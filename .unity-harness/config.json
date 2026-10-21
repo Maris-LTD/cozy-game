@@ -36,5 +36,10 @@
     "compile": true,
     "tests": false,
     "maxBlocks": 3
+  },
+  "studio": {
+    "stage": "concept",
+    "rigor": "standard",
+    "automation": "guided"
   }
 }
