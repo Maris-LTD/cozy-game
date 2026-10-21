@@ -111,6 +111,30 @@ interfaces:
     signature: "void RequestReveal(PetData pet, Action onRevealComplete); void SkipReveal();"
     layer: Presentation
     added: "2026-10-21"
+  - name: IRandomProvider
+    status: active
+    adr: Docs/architecture/adr-0008-weighted-random-drop-selection.md
+    signature: "double NextDouble(); int NextInt(int minInclusive, int maxExclusive);"
+    layer: Contracts
+    added: "2026-10-21"
+  - name: IGachaDropResolver
+    status: active
+    adr: Docs/architecture/adr-0008-weighted-random-drop-selection.md
+    signature: "GachaDropResult ResolveDrop(IRandomProvider rng);"
+    layer: Features
+    added: "2026-10-21"
+  - name: IValidatableAsset
+    status: active
+    adr: Docs/architecture/adr-0009-scriptableobject-editor-validation.md
+    signature: "void Validate(IValidationContext context);"
+    layer: Contracts
+    added: "2026-10-21"
+  - name: IValidationContext
+    status: active
+    adr: Docs/architecture/adr-0009-scriptableobject-editor-validation.md
+    signature: "void AddError(string message, Object contextObj); void AddWarning(string message, Object contextObj); bool HasErrors;"
+    layer: Contracts
+    added: "2026-10-21"
 
 performance_budgets:
   - metric: target_fps
@@ -174,6 +198,16 @@ api_decisions:
     adr: Docs/architecture/adr-0007-event-driven-feedback-pipeline.md
     choice: "Event-driven presentation translator using DOTween and pooled floating text"
     added: "2026-10-21"
+  - topic: gacha_rng
+    status: active
+    adr: Docs/architecture/adr-0008-weighted-random-drop-selection.md
+    choice: "Two-tier CDF cumulative weight binary search using IRandomProvider"
+    added: "2026-10-21"
+  - topic: data_validation
+    status: active
+    adr: Docs/architecture/adr-0009-scriptableobject-editor-validation.md
+    choice: "Editor-time automated validation via IValidatableAsset and IPreprocessBuildWithReport"
+    added: "2026-10-21"
 
 forbidden_patterns:
   - pattern: circular_assembly_dependency
@@ -210,4 +244,14 @@ forbidden_patterns:
     status: active
     adr: Docs/architecture/adr-0007-event-driven-feedback-pipeline.md
     rule: "Core gameplay and economy code must never reference DOTween, TextMeshPro, or ParticleSystem directly."
+    added: "2026-10-21"
+  - pattern: unity_random_in_gacha
+    status: active
+    adr: Docs/architecture/adr-0008-weighted-random-drop-selection.md
+    rule: "Gacha resolution must never call UnityEngine.Random directly; must use IRandomProvider."
+    added: "2026-10-21"
+  - pattern: runtime_asset_mutation_in_validation
+    status: active
+    adr: Docs/architecture/adr-0009-scriptableobject-editor-validation.md
+    rule: "Asset validation must never mutate asset state or serialized fields."
     added: "2026-10-21"

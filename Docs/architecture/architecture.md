@@ -1,21 +1,21 @@
 # Cozy Gachapon Room (Tiệm Trứng Thư Giãn) - Master Architecture
 
 ## Document Status
-- Version: 1.0.0
+- Version: 1.1.0
 - Last Updated: 2026-10-21
 - Unity: 6000.3.16f1 (URP 2D, Input System: new)
 - Platforms: WebGL, Android, iOS | Budgets: 60 fps, <=100 draw calls, <=1024 MB
 - GDDs Covered: economy-core, pet-catalog, bootstrap-and-scene-flow, object-pooling, audio, plinko-board, inventory, gacha-machine, shelf-and-synergy, hud-and-tab-navigation, feedback-and-juice
-- ADRs Referenced: ADR-0001 to ADR-0007 (Planned)
+- ADRs Referenced: ADR-0001 to ADR-0009 (Accepted)
 - Sign-offs:
   - TD-ARCHITECTURE: skipped (lean)
   - LP-FEASIBILITY: skipped (lean)
 
 ## Unity Knowledge Gap Summary
 - **Unity 6000.3.16f1 (URP 2D)**:
-  - **Physics2D**: Box2D chạy trên WebGL và Mobile cần trần số lượng vật thể động (active coins <= 48). Cơ chế `Simulate()` theo `FixedUpdate` được cô lập trong World Space Camera.
+  - **Physics2D**: Box2D chạy trên WebGL và Mobile cần trần số lượng vật thể động (active coins <= 48). Cơ chế `Simulate()` theo `FixedUpdate` được cô lập trong World Space Camera. **Lưu ý Unity 6**: `Rigidbody2D.velocity` đã bị deprecate, bắt buộc sử dụng `Rigidbody2D.linearVelocity`.
   - **Audio WebGL**: Trình duyệt yêu cầu thao tác người dùng đầu tiên (pointer up / touch) để mở khóa Web Audio context. Hệ thống Audio lắng nghe `FirstInteraction` để kích hoạt voice pool.
-  - **UI / uGUI 2.0**: HUD 3 tab và header dùng Canvas Scaler 1080x1920 reference resolution, tách riêng Canvas tĩnh và Canvas động (số bay/hiệu ứng) để tránh Canvas Rebuild toàn phần.
+  - **UI / uGUI 2.0 & Text**: HUD 3 tab và header dùng Canvas Scaler 1080x1920 reference resolution, tách riêng Canvas tĩnh và Canvas động (số bay/hiệu ứng) để tránh Canvas Rebuild toàn phần. Sử dụng `TMP_Text.SetText()` hoặc cập nhật theo event để đạt chuẩn 0 B GC/frame.
   - **GC Allocations**: Tuyệt đối không dùng LINQ, string concatenation trong Update loop; tất cả số bay và xu Plinko sử dụng Object Pooling cấp sẵn trước khi vào màn chơi.
 
 ## Layer Map
@@ -182,17 +182,19 @@ namespace CozyGachapon.Contracts
 
 ## ADR Audit & Required ADRs
 
-Dự án hiện chưa có ADR nào được ghi nhận. Toàn bộ 7 quyết định cốt lõi cần được lập thành tài liệu ADR:
+Toàn bộ 9 quyết định kiến trúc cốt lõi đã được soạn thảo và nghiệm thu (`Accepted`):
 
-| ADR ID | Title | Layer | Criticality | GDDs Covered |
-|---|---|---|---|---|
-| ADR-0001 | Layered Assembly Architecture & Module Boundaries | Foundation | High (Must exist before code) | All |
-| ADR-0002 | Bootstrap Composition Root & Phased Lifecycle via IBootStep | Foundation | High (Must exist before code) | bootstrap-and-scene-flow |
-| ADR-0003 | Zero-Allocation Object Pooling Service | Foundation | High (Must exist before code) | object-pooling, plinko-board |
-| ADR-0004 | Priority Voice Management & Audio Subsystem | Foundation | High (Must exist before code) | audio |
-| ADR-0005 | Layered Income Pipeline & Double Currency Format | Core | High (Must exist before code) | economy-core, shelf-and-synergy |
-| ADR-0006 | World Space 2D Physics Plinko Board vs Canvas UI Separation | Core | High (Must exist before code) | plinko-board, hud-and-tab-navigation |
-| ADR-0007 | Event-Driven Feedback & Juice Translation Pipeline | Presentation | Medium | feedback-and-juice |
+| ADR ID | Title | Layer | Criticality | GDDs Covered | Status |
+|---|---|---|---|---|---|
+| ADR-0001 | Layered Assembly Architecture & Module Boundaries | Foundation | High (Must exist before code) | All | Accepted |
+| ADR-0002 | Bootstrap Composition Root & Phased Lifecycle via IBootStep | Foundation | High (Must exist before code) | bootstrap-and-scene-flow | Accepted |
+| ADR-0003 | Zero-Allocation Object Pooling Service | Foundation | High (Must exist before code) | object-pooling, plinko-board | Accepted |
+| ADR-0004 | Priority Voice Management & Audio Subsystem | Foundation | High (Must exist before code) | audio | Accepted |
+| ADR-0005 | Layered Income Pipeline & Double Currency Format | Core | High (Must exist before code) | economy-core, shelf-and-synergy | Accepted |
+| ADR-0006 | World Space 2D Physics Plinko Board vs Canvas UI Separation | Core | High (Must exist before code) | plinko-board, hud-and-tab-navigation | Accepted |
+| ADR-0007 | Event-Driven Feedback & Juice Translation Pipeline | Presentation | Medium | feedback-and-juice | Accepted |
+| ADR-0008 | Weighted Random Drop Selection Algorithm & RNG Architecture | Feature | Medium | gacha-machine | Accepted |
+| ADR-0009 | ScriptableObject Data Validation Tooling in Editor | Tooling / Core | Medium | pet-catalog, gacha-machine | Accepted |
 
 ## Architecture Principles
 1. **Plain C# Core, Thin MonoBehaviours**: Logic nghiệp vụ (Kinh tế, Gacha, Bảng tính, Bể chứa dữ liệu) nằm trong các class C# thuần. MonoBehaviours chỉ đóng vai trò View, Router và adapter vòng đời Unity.
