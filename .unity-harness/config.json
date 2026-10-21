@@ -40,6 +40,17 @@
   "studio": {
     "stage": "concept",
     "rigor": "standard",
-    "automation": "guided"
+    "automation": "guided",
+    "unityVersion": "6000.3.16f1",
+    "renderPipeline": "URP",
+    "inputSystem": "new",
+    "targetPlatforms": [
+      "WebGL",
+      "Android",
+      "iOS"
+    ],
+    "targetFps": 60,
+    "drawCallBudget": 100,
+    "memoryBudgetMb": 1024
   }
 }

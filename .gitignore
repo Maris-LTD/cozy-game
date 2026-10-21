@@ -80,3 +80,7 @@ firebase-debug.log
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Unity
 unity_compile_check.log
 unity_compile_output.log
+
+# Studio per-session scratch
+Docs/production/session-state/
+Docs/production/session-logs/
