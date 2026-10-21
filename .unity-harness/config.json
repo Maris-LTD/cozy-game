@@ -1,0 +1,40 @@
+{
+  "language": "vi",
+  "compileTimeoutSec": 180,
+  "testTimeoutSec": 300,
+  "testAssemblies": [
+    "CozyGachapon.Tests.EditMode"
+  ],
+  "rules": {
+    "maxLines": 250,
+    "noComments": true,
+    "noDebugLog": true,
+    "compareTag": true,
+    "includePaths": [
+      "Assets/CozyGachapon/Scripts/",
+      "Assets/CozyGachapon/Tests/"
+    ]
+  },
+  "smoke": {
+    "scene": "Assets/CozyGachapon/Scenes/Game.unity",
+    "waitForScene": "Game",
+    "maxWaitSec": 45,
+    "settleSec": 3,
+    "runInBackground": true,
+    "keepFocus": false,
+    "focusIntervalMs": 1000,
+    "expectTypes": [
+      "CozyGachaponGame"
+    ],
+    "failOnMissingScripts": true,
+    "capturePath": "Temp/harness/smoke.png",
+    "ignoreErrorPatterns": []
+  },
+  "stopGate": {
+    "enabled": true,
+    "rules": true,
+    "compile": true,
+    "tests": false,
+    "maxBlocks": 3
+  }
+}

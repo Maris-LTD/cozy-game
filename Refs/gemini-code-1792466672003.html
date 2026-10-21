@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Cozy Gachapon Room - Tactical Loadout</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    html, body {
+      width: 100vw;
+      height: 100dvh;
+      overflow: hidden !important;
+      position: fixed;
+      inset: 0;
+      touch-action: manipulation;
+      background-color: #EFE8DC;
+      color: #3D312A;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Nunito", sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.03); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #D5C4AF; border-radius: 4px; }
+  </style>
+</head>
+<body class="flex items-center justify-center">
+
+  <!-- Khung Giả Lập Mobile Cozy (100% màn hình dọc) -->
+  <div class="relative w-full h-full max-w-md bg-[#FAF7F2] flex flex-col justify-between overflow-hidden shadow-2xl border-x border-[#E3DACB]">
+    
+    <!-- Top Header: Tài nguyên & Thu nhập CPS (Ấm cúng) -->
+    <header class="h-14 px-4 bg-[#FFFDF9]/95 backdrop-blur border-b border-[#E8DFD1] flex items-center justify-between z-20 shrink-0 shadow-sm">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl drop-shadow-sm">🪙</span>
+        <div>
+          <div class="text-lg font-black tracking-tight text-[#B45309] font-mono leading-tight" id="coin-display">150</div>
+          <div class="text-[10px] font-bold text-[#4D7C0F]" id="cps-display">+0 xu/giây</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <div id="boost-indicator" class="hidden px-2.5 py-0.5 rounded-full bg-[#FEF2F2] border border-[#FCA5A5] text-[10px] text-[#DC2626] font-bold animate-pulse shadow-sm">
+          🔥 TRÀ SỐT DẺO (<span id="boost-timer">0</span>s)
+        </div>
+        <div class="text-right">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-[#8C7A6B]">Kho Đồ</div>
+          <div class="text-xs font-black text-[#6B5A4B] font-mono" id="inv-count">0 món</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Khu Vực Nội Dung Chính (3 Tab) -->
+    <main class="flex-1 relative overflow-hidden bg-[#FAF7F2]">
+      
+      <!-- TAB 1: BÀN PLINKO & MÁY GACHA GỖ -->
+      <section id="tab-game" class="absolute inset-0 flex flex-col justify-between p-3">
+        <!-- Bàn Plinko Gỗ Mộc Canvas -->
+        <div class="relative flex-1 w-full bg-[#F3ECE1] rounded-2xl border-2 border-[#D8C7B2] overflow-hidden shadow-inner flex flex-col">
+          <canvas id="plinko-canvas" class="w-full h-full block cursor-pointer"></canvas>
+          <div class="absolute top-2 left-2.5 pointer-events-none text-[10px] font-bold bg-[#FFFDF9]/90 px-2.5 py-1 rounded-full text-[#7A695A] shadow-sm border border-[#E3DACB]">
+            👆 Chạm để thả đồng xu vàng
+          </div>
+        </div>
+
+        <!-- Cỗ Máy Vặn Gachapon Phong Cách Cổ Điển -->
+        <div class="h-28 mt-2.5 bg-gradient-to-r from-[#FFFDF9] to-[#F7EFE3] border-2 border-[#DFD1BF] rounded-2xl p-2.5 flex items-center justify-between gap-3 shadow-sm shrink-0">
+          <div class="flex items-center gap-3">
+            <div id="gacha-globe" class="w-16 h-16 rounded-2xl bg-[#EFE4D3] border-2 border-[#C9B397] flex items-center justify-center text-3xl shadow-inner relative overflow-hidden transition-transform">
+              🔮
+              <span class="absolute bottom-0 text-[8px] font-bold bg-[#A77443] text-white w-full text-center py-0.5 tracking-wider uppercase">Trứng</span>
+            </div>
+            <div>
+              <div class="text-xs font-black text-[#5C4033]">Máy Trứng Gachapon</div>
+              <div class="text-[11px] font-medium text-[#7A695A] mt-0.5">Giá vặn: <span class="text-[#B45309] font-black font-mono">100 🪙</span></div>
+              <div class="text-[10px] text-[#9A8775]">Vặn tìm kiếm thú cưng đặt lên kệ!</div>
+            </div>
+          </div>
+          <button id="btn-spin" onclick="spinGachapon()" class="h-12 px-4 rounded-xl bg-gradient-to-b from-[#E9A844] to-[#C98224] active:scale-95 text-white font-black text-xs tracking-wider shadow-md shadow-[#C98224]/30 flex flex-col items-center justify-center border border-[#F6C77C]">
+            <span>VẶN TRỨNG</span>
+            <span class="text-[10px] opacity-90 font-mono">100 🪙</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- TAB 2: KỆ ĐỒ CHƠI GỖ & KHO ĐỒ CHIẾN THUẬT -->
+      <section id="tab-shelf" class="hidden absolute inset-0 flex flex-col p-3 gap-2.5 overflow-hidden">
+        
+        <!-- Nửa trên: Kệ Gỗ Giới Hạn Slot (Active Loadout) -->
+        <div class="bg-gradient-to-b from-[#F4EADB] to-[#E9DCB8] border-2 border-[#C9B397] rounded-2xl p-3 shrink-0 shadow-sm">
+          <div class="flex justify-between items-center mb-2">
+            <div class="text-xs font-black text-[#5C4033] flex items-center gap-1.5">
+              <span>🧸</span> KỆ XUẤT CHIẾN (<span id="slot-usage">0/3</span>)
+            </div>
+            <div class="text-[10px] font-medium text-[#8C6D46]">Chỉ đồ trên kệ mới kích hoạt buff!</div>
+          </div>
+          <!-- Lưới Slot trên Kệ -->
+          <div id="shelf-slots" class="grid grid-cols-3 gap-2">
+            <!-- Render động bằng JS -->
+          </div>
+        </div>
+
+        <!-- Nửa dưới: Kho Lưu Trữ (Inventory) -->
+        <div class="flex-1 bg-[#FFFDF9] border border-[#E3DACB] rounded-2xl p-3 flex flex-col overflow-hidden shadow-sm">
+          <div class="flex justify-between items-center mb-2 shrink-0">
+            <div class="text-xs font-black text-[#5C4033]">📦 HỘP LƯU TRỮ ĐỒ CHƠI</div>
+            <div class="text-[10px] text-[#8C7A6B]">Chọn thú để mang lên kệ</div>
+          </div>
+          <div id="inventory-grid" class="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-2 gap-2 pr-1">
+            <!-- Render động bằng JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: TIỆM TẠP HÓA ẤM CÚNG (SHOP) -->
+      <section id="tab-shop" class="hidden absolute inset-0 p-3 overflow-y-auto custom-scrollbar flex flex-col gap-2.5">
+        
+        <!-- Nhóm 1: Mở Rộng Slot Kệ Gỗ -->
+        <div class="bg-[#FFFDF9] border border-[#E3DACB] rounded-2xl p-3 shadow-sm">
+          <div class="text-xs font-black text-[#5C4033] mb-2 flex items-center gap-1.5">
+            <span>🪵</span> ĐÓNG THÊM Ô KỆ GỖ
+          </div>
+          <div class="bg-[#F8F3EA] p-2.5 rounded-xl border border-[#EADFCF] flex justify-between items-center">
+            <div>
+              <div class="text-xs font-bold text-[#3D312A]" id="slot-upgrade-title">Mở Ô Kệ Thứ 4</div>
+              <div class="text-[10px] text-[#7A695A]">Cho phép bày thêm 1 thú cưng lên kệ</div>
+            </div>
+            <button id="btn-buy-slot" onclick="buyShelfSlot()" class="px-3 py-2 rounded-xl bg-[#A77443] hover:bg-[#936639] active:scale-95 text-white font-bold text-xs font-mono shadow-sm">
+              500 🪙
+            </button>
+          </div>
+        </div>
+
+        <!-- Nhóm 2: Bùa Tăng Tốc & Trà Thơm (Boosters) -->
+        <div class="bg-[#FFFDF9] border border-[#E3DACB] rounded-2xl p-3 shadow-sm">
+          <div class="text-xs font-black text-[#5C4033] mb-2 flex items-center gap-1.5">
+            <span>🍵</span> BÙA LỢI & TRÀ THƯ GIÃN
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <!-- Boost 1: Trà Sốt Dẻo -->
+            <div class="bg-[#F8F3EA] p-2.5 rounded-xl border border-[#EADFCF] flex flex-col justify-between h-28">
+              <div>
+                <div class="text-xs font-black text-[#B91C1C]">🍵 Trà Sốt Dẻo</div>
+                <div class="text-[10px] text-[#7A695A] mt-1 leading-snug">x2 toàn bộ tiền thu hoạch trong 30 giây</div>
+              </div>
+              <button onclick="buyBoost('fever', 150)" class="w-full py-1.5 rounded-lg bg-[#E07A5F] active:scale-95 text-white font-bold text-[11px] font-mono shadow-sm">
+                150 🪙
+              </button>
+            </div>
+            <!-- Boost 2: Cơn Mưa Xu -->
+            <div class="bg-[#F8F3EA] p-2.5 rounded-xl border border-[#EADFCF] flex flex-col justify-between h-28">
+              <div>
+                <div class="text-xs font-black text-[#B45309]">🌧️ Mưa Đồng Xu</div>
+                <div class="text-[10px] text-[#7A695A] mt-1 leading-snug">Xả ngay 25 đồng xu lăn tưng bừng vào Plinko</div>
+              </div>
+              <button onclick="buyBoost('rain', 200)" class="w-full py-1.5 rounded-lg bg-[#D97D54] active:scale-95 text-white font-bold text-[11px] font-mono shadow-sm">
+                200 🪙
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nhóm 3: Chợ Đồ Cũ (Flash Deal) -->
+        <div class="bg-[#FFFDF9] border border-[#E3DACB] rounded-2xl p-3 shadow-sm">
+          <div class="flex justify-between items-center mb-2">
+            <div class="text-xs font-black text-[#5C4033] flex items-center gap-1.5">
+              <span>🏷️</span> GIAN HÀNG ĐẶC BIỆT
+            </div>
+            <span class="text-[10px] text-[#8C7A6B]">Mua thẳng không cần quay</span>
+          </div>
+          <div id="flash-deal-card" class="bg-[#F8F3EA] p-2.5 rounded-xl border border-[#EADFCF] flex justify-between items-center">
+            <!-- Render động bằng JS -->
+          </div>
+        </div>
+
+        <!-- Nhóm 4: Quà Tặng Tài Trợ (Rewarded Ads) -->
+        <div class="bg-gradient-to-r from-[#FFFBEB] to-[#FEF3C7] border border-[#FDE68A] rounded-2xl p-3 flex justify-between items-center shadow-sm">
+          <div>
+            <div class="text-xs font-black text-[#92400E] flex items-center gap-1">🎁 QUÀ TẶNG BÁC BẢO VỆ</div>
+            <div class="text-[10px] text-[#A16207] mt-0.5">Xem 1 video ngắn nhận ngay 150 xu vặn trứng</div>
+          </div>
+          <button onclick="watchRewardedAd()" class="px-3 py-2 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] active:scale-95 text-white font-black text-xs shadow-sm">
+            NHẬN 150🪙
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar (Cozy Menu Ngón Cái) -->
+    <nav class="h-16 px-6 bg-[#FFFDF9] border-t border-[#E8DFD1] flex items-center justify-around z-20 shrink-0 shadow-lg">
+      <button onclick="switchTab('game')" id="nav-game" class="flex flex-col items-center gap-1 text-[#C98224] transition-colors">
+        <span class="text-xl">🎰</span>
+        <span class="text-[10px] font-bold">Plinko & Máy</span>
+      </button>
+      <button onclick="switchTab('shelf')" id="nav-shelf" class="flex flex-col items-center gap-1 text-[#A89887] transition-colors">
+        <span class="text-xl">🧸</span>
+        <span class="text-[10px] font-bold">Kệ & Kho Đồ</span>
+      </button>
+      <button onclick="switchTab('shop')" id="nav-shop" class="flex flex-col items-center gap-1 text-[#A89887] transition-colors">
+        <span class="text-xl">🛒</span>
+        <span class="text-[10px] font-bold">Tiệm Tạp Hóa</span>
+      </button>
+    </nav>
+
+    <!-- POPUP BÓC TRỨNG GACHAPON CAPSULE (ẤM ÁP) -->
+    <div id="modal-unbox" class="hidden absolute inset-0 bg-[#3D312A]/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+      <div class="text-xs font-black tracking-widest text-[#FDFBF7] uppercase mb-2 drop-shadow">QUẢ TRỨNG MAY MẮN!</div>
+      <div id="capsule-ball" onclick="openCapsule()" class="w-28 h-28 my-4 rounded-full bg-gradient-to-tr from-[#E07A5F] via-[#F4D06F] to-[#7EA172] shadow-xl flex items-center justify-center text-5xl cursor-pointer hover:scale-105 active:scale-95 transition-all border-4 border-white/80 animate-bounce">
+        🎁
+      </div>
+      <div id="unbox-tip" class="text-xs text-[#FAF7F2] font-bold drop-shadow">Bấm vào quả trứng để hé mở!</div>
+      
+      <!-- Kết quả mở trứng hé lộ dạng Thẻ Sưu Tập Mộc Mạc -->
+      <div id="unbox-result" class="hidden flex-col items-center bg-[#FFFDF9] border-2 border-[#D8C7B2] p-5 rounded-3xl shadow-2xl max-w-xs w-full">
+        <div id="res-icon" class="text-6xl mb-2 drop-shadow">🦊</div>
+        <div id="res-name" class="text-base font-black text-[#5C4033]">Cáo Khăn Len</div>
+        <div id="res-rarity" class="text-[10px] font-black text-[#7EA172] uppercase tracking-wider mb-2 px-2 py-0.5 rounded-full bg-[#EBF3E8]">Sử Thi (Epic)</div>
+        <div id="res-skill" class="text-xs text-[#7A695A] bg-[#F7EFE3] p-2.5 rounded-xl border border-[#DFD1BF] mb-4 font-medium leading-relaxed">
+          +10 CPS & Nhân đôi sản lượng thú cưng khác trên kệ!
+        </div>
+        <button onclick="closeUnboxModal()" class="w-full py-2.5 rounded-xl bg-[#7EA172] hover:bg-[#688A5C] text-white font-black text-xs shadow-md">
+          CẤT VÀO HỘP ĐỒ CHƠI
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /* ========================================================
+       1. CƠ SỞ DỮ LIỆU ĐỒ CHƠI & BÙA LỢI COZY (SYNERGIES)
+       ======================================================== */
+    const PET_DATABASE = [
+      { id: 1, name: "Vịt Gỗ Con", icon: "🐥", type: "beast", rarity: "Thường", baseCps: 2, desc: "+2 xu/giây thụ động.", color: "text-[#B45309] bg-[#FEF3C7]" },
+      { id: 2, name: "Ếch Cốm Mộng Mơ", icon: "🐸", type: "beast", rarity: "Thường", baseCps: 3, desc: "+3 xu/giây thụ động.", color: "text-[#4D7C0F] bg-[#ECFCCB]" },
+      { id: 3, name: "Mèo Chiêu Tài May Mắn", icon: "🐱", type: "beast", rarity: "Hiếm", baseCps: 5, desc: "+5 CPS. Thưởng +50 xu mỗi khi xu trúng Jackpot x5!", color: "text-[#1D4ED8] bg-[#DBEAFE]" },
+      { id: 4, name: "Thỏ Bông Nhào Lộn", icon: "🐰", type: "beast", rarity: "Hiếm", baseCps: 6, desc: "+6 CPS. Mỗi cú nảy chốt đinh cộng thêm +1 xu.", color: "text-[#1D4ED8] bg-[#DBEAFE]" },
+      { id: 5, name: "Cáo Khăn Len", icon: "🦊", type: "beast", rarity: "Sử Thi", baseCps: 12, desc: "+12 CPS. Nhân đôi (x2) CPS của mọi thú khác trên kệ!", color: "text-[#7C3AED] bg-[#EDE9FE]" },
+      { id: 6, name: "Kẹo Bảy Màu Ngọt Ngào", icon: "🍬", type: "candy", rarity: "Sử Thi", baseCps: 15, desc: "+15 CPS. Tăng gấp đôi độ nảy của đinh Plinko.", color: "text-[#7C3AED] bg-[#EDE9FE]" },
+      { id: 7, name: "Mèo Hoàng Gia Béo Múp", icon: "👑", type: "royal", rarity: "Huyền Thoại", baseCps: 35, desc: "+35 CPS. Nhân đôi (x2) toàn bộ thu nhập cả bàn!", color: "text-[#B45309] bg-[#FEF3C7]" }
+    ];
+
+    /* ========================================================
+       2. TRẠNG THÁI GAME (GAME STATE)
+       ======================================================== */
+    let state = {
+      coins: 150,
+      maxSlots: 3,                 // 3 slot ban đầu
+      equipped: [1],              // Khởi đầu có sẵn Vịt Gỗ
+      inventory: [
+        { uid: "p_init", id: 1, stars: 1 }
+      ],
+      multiplierBonus: 1,
+      feverMultiplier: 1,
+      feverTimer: 0,
+      pegBonusCoin: 0,
+      jackpotBonus: 0,
+      flashDealId: 3              // Mèo Chiêu Tài bán trong shop
+    };
+
+    /* ========================================================
+       3. HỆ THỐNG ÂM THANH MỘC (WEB AUDIO API)
+       ======================================================== */
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+    function getAudio() {
+      if (!audioCtx) audioCtx = new AudioContext();
+      return audioCtx;
+    }
+    // Âm thanh mộc cầm (marimba / wood tap) ấm tai
+    function playBeep(freq, type="sine", dur=0.08, vol=0.12) {
+      try {
+        const ctx = getAudio();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(vol, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    /* ========================================================
+       4. BÀN PLINKO GỖ VẬT LÝ CANVAS 2D
+       ======================================================== */
+    const canvas = document.getElementById("plinko-canvas");
+    const ctx = canvas.getContext("2d");
+    let balls = [];
+    let pegs = [];
+    const buckets = [
+      { mult: 1, label: "x1", color: "#8C7A6B", bg: "rgba(140, 122, 107, 0.15)" },
+      { mult: 2, label: "x2", color: "#2563EB", bg: "rgba(37, 99, 235, 0.12)" },
+      { mult: 5, label: "x5 HŨ", color: "#D97706", bg: "rgba(217, 119, 6, 0.22)" }, // Hũ Jackpot
+      { mult: 2, label: "x2", color: "#2563EB", bg: "rgba(37, 99, 235, 0.12)" },
+      { mult: 1, label: "x1", color: "#8C7A6B", bg: "rgba(140, 122, 107, 0.15)" }
+    ];
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      initPegs();
+    }
+
+    function initPegs() {
+      pegs = [];
+      const rows = 6;
+      const startY = 32;
+      const spacingY = (canvas.height - 80) / rows;
+      for (let r = 0; r < rows; r++) {
+        const count = 4 + (r % 2);
+        const spacingX = canvas.width / (count + 1);
+        for (let c = 1; c <= count; c++) {
+          pegs.push({ x: c * spacingX, y: startY + r * spacingY, r: 4.5 });
+        }
+      }
+    }
+
+    function dropCoin(x) {
+      balls.push({
+        x: x || canvas.width / 2 + (Math.random() * 40 - 20),
+        y: 8,
+        vx: (Math.random() - 0.5) * 1.8,
+        vy: 1,
+        r: 6.5
+      });
+      playBeep(520, "sine", 0.04, 0.08);
+    }
+
+    canvas.addEventListener("pointerdown", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      dropCoin(e.clientX - rect.left);
+    });
+
+    function updatePlinko() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 1. Vẽ các chốt đinh gỗ tròn
+      for (const p of pegs) {
+        ctx.fillStyle = "#A77443";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#E4D5C1";
+        ctx.beginPath();
+        ctx.arc(p.x - 1, p.y - 1, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 2. Vẽ 5 hũ đáy mộc
+      const bW = canvas.width / buckets.length;
+      const bH = 32;
+      const bY = canvas.height - bH;
+      for (let i = 0; i < buckets.length; i++) {
+        ctx.fillStyle = buckets[i].bg;
+        ctx.fillRect(i * bW, bY, bW, bH);
+        ctx.strokeStyle = buckets[i].color;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(i * bW, bY, bW, bH);
+
+        ctx.fillStyle = buckets[i].color;
+        ctx.font = "bold 11px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(buckets[i].label, i * bW + bW / 2, bY + 20);
+      }
+
+      // 3. Xử lý bóng xu lăn
+      for (let i = balls.length - 1; i >= 0; i--) {
+        const b = balls[i];
+        b.vy += 0.23; // Trọng lực nhẹ êm
+        b.x += b.vx;
+        b.y += b.vy;
+
+        // Va chạm viền
+        if (b.x < b.r) { b.x = b.r; b.vx *= -0.55; }
+        if (b.x > canvas.width - b.r) { b.x = canvas.width - b.r; b.vx *= -0.55; }
+
+        // Va chạm chốt đinh
+        for (const p of pegs) {
+          const dx = b.x - p.x;
+          const dy = b.y - p.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < b.r + p.r) {
+            const angle = Math.atan2(dy, dx);
+            b.vx = Math.cos(angle) * 2.1;
+            b.vy = Math.sin(angle) * 2.1;
+            playBeep(650 + Math.random() * 150, "sine", 0.03, 0.05);
+
+            if (state.pegBonusCoin > 0) {
+              state.coins += state.pegBonusCoin;
+            }
+          }
+        }
+
+        // Vẽ đồng xu vàng ấm áp
+        ctx.fillStyle = "#F59E0B";
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#B45309";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Rơi vào hũ hứng đáy
+        if (b.y > bY) {
+          const bucketIndex = Math.min(buckets.length - 1, Math.max(0, Math.floor(b.x / bW)));
+          const bInfo = buckets[bucketIndex];
+          let earned = 10 * bInfo.mult * state.multiplierBonus * state.feverMultiplier;
+
+          if (bInfo.mult === 5 && state.jackpotBonus > 0) {
+            earned += state.jackpotBonus;
+            playBeep(980, "triangle", 0.18, 0.22);
+          } else {
+            playBeep(450 + bInfo.mult * 80, "sine", 0.07, 0.1);
+          }
+
+          state.coins += earned;
+          balls.splice(i, 1);
+          updateHeaderUI();
+        }
+      }
+
+      requestAnimationFrame(updatePlinko);
+    }
+
+    /* ========================================================
+       5. TÍNH TOÁN BÙA LỢI & SYNERGY KỆ (LOADOUT)
+       ======================================================== */
+    function recalculateLoadoutEffects() {
+      let totalCps = 0;
+      let hasFox = false;
+      let hasRoyalCat = false;
+      state.pegBonusCoin = 0;
+      state.jackpotBonus = 0;
+
+      const equippedPets = state.equipped.map(id => PET_DATABASE.find(p => p.id === id)).filter(Boolean);
+
+      for (const pet of equippedPets) {
+        if (pet.id === 5) hasFox = true;
+        if (pet.id === 7) hasRoyalCat = true;
+        if (pet.id === 3) state.jackpotBonus += 50;
+        if (pet.id === 4) state.pegBonusCoin += 1;
+      }
+
+      for (const pet of equippedPets) {
+        let petCps = pet.baseCps;
+        if (hasFox && pet.type === "beast" && pet.id !== 5) {
+          petCps *= 2;
+        }
+        totalCps += petCps;
+      }
+
+      if (hasRoyalCat) {
+        totalCps *= 2;
+        state.multiplierBonus = 2;
+      } else {
+        state.multiplierBonus = 1;
+      }
+
+      return totalCps;
+    }
+
+    /* ========================================================
+       6. RENDER KỆ GỖ & HỘP LƯU TRỮ (INVENTORY)
+       ======================================================== */
+    function renderShelfAndInventory() {
+      // 1. Render Các Ô Kệ Gỗ
+      const shelfContainer = document.getElementById("shelf-slots");
+      shelfContainer.innerHTML = "";
+      document.getElementById("slot-usage").innerText = `${state.equipped.length}/${state.maxSlots}`;
+
+      for (let i = 0; i < state.maxSlots; i++) {
+        const petId = state.equipped[i];
+        const slotEl = document.createElement("div");
+
+        if (petId) {
+          const pet = PET_DATABASE.find(p => p.id === petId);
+          slotEl.className = "h-24 rounded-xl bg-[#FFFDF9] border-2 border-[#D8C7B2] flex flex-col items-center justify-between p-2 text-center relative shadow-sm";
+          slotEl.innerHTML = `
+            <button onclick="unequipPet(${petId})" class="absolute top-1 right-1 text-[9px] bg-[#E07A5F] hover:bg-[#D96B4F] text-white rounded px-1.5 py-0.5 font-bold shadow-xs">Gỡ</button>
+            <div class="text-2xl mt-1">${pet.icon}</div>
+            <div class="text-[11px] font-bold text-[#5C4033] truncate w-full">${pet.name}</div>
+            <div class="text-[9px] font-bold text-[#B45309] font-mono">+${pet.baseCps} CPS</div>
+          `;
+        } else {
+          slotEl.className = "h-24 rounded-xl border-2 border-dashed border-[#C9B397] bg-[#FAF7F2]/60 flex flex-col items-center justify-center text-[#A89887] text-xs";
+          slotEl.innerHTML = `<span class="text-lg opacity-60">➕</span><span class="font-bold text-[10px] mt-0.5">Ô Trống</span>`;
+        }
+        shelfContainer.appendChild(slotEl);
+      }
+
+      // 2. Render Hộp Kho Lưu Trữ (Inventory)
+      const invContainer = document.getElementById("inventory-grid");
+      invContainer.innerHTML = "";
+      document.getElementById("inv-count").innerText = `${state.inventory.length} món`;
+
+      state.inventory.forEach(item => {
+        const pet = PET_DATABASE.find(p => p.id === item.id);
+        const isEquipped = state.equipped.includes(item.id);
+        const card = document.createElement("div");
+        card.className = `p-2.5 rounded-xl border-2 ${isEquipped ? 'bg-[#FAF2E6] border-[#D9A066]' : 'bg-[#FAF7F2] border-[#E8DFD1]'} flex flex-col justify-between shadow-xs`;
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-2xl">${pet.icon}</span>
+              <span class="text-[8px] font-bold px-1.5 py-0.5 rounded-full ${pet.color}">${pet.rarity}</span>
+            </div>
+            <div class="text-xs font-bold text-[#5C4033] mt-1">${pet.name}</div>
+            <div class="text-[10px] text-[#7A695A] mt-0.5 line-clamp-2 leading-tight">${pet.desc}</div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-[#E8DFD1] flex items-center justify-between">
+            <span class="text-[10px] font-mono font-bold text-[#4D7C0F]">+${pet.baseCps} CPS</span>
+            ${isEquipped 
+              ? `<button onclick="unequipPet(${pet.id})" class="text-[10px] font-bold px-2 py-1 bg-[#E07A5F] text-white rounded-lg shadow-xs">Đang Bày</button>`
+              : `<button onclick="equipPet(${pet.id})" class="text-[10px] font-bold px-2 py-1 bg-[#7EA172] active:scale-95 text-white rounded-lg shadow-xs">Bày Lên Kệ</button>`
+            }
+          </div>
+        `;
+        invContainer.appendChild(card);
+      });
+    }
+
+    function equipPet(id) {
+      if (state.equipped.includes(id)) return;
+      if (state.equipped.length >= state.maxSlots) {
+        alert("⚠️ Kệ gỗ đã hết chỗ! Hãy gỡ bớt 1 thú ra hoặc sang Tiệm Tạp Hóa đóng thêm ô kệ nhé.");
+        return;
+      }
+      state.equipped.push(id);
+      playBeep(750, "sine", 0.06, 0.12);
+      renderShelfAndInventory();
+      updateHeaderUI();
+    }
+
+    function unequipPet(id) {
+      state.equipped = state.equipped.filter(petId => petId !== id);
+      playBeep(420, "sine", 0.06, 0.1);
+      renderShelfAndInventory();
+      updateHeaderUI();
+    }
+
+    /* ========================================================
+       7. VẶN GACHAPON & BÓC TRỨNG
+       ======================================================== */
+    let currentUnboxPet = null;
+
+    function spinGachapon() {
+      if (state.coins < 100) {
+        alert("🪙 Bạn cần 100 xu để vặn trứng! Hãy chạm thả thêm bóng Plinko nhé.");
+        return;
+      }
+      state.coins -= 100;
+      updateHeaderUI();
+
+      const globe = document.getElementById("gacha-globe");
+      globe.classList.add("scale-110", "rotate-12");
+      playBeep(320, "triangle", 0.1, 0.18);
+
+      setTimeout(() => {
+        globe.classList.remove("scale-110", "rotate-12");
+        const rand = Math.random() * 100;
+        let pet;
+        if (rand < 55) {
+          pet = PET_DATABASE.filter(p => p.rarity === "Thường")[Math.floor(Math.random() * 2)];
+        } else if (rand < 85) {
+          pet = PET_DATABASE.filter(p => p.rarity === "Hiếm")[Math.floor(Math.random() * 2)];
+        } else if (rand < 97) {
+          pet = PET_DATABASE.filter(p => p.rarity === "Sử Thi")[Math.floor(Math.random() * 2)];
+        } else {
+          pet = PET_DATABASE.find(p => p.rarity === "Huyền Thoại");
+        }
+
+        currentUnboxPet = pet;
+        showUnboxModal(pet);
+      }, 350);
+    }
+
+    function showUnboxModal(pet) {
+      const modal = document.getElementById("modal-unbox");
+      const ball = document.getElementById("capsule-ball");
+      const res = document.getElementById("unbox-result");
+      const tip = document.getElementById("unbox-tip");
+
+      ball.classList.remove("hidden");
+      tip.classList.remove("hidden");
+      res.classList.add("hidden");
+      res.classList.remove("flex");
+
+      modal.classList.remove("hidden");
+      playBeep(580, "sine", 0.12, 0.15);
+    }
+
+    function openCapsule() {
+      const ball = document.getElementById("capsule-ball");
+      const res = document.getElementById("unbox-result");
+      const tip = document.getElementById("unbox-tip");
+
+      ball.classList.add("hidden");
+      tip.classList.add("hidden");
+      res.classList.remove("hidden");
+      res.classList.add("flex");
+
+      document.getElementById("res-icon").innerText = currentUnboxPet.icon;
+      document.getElementById("res-name").innerText = currentUnboxPet.name;
+      document.getElementById("res-rarity").innerText = currentUnboxPet.rarity;
+      document.getElementById("res-skill").innerText = currentUnboxPet.desc;
+
+      playBeep(780, "sine", 0.1, 0.18);
+      setTimeout(() => playBeep(1040, "sine", 0.22, 0.2), 90);
+
+      if (!state.inventory.some(i => i.id === currentUnboxPet.id)) {
+        state.inventory.push({ uid: "p_" + Date.now(), id: currentUnboxPet.id, stars: 1 });
+      }
+      renderShelfAndInventory();
+    }
+
+    function closeUnboxModal() {
+      document.getElementById("modal-unbox").classList.add("hidden");
+    }
+
+    /* ========================================================
+       8. TIỆM TẠP HÓA (SHOP LOGIC)
+       ======================================================== */
+    function buyShelfSlot() {
+      const cost = state.maxSlots === 3 ? 500 : 2000;
+      if (state.coins >= cost) {
+        state.coins -= cost;
+        state.maxSlots += 1;
+        playBeep(820, "sine", 0.15, 0.18);
+        
+        if (state.maxSlots >= 5) {
+          document.getElementById("slot-upgrade-title").innerText = "Kệ Gỗ Đã Đầy Ô Tối Đa";
+          document.getElementById("btn-buy-slot").innerText = "TỐI ĐA";
+          document.getElementById("btn-buy-slot").disabled = true;
+          document.getElementById("btn-buy-slot").className = "px-3 py-2 rounded-xl bg-[#C9B397] text-white font-bold text-xs font-mono cursor-not-allowed";
+        } else {
+          document.getElementById("slot-upgrade-title").innerText = "Mở Ô Kệ Thứ 5";
+          document.getElementById("btn-buy-slot").innerText = "2000 🪙";
+        }
+        renderShelfAndInventory();
+        updateHeaderUI();
+      } else {
+        alert(`Bạn cần ${cost} xu để đóng thêm ô kệ nhé!`);
+      }
+    }
+
+    function buyBoost(type, cost) {
+      if (state.coins < cost) {
+        alert(`Cần ${cost} xu để pha món này!`);
+        return;
+      }
+      state.coins -= cost;
+      if (type === "fever") {
+        state.feverMultiplier = 2;
+        state.feverTimer = 30;
+        document.getElementById("boost-indicator").classList.remove("hidden");
+      } else if (type === "rain") {
+        for (let i = 0; i < 25; i++) {
+          setTimeout(() => dropCoin(), i * 85);
+        }
+      }
+      playBeep(880, "sine", 0.1, 0.15);
+      updateHeaderUI();
+    }
+
+    function renderFlashDeal() {
+      const dealContainer = document.getElementById("flash-deal-card");
+      const pet = PET_DATABASE.find(p => p.id === state.flashDealId);
+      dealContainer.innerHTML = `
+        <div class="flex items-center gap-2.5">
+          <span class="text-3xl">${pet.icon}</span>
+          <div>
+            <div class="text-xs font-black text-[#5C4033]">${pet.name}</div>
+            <div class="text-[10px] text-[#7A695A] font-mono">+${pet.baseCps} CPS (Thẻ Hiếm)</div>
+          </div>
+        </div>
+        <button onclick="buyFlashDeal(${pet.id}, 350)" class="px-3 py-1.5 rounded-xl bg-[#7EA172] hover:bg-[#688A5C] active:scale-95 text-white font-black text-xs font-mono shadow-xs">
+          350 🪙
+        </button>
+      `;
+    }
+
+    function buyFlashDeal(petId, cost) {
+      if (state.coins < cost) {
+        alert(`Bạn cần ${cost} xu để rước bạn thú này về!`);
+        return;
+      }
+      state.coins -= cost;
+      if (!state.inventory.some(i => i.id === petId)) {
+        state.inventory.push({ uid: "p_" + Date.now(), id: petId, stars: 1 });
+      }
+      alert(`🎉 Bạn đã đón thành công bạn ${PET_DATABASE.find(p=>p.id===petId).name} về hộp đồ chơi!`);
+      renderShelfAndInventory();
+      updateHeaderUI();
+    }
+
+    function watchRewardedAd() {
+      playBeep(640, "triangle", 0.1, 0.12);
+      setTimeout(() => {
+        state.coins += 150;
+        alert("🎁 Bác bảo vệ đã gửi tặng bạn 150 Xu may mắn!");
+        updateHeaderUI();
+      }, 500);
+    }
+
+    /* ========================================================
+       9. GIAO DIỆN & ĐIỀU HƯỚNG
+       ======================================================== */
+    function switchTab(tab) {
+      document.getElementById("tab-game").classList.add("hidden");
+      document.getElementById("tab-shelf").classList.add("hidden");
+      document.getElementById("tab-shop").classList.add("hidden");
+
+      document.getElementById("nav-game").className = "flex flex-col items-center gap-1 text-[#A89887]";
+      document.getElementById("nav-shelf").className = "flex flex-col items-center gap-1 text-[#A89887]";
+      document.getElementById("nav-shop").className = "flex flex-col items-center gap-1 text-[#A89887]";
+
+      if (tab === "game") {
+        document.getElementById("tab-game").classList.remove("hidden");
+        document.getElementById("nav-game").className = "flex flex-col items-center gap-1 text-[#C98224] font-bold";
+        resizeCanvas();
+      } else if (tab === "shelf") {
+        document.getElementById("tab-shelf").classList.remove("hidden");
+        document.getElementById("nav-shelf").className = "flex flex-col items-center gap-1 text-[#A77443] font-bold";
+        renderShelfAndInventory();
+      } else if (tab === "shop") {
+        document.getElementById("tab-shop").classList.remove("hidden");
+        document.getElementById("nav-shop").className = "flex flex-col items-center gap-1 text-[#7EA172] font-bold";
+        renderFlashDeal();
+      }
+      playBeep(580, "sine", 0.04, 0.05);
+    }
+
+    function updateHeaderUI() {
+      document.getElementById("coin-display").innerText = Math.floor(state.coins).toLocaleString();
+      const currentCps = recalculateLoadoutEffects() * state.feverMultiplier;
+      document.getElementById("cps-display").innerText = `+${currentCps} xu/giây`;
+    }
+
+    // Vòng lặp kinh tế thụ động mỗi giây
+    setInterval(() => {
+      const currentCps = recalculateLoadoutEffects() * state.feverMultiplier;
+      if (currentCps > 0) {
+        state.coins += currentCps;
+        updateHeaderUI();
+      }
+
+      if (state.feverTimer > 0) {
+        state.feverTimer--;
+        document.getElementById("boost-timer").innerText = state.feverTimer;
+        if (state.feverTimer <= 0) {
+          state.feverMultiplier = 1;
+          document.getElementById("boost-indicator").classList.add("hidden");
+        }
+      }
+    }, 1000);
+
+    // Tự động khớp kích thước
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("load", () => {
+      resizeCanvas();
+      renderShelfAndInventory();
+      updateHeaderUI();
+    });
+  </script>
+</body>
+</html>
