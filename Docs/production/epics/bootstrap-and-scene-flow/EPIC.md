@@ -4,7 +4,7 @@
 > **GDD**: Docs/design/gdd/bootstrap-and-scene-flow.md
 > **Code area**: Assets/CozyGachapon/Scripts/Foundation/Bootstrap/
 > **Status**: Ready
-> **Stories**: Not yet created — run `game-tasks bootstrap-and-scene-flow`
+> **Stories**: 9 — see table
 
 ## Overview
 
@@ -29,6 +29,20 @@ Bootstrap & Scene Flow là hệ hạ tầng điều phối toàn bộ vòng đ�
 | TR-boot-004 | Fixed 9:16 to 9:21 vertical aspect viewport layout with letterbox bounds | ADR-0002, ADR-0006 ✅ |
 | TR-boot-005 | Startup curtain coordination covering prewarm operations until ready | ADR-0002, ADR-0003 ✅ |
 
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | IBootStep Phased Startup Sequencer | Logic | Ready | ADR-0002 |
+| 002 | Boot Failure Watchdog & Timeout Handler | Logic | Ready | ADR-0002 |
+| 003 | Startup Curtain Controller & Interactive Milestone | Logic | Ready | ADR-0002 |
+| 004 | Application Lifecycle & Visibility Watchdog | Logic | Ready | ADR-0002 |
+| 005 | Rewarded Ad Lifecycle & AdClosed Integration | Logic | Ready | ADR-0002 |
+| 006 | Central Input Barrier & Tab Router | Logic | Ready | ADR-0002 |
+| 007 | World Press Input Routing & Modal Back Handler | Integration | Ready | ADR-0002 |
+| 008 | Viewport Calculator & Aspect Ratio Letterboxing | Logic | Ready | ADR-0002, ADR-0006 |
+| 009 | Startup Curtain View & Retry Panel | UI | Ready | ADR-0002 |
+
 ## Definition of Done
 
 This epic is complete when:
@@ -40,4 +54,4 @@ This epic is complete when:
 
 ## Next Step
 
-Run `game-tasks bootstrap-and-scene-flow` to break this epic into implementable stories.
+Run `game-readiness Docs/production/epics/bootstrap-and-scene-flow/story-001-bootstep-phased-sequencer.md` to validate the first story, then `game-dev` to implement it.
