@@ -1,11 +1,11 @@
 # Story 001: IBootStep Phased Startup Sequencer
 
 > **Epic**: Bootstrap & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1-2 days
-> **Last Updated**: [set by game-dev when implementation begins]
+> **Last Updated**: 2026-10-22
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,11 +34,11 @@
 
 *From Docs/design/gdd/bootstrap-and-scene-flow.md, scoped to this story:*
 
-- [ ] `AC-1 [EditMode]`: Khi đăng ký các bước giả theo thứ tự xáo trộn thuộc các pha `ServiceInit`, `DataLoad`, `SaveLoad`, `GameplayInit`, `Prewarm`, thứ tự gọi `Run()` phải theo đúng thứ tự pha, mỗi bước được gọi đúng 1 lần, và sự kiện `BootCompleted` phát đúng 1 lần sau khi bước `Prewarm` hoàn tất.
-- [ ] `AC-2 [EditMode]`: Trong cùng một pha (ví dụ `GameplayInit`), thứ tự thực thi giữa các bước phải giải quyết quan hệ phụ thuộc tô-pô theo `RunsAfter`, trường hợp không có phụ thuộc thì sắp xếp theo thứ tự bảng chữ cái của `Id`.
-- [ ] `AC-3 [EditMode]`: Khi một bước kéo dài nhiều khung hình mới báo `IsDone`, bước phụ thuộc tiếp theo không được gọi `Run()` trước khung hình bước trước hoàn tất.
-- [ ] `AC-4 [EditMode]`: Pha không có bước nào (như `SaveLoad` trong MVP) phải kết thúc ngay trong cùng khung hình mà không gây trễ thêm khung nào.
-- [ ] `AC-6 [EditMode]`: Khi hệ thống đã bắt đầu pha `ServiceInit`, mọi yêu cầu đăng ký bước mới phải bị từ chối; hai bước đăng ký trùng `Id` phải bị từ chối và kích hoạt `BootFailed`.
+- [x] `AC-1 [EditMode]`: Khi đăng ký các bước giả theo thứ tự xáo trộn thuộc các pha `ServiceInit`, `DataLoad`, `SaveLoad`, `GameplayInit`, `Prewarm`, thứ tự gọi `Run()` phải theo đúng thứ tự pha, mỗi bước được gọi đúng 1 lần, và sự kiện `BootCompleted` phát đúng 1 lần sau khi bước `Prewarm` hoàn tất.
+- [x] `AC-2 [EditMode]`: Trong cùng một pha (ví dụ `GameplayInit`), thứ tự thực thi giữa các bước phải giải quyết quan hệ phụ thuộc tô-pô theo `RunsAfter`, trường hợp không có phụ thuộc thì sắp xếp theo thứ tự bảng chữ cái của `Id`.
+- [x] `AC-3 [EditMode]`: Khi một bước kéo dài nhiều khung hình mới báo `IsDone`, bước phụ thuộc tiếp theo không được gọi `Run()` trước khung hình bước trước hoàn tất.
+- [x] `AC-4 [EditMode]`: Pha không có bước nào (như `SaveLoad` trong MVP) phải kết thúc ngay trong cùng khung hình mà không gây trễ thêm khung nào.
+- [x] `AC-6 [EditMode]`: Khi hệ thống đã bắt đầu pha `ServiceInit`, mọi yêu cầu đăng ký bước mới phải bị từ chối; hai bước đăng ký trùng `Id` phải bị từ chối và kích hoạt `BootFailed`.
 
 ## Implementation Notes
 
@@ -62,9 +62,21 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Bootstrap/BootStepSequencerTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Created `Assets/CozyGachapon/Tests/EditMode/Bootstrap/BootStepSequencerTests.cs` (8 unit tests)
 
 ## Dependencies
 
 - Depends on: None
 - Unlocks: Story 002, Story 003
+
+## Completion Notes
+
+**Completed**: 2026-10-22
+**Criteria**: 5/5 passing (0 deferred)
+**Harness**: unity-harness all (rules: PASS 6 files, compile: PASS, tests: PASS CozyGachapon.Tests.EditMode 10/10)
+**Run result**: N/A - pure C# logic sequencer without visual surface
+**Deviations**: None
+**Test Evidence**: Assets/CozyGachapon/Tests/EditMode/Bootstrap/BootStepSequencerTests.cs (10/10 tests passed)
+**Visual sign-off**: n/a (not Visual/Feel or UI)
+**Code Review**: unity-reviewer: 0 blocker / 0 major / 0 minor open (all resolved); LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

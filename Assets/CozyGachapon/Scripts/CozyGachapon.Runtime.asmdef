@@ -1,7 +1,10 @@
 {
     "name": "CozyGachapon.Runtime",
     "rootNamespace": "CozyGachapon",
-    "references": [],
+    "references": [
+        "CozyGachapon.Contracts",
+        "CozyGachapon.Foundation"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

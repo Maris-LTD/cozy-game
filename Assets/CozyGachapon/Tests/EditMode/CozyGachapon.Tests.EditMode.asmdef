@@ -2,6 +2,8 @@
     "name": "CozyGachapon.Tests.EditMode",
     "rootNamespace": "CozyGachapon.Tests",
     "references": [
+        "CozyGachapon.Contracts",
+        "CozyGachapon.Foundation",
         "CozyGachapon.Runtime",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
