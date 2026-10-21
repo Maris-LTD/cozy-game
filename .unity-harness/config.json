@@ -38,7 +38,7 @@
     "maxBlocks": 3
   },
   "studio": {
-    "stage": "concept",
+    "stage": "systems-design",
     "rigor": "standard",
     "automation": "guided",
     "unityVersion": "6000.3.16f1",

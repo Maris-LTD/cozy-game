@@ -2,7 +2,7 @@
 
 > **Status**: Draft
 > **Created**: 2026-10-21
-> **Last Updated**: 2026-10-21 (Sync batch 2026-10-21, lần 4: Bootstrap & Scene Flow, Economy Core, Plinko Board, Audio → Approved; Audio nhận `Interactive` làm mốc nhạc VS thay `BootCompleted` theo audio.md Revision 5; registry áp thay đổi đã duyệt)
+> **Last Updated**: 2026-10-21 (Sync batch 2026-10-21, lần 5: Inventory, Gacha Machine, Shelf & Synergy, HUD & Tab Navigation, Feedback & Juice → Approved; Depends On khớp mục Dependencies của GDD; registry thêm giá trị Gacha/Shelf/Feedback)
 > **Source Concept**: Docs/design/gdd/game-concept.md
 
 > [TD-SYSTEM-BOUNDARY] skipped (lean)
@@ -54,11 +54,11 @@ Game cần 24 hệ thống quanh một vòng lặp duy nhất: Plinko sinh xu �
 | 4 | Object Pooling (inferred) | Core | MVP | Approved | Docs/design/gdd/object-pooling.md | Bootstrap & Scene Flow (hợp đồng pha: `ServiceInit`, `Prewarm`) |
 | 5 | Audio (inferred) | Audio | MVP | Approved | Docs/design/gdd/audio.md | Bootstrap & Scene Flow (soft: bước `audio.service` pha `ServiceInit`, `Paused`/`Resumed`, `FirstInteraction`, `Interactive`: mốc nhạc VS) |
 | 6 | Plinko Board | Gameplay | MVP | Approved | Docs/design/gdd/plinko-board.md | Object Pooling, Bootstrap & Scene Flow |
-| 7 | Inventory | Economy | MVP | Not Started | — | Pet Catalog, Bootstrap & Scene Flow (*provisional*) |
-| 8 | Gacha Machine | Gameplay | MVP | Not Started | — | Economy Core, Pet Catalog, Inventory, Bootstrap & Scene Flow (*provisional*) |
-| 9 | Shelf & Synergy | Gameplay | MVP | Not Started | — | Economy Core, Pet Catalog, Inventory, Plinko Board, Bootstrap & Scene Flow (*provisional*) |
-| 10 | HUD & Tab Navigation | UI | MVP | Not Started | — | Economy Core, Shelf & Synergy, Bootstrap & Scene Flow, Audio (soft: nút loa), Pet Catalog (soft: dữ liệu thẻ thú) |
-| 11 | Feedback & Juice | UI | MVP | Not Started | — | Plinko Board, Gacha Machine, Shelf & Synergy, Audio, Object Pooling, Economy Core (`IncomeCredited`, `SpendRejected`), Bootstrap & Scene Flow (`TabChanged`, provisional), Pet Catalog (soft: dữ liệu thẻ thú) |
+| 7 | Inventory | Economy | MVP | Approved | Docs/design/gdd/inventory.md | Pet Catalog, Bootstrap & Scene Flow (bước `inventory.core`), Economy Core (soft, chỉ thứ tự khởi tạo), Save/Load (soft, VS) |
+| 8 | Gacha Machine | Gameplay | MVP | Approved | Docs/design/gdd/gacha-machine.md | Economy Core, Pet Catalog, Inventory, Bootstrap & Scene Flow, HUD & Tab Navigation (Hard, popup `ModalHost`) |
+| 9 | Shelf & Synergy | Gameplay | MVP | Approved | Docs/design/gdd/shelf-and-synergy.md | Economy Core, Pet Catalog, Inventory, Plinko Board, Bootstrap & Scene Flow, HUD & Tab Navigation (soft), Star Progression (soft, VS) |
+| 10 | HUD & Tab Navigation | UI | MVP | Approved | Docs/design/gdd/hud-and-tab-navigation.md | Economy Core, Bootstrap & Scene Flow, Audio (soft: nút loa), Pet Catalog (soft: dữ liệu thẻ thú) |
+| 11 | Feedback & Juice | UI | MVP | Approved | Docs/design/gdd/feedback-and-juice.md | Plinko Board, Gacha Machine (hợp đồng bóc trứng; chiều phụ thuộc đang chốt), Shelf & Synergy (soft), HUD & Tab Navigation (soft), Audio, Object Pooling, Economy Core (`IncomeCredited`, `SpendRejected`), Bootstrap & Scene Flow (`TabChanged`, `Paused`/`Resumed`), Pet Catalog (soft: dữ liệu thẻ thú) |
 | 12 | Save/Load | Persistence | Vertical Slice | Not Started | — | Bootstrap & Scene Flow (*provisional*) |
 | 13 | Time & Timers (inferred) | Core | Vertical Slice | Not Started | — | Bootstrap & Scene Flow (soft, *provisional*) |
 | 14 | Star Progression | Progression | Vertical Slice | Not Started | — | Economy Core, Pet Catalog, Inventory, Gacha Machine |
@@ -118,12 +118,12 @@ Tầng Foundation không còn "không phụ thuộc": hầu hết hệ ở đây
 
 ### Core Layer
 1. Plinko Board — depends on: Object Pooling (pool `plinko.coin`), Bootstrap & Scene Flow (input `WorldPress`, tab, vòng đời `Paused`/`Resumed`, `Interactive` + `IsSimulationRunning`, `FrameChanged`). Audio chỉ gián tiếp qua Feedback & Juice (Plinko không gọi Audio). Công bố sự kiện `CoinSpawned`, `PegHit`, `JackpotHit`, `CoinResolved`, `CoinStuck`, `BoardBusy`; API `RequestBurst` / `RegisterAutoDropRate` / `RegisterBouncinessFactor` / `Unregister`; cờ `acceptManualTaps`; tham số vật lý có trần. Plinko công bố `IBaseCoinValueSource`, Economy Core cài đặt (Plinko có dự phòng `PlinkoConfig.baseCoinValue`).
-2. Inventory — depends on: Pet Catalog, Bootstrap & Scene Flow (*provisional*).
+2. Inventory — depends on: Pet Catalog, Bootstrap & Scene Flow (bước `inventory.core`), Economy Core (soft, thứ tự khởi tạo), Save/Load (soft, VS).
 3. Rewarded Ads — depends on: Platform Services, Economy Core, Time & Timers, Audio (soft, `SetMuteReason(Ad)`), Plinko Board (soft, `RequestBurst`).
 
 ### Feature Layer
-1. Gacha Machine — depends on: Economy Core, Pet Catalog, Inventory, Bootstrap & Scene Flow (*provisional*).
-2. Shelf & Synergy — depends on: Economy Core, Pet Catalog, Inventory, Plinko Board (sự kiện, API modifier bàn), Bootstrap & Scene Flow (*provisional*).
+1. Gacha Machine — depends on: Economy Core, Pet Catalog, Inventory, Bootstrap & Scene Flow, HUD & Tab Navigation (Hard, popup).
+2. Shelf & Synergy — depends on: Economy Core, Pet Catalog, Inventory, Plinko Board (sự kiện, API modifier bàn), Bootstrap & Scene Flow, HUD & Tab Navigation (soft), Star Progression (soft, VS).
 3. Star Progression — depends on: Economy Core, Pet Catalog, Inventory, Gacha Machine.
 4. Boosts — depends on: Economy Core, Plinko Board, Time & Timers.
 5. Shop — depends on: Economy Core, Inventory, Shelf & Synergy, Boosts, Time & Timers.
@@ -136,12 +136,12 @@ Tầng Foundation không còn "không phụ thuộc": hầu hết hệ ở đây
 Rewarded Ads là placement trong Shop (quà Bác Bảo Vệ), Offline Earnings (x2), Boosts (Mưa Xu) từ Alpha; các hệ đó gọi Rewarded Ads qua một API placement, không đổi tầng của chúng.
 
 ### Presentation Layer
-1. HUD & Tab Navigation — depends on: Economy Core, Shelf & Synergy, Bootstrap & Scene Flow, Audio (soft, nút loa), Pet Catalog (soft, dữ liệu thẻ thú).
-2. Feedback & Juice — depends on: Plinko Board, Gacha Machine, Shelf & Synergy, Audio, Object Pooling, Economy Core (`IncomeCredited`, `SpendRejected`), Bootstrap & Scene Flow (`TabChanged`, provisional), Pet Catalog (soft, dữ liệu thẻ thú).
+1. HUD & Tab Navigation — depends on: Economy Core, Bootstrap & Scene Flow, Audio (soft, nút loa), Pet Catalog (soft, dữ liệu thẻ thú).
+2. Feedback & Juice — depends on: Plinko Board, Gacha Machine (chiều phụ thuộc đang chốt), Shelf & Synergy (soft), HUD & Tab Navigation (soft), Audio, Object Pooling, Economy Core (`IncomeCredited`, `SpendRejected`), Bootstrap & Scene Flow (`TabChanged`), Pet Catalog (soft, dữ liệu thẻ thú).
 3. Settings & Accessibility — depends on: Audio, Save/Load, Feedback & Juice.
 
-**Điểm nghẽn** (nhiều hệ phụ thuộc, đếm cả cạnh soft và *provisional* trong cột Depends On): Bootstrap & Scene Flow (15), Economy Core (12), Pet Catalog (7), Plinko Board (7), Shelf & Synergy (7), Inventory (6), Audio (5), Save/Load (5), Time & Timers (5).
-**Lá** (không hệ nào phụ thuộc, rủi ro thấp): HUD & Tab Navigation, Tutorial & Onboarding, Offline Earnings, Prestige, Analytics Hooks, Neighbor Pranks.
+**Điểm nghẽn** (nhiều hệ phụ thuộc, đếm cả cạnh soft và *provisional* trong cột Depends On): Bootstrap & Scene Flow (15), Economy Core (13), Pet Catalog (7), Plinko Board (7), Inventory (6), Shelf & Synergy (6), Save/Load (6), Audio (5), Time & Timers (5).
+**Lá** (không hệ nào phụ thuộc, rủi ro thấp): Tutorial & Onboarding, Offline Earnings, Prestige, Analytics Hooks, Neighbor Pranks.
 
 ## Recommended Design Order
 
@@ -200,14 +200,14 @@ Economy Core được mở lại một lần sau khi Plinko Board và Shelf & Sy
 | Metric | Count |
 |---|---|
 | Total systems | 24 |
-| GDDs started | 6 |
-| GDDs reviewed | 6 |
-| GDDs approved | 6 |
-| MVP systems designed | 6 / 11 |
+| GDDs started | 11 |
+| GDDs reviewed | 11 |
+| GDDs approved | 11 |
+| MVP systems designed | 11 / 11 |
 | Vertical Slice systems designed | 0 / 7 |
 
 ## Next Steps
 - [x] Approve this enumeration (2026-10-21)
-- [ ] Design MVP systems first with game-design (bắt đầu: Economy Core)
-- [ ] Review each GDD with game-design-review (6 GDD đợt 2026-10-21 đã Approved; còn 5 hệ MVP chưa có GDD)
+- [x] Design MVP systems first with game-design (11/11 hệ MVP đã có GDD)
+- [ ] Review each GDD with game-design-review (11 GDD MVP đã Approved; còn các hệ Vertical Slice trở đi chưa có GDD)
 - [ ] Run game-gate technical-setup when the MVP systems are designed

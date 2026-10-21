@@ -1,6 +1,6 @@
 # Bootstrap & Scene Flow
 
-> **Status**: Approved
+> **Status**: In Review
 > **Author**: Maris-LTD + Claude (game-designer, workflow gdd-pipeline)
 > **Last Updated**: 2026-10-21
 > **Last Verified**: 2026-10-21
@@ -8,6 +8,7 @@
 > **Decisions**: D1–D5 + prewarm pool của user, và quyết định "khi rewarded ad mở: Platform Services báo ad đang mở, Bootstrap không phát `Paused`" (B) (Docs/production/session-logs/decision-log.md, 2026-10-21)
 > **Revision 4 — 2026-10-21** (theo review Round 3 `reviews/bootstrap-and-scene-flow-review-2026-10-21.md` và `gdd-consistency-2026-10-21-run2.json`): BSF-R3-01 dòng log `boot_to_interactive` ở mọi bản dựng (B5.3, AC-36); BSF-R3-02 sự kiện `Interactive` và luật mô phỏng chỉ chạy khi `Running` (B5.3, B6.5, AC-40); BSF-R3-03 yêu cầu build `runInBackground` và chỉ hướng dọc (B6.8, B8.4, AC-41); đóng Q1 theo quyết định B — cờ "ad đang mở" (B6.10, AC-42); BSF-R3-12 Tuning Knobs; C2[8] thứ tự `GameplayInit`; C2[16] bỏ ghi chú cross-doc lỗi thời.
 > **Revision 5 — 2026-10-21**: BSF-R4-01 `AdClosed {adSeconds}` (B6.10.5, `ad_seconds`, AC-43); BSF-R4-02 `Resumed` ở Paused bất kể cờ ad (B6.10.1, AC-42); C3[12] bỏ Q6/Q8, "Hai chiều", ghi chú Cross-References cũ.
+> **Revision 6 — 2026-10-21**: C5[14] `shelf.core` RunsAfter [`economy.core`, `inventory.core`, `plinko.board`]; bỏ nhãn provisional của Inventory/Gacha/Shelf; Gacha dùng `ModalHost` của HUD (B3 pha 4, bảng Interactions, Dependencies).
 > [CD-GDD-ALIGN] skipped (lean)
 > engine-programmer, game-designer (Formulas) và qa-lead (Acceptance Criteria) không được gọi: workflow không cho phép subagent; tác giả tự rà soát theo tiêu chí của các vai đó.
 
@@ -56,7 +57,7 @@ Mọi tên trong `backtick` dạng `Asset.field` là knob ở `BootConfig`, `Sce
 | 1 | `ServiceInit` | Dịch vụ nền không phụ thuộc dữ liệu | Object Pooling (dịch vụ → Accepting), Audio (khởi tạo, không cốt lõi) |
 | 2 | `DataLoad` | Dữ liệu tĩnh chỉ đọc | Pet Catalog (nạp, lập bảng tra), các config asset của hệ khác |
 | 3 | `SaveLoad` | Đọc dữ liệu đã lưu (từ VS) | Save/Load (VS). MVP: pha rỗng, đi qua ngay |
-| 4 | `GameplayInit` | Hệ có trạng thái và hệ trình bày; các hệ khách đăng ký pool trong pha này | Thứ tự chỉ do các cạnh `RunsAfter` mà mỗi hệ tự khai: `economy.core` không có `RunsAfter` (Economy R16.1); Inventory `RunsAfter` `economy.core`; Shelf & Synergy `RunsAfter` `economy.core` và Inventory; HUD & Tab Navigation, Feedback & Juice `RunsAfter` các bước gameplay mà chúng đọc. Plinko Board và Gacha Machine **không** có `RunsAfter` (Plinko R9.2, Economy R16.2: Plinko kéo `baseCoinValue` lúc giải quyết xu và có dự phòng) — chúng chỉ được xếp theo thứ tự chữ của `Id` (B3.2). Các cạnh của hệ chưa có GDD là *provisional* |
+| 4 | `GameplayInit` | Hệ có trạng thái và hệ trình bày; các hệ khách đăng ký pool trong pha này | Thứ tự chỉ do các cạnh `RunsAfter` mà mỗi hệ tự khai: `economy.core` không có `RunsAfter` (Economy R16.1); Inventory (`inventory.core`) `RunsAfter` `economy.core`; Shelf & Synergy (`shelf.core`) `RunsAfter` [`economy.core`, `inventory.core`, `plinko.board`]; HUD & Tab Navigation, Feedback & Juice `RunsAfter` các bước gameplay mà chúng đọc. Gacha Machine không có `RunsAfter` ngoài các cạnh nó tự khai; Plinko Board và Gacha **không** bị ràng buộc với nhau (Plinko R9.2, Economy R16.2: Plinko kéo `baseCoinValue` lúc giải quyết xu và có dự phòng) — chúng chỉ được xếp theo thứ tự chữ của `Id` (B3.2). Các cạnh của hệ chưa có GDD là *provisional* |
 | 5 | `Prewarm` | Prewarm **toàn bộ** pool đã đăng ký (Pool D5, quyết định user) | Object Pooling (`pooling.prewarm`) |
 | — | `BootCompleted` | Phát sự kiện, rèm bắt đầu kéo lên (B5) | — |
 
@@ -191,10 +192,10 @@ Bootstrap không gọi API riêng của hệ nào; mọi tương tác đi qua in
 | Audio | Bước `ServiceInit` **không cốt lõi** (kết quả Ready / Failed) | `Paused` / `Resumed`, `FirstInteraction`, `Interactive` (mốc bắt đầu nhạc từ VS, B5.3) | Bootstrap (sự kiện); Audio (phản ứng, mixer) |
 | Pet Catalog | Bước `DataLoad` cốt lõi (nạp, lập bảng tra → Ready) | Thứ tự: Catalog Ready trước mọi bước `GameplayInit` (Inventory, Gacha, Shelf) | Bootstrap (thứ tự); Catalog (nội dung nạp) |
 | Economy Core | Bước `GameplayInit` cốt lõi (Uninitialized → Running; từ VS nhận dữ liệu từ save vì `SaveLoad` đứng trước) | `Paused` / `Resumed` (dừng/tiếp cộng Idle), `Interactive` + `IsSimulationRunning` (chỉ cộng Idle khi vòng đời `Running`, B6.5), `AdClosed {adSeconds}` (bù Idle, B6.10.5), thứ tự khởi tạo | Bootstrap |
-| Inventory | Bước `GameplayInit` cốt lõi, `RunsAfter` Economy (provisional — GDD chưa có) | Thứ tự khởi tạo | Bootstrap |
+| Inventory | Bước `GameplayInit` cốt lõi (`inventory.core`), `RunsAfter` Economy | Thứ tự khởi tạo | Bootstrap |
 | Plinko Board | Bước `GameplayInit` cốt lõi (đăng ký pool `plinko.coin`); đăng ký viewport world `PlinkoViewport` + camera Plinko vào router; đăng ký gốc hình ảnh của tab `Board` | `WorldPress {worldPos, screenPos}` đã lọc UI và cổng chặn; `ActiveTab` / `TabChanged`; `Paused` / `Resumed`; `Interactive` + `IsSimulationRunning` (mô phỏng và auto-drop chỉ tiến khi `Running`, B6.5); `FrameChanged` | Bootstrap (router, tab, vòng đời); Plinko (cờ `acceptManualTaps`, cooldown, trần xu) |
-| Gacha Machine | Bước `GameplayInit` (provisional); giữ/nhả token cổng chặn và (tùy GDD Gacha) khóa tab lúc mở trứng | `AcquireInputBlock`, `AcquireTabLock`, `ActiveTab` | Bootstrap (cơ chế); Gacha (chính sách khi nào khóa) |
-| Shelf & Synergy | Bước `GameplayInit`, `RunsAfter` Economy và Inventory (provisional); gốc hình ảnh của tab `Shelf` | `ActiveTab` / `TabChanged`, router cho kéo thú (nếu Shelf dùng viewport world; UI thì không cần) | Bootstrap |
+| Gacha Machine | Bước `GameplayInit` (`gacha.machine`); khóa tab lúc mở trứng; token cổng chặn đi qua `ModalHost` của HUD (HUD giữ token, không gọi trực tiếp) | `AcquireTabLock`/`Release`, `ActiveTab`, `Interactive`, `Paused`/`Resumed` | Bootstrap (cơ chế); Gacha (chính sách khi nào khóa) |
+| Shelf & Synergy | Bước `GameplayInit`, `shelf.core` `RunsAfter` Economy, Inventory và `plinko.board`; gốc hình ảnh của tab `Shelf` | `ActiveTab` / `TabChanged`, router cho kéo thú (nếu Shelf dùng viewport world; UI thì không cần) | Bootstrap |
 | HUD & Tab Navigation | Bước `GameplayInit` (trình bày, sau gameplay); gọi `RequestTab` khi bấm nav; đẩy trình xử lý Back cho modal; giữ token cổng chặn khi modal mở | `ActiveTab` / `TabChanged` (để tô nút nav), kết quả `RequestTab` (`Locked` → phản hồi nhẹ), `FrameChanged` (vùng an toàn) | Bootstrap (trạng thái tab, khóa); HUD (vẽ nav, modal) |
 | Feedback & Juice | Bước `GameplayInit` đề xuất không cốt lõi (đăng ký pool số bay) | `TabChanged` (tắt số bay khi bàn ẩn, gọi `SetBusBackground(Plinko, …)` của Audio) | Bootstrap (sự kiện); Feedback (phản ứng) |
 | Tutorial & Onboarding (VS) | Bước màn chào (B10); giữ token cổng chặn và khóa tab trong các bước hướng dẫn; có thể gọi `RequestTab` | `WelcomeQueueCompleted`, `AcquireInputBlock`, `AcquireTabLock`, `ActiveTab` | Bootstrap (cơ chế); Tutorial (kịch bản) |
@@ -385,9 +386,9 @@ Bootstrap không phụ thuộc hệ nào (upstream: None). Mọi dòng dưới �
 | Feedback & Juice | Feedback phụ thuộc Bootstrap | Hard (với `TabChanged`) | In: `ActiveTab` / `TabChanged`. Out: bước `GameplayInit` đề xuất không cốt lõi (đăng ký pool số bay). Owner: Bootstrap (sự kiện); Feedback (phản ứng, gọi Audio `SetBusBackground`). *Provisional* — GDD chưa có. |
 | HUD & Tab Navigation | HUD phụ thuộc Bootstrap | Hard | In: `ActiveTab` / `TabChanged`, kết quả `RequestTab`, `FrameChanged` (vùng an toàn). Out: `RequestTab(tab)`, token cổng chặn và trình xử lý Back cho modal, bước `GameplayInit`. Owner: Bootstrap (trạng thái tab, khóa, cổng); HUD (vẽ nav, modal). *Provisional* — GDD chưa có. |
 | Tutorial & Onboarding | Tutorial phụ thuộc Bootstrap (VS) | Hard | In: `WelcomeQueueCompleted`, `AcquireInputBlock`, `AcquireTabLock`, `RequestTab`, `ActiveTab`. Out: bước màn chào. Owner: Bootstrap (cơ chế); Tutorial (kịch bản). Muốn chỉ tắt thả xu tay → cờ `acceptManualTaps` của Plinko. *Provisional* — GDD chưa có. |
-| Inventory | Inventory phụ thuộc Bootstrap | Hard | Out: bước `GameplayInit` cốt lõi (`RunsAfter` Economy). *Provisional*. |
-| Gacha Machine | Gacha phụ thuộc Bootstrap | Hard | In: `AcquireInputBlock`, `AcquireTabLock`, `ActiveTab`. Out: bước `GameplayInit`. Owner: Bootstrap (cơ chế); Gacha (khi nào khóa). *Provisional*. |
-| Shelf & Synergy | Shelf phụ thuộc Bootstrap | Hard | In: `ActiveTab` / `TabChanged`. Out: bước `GameplayInit` (`RunsAfter` Economy, Inventory), gốc hình ảnh tab `Shelf`. *Provisional*. |
+| Inventory | Inventory phụ thuộc Bootstrap | Hard | Out: bước `GameplayInit` cốt lõi (`RunsAfter` Economy). |
+| Gacha Machine | Gacha phụ thuộc Bootstrap | Hard | In: `AcquireTabLock`/`Release`, `ActiveTab`, `Interactive`, `Paused`/`Resumed` (cổng chặn đi qua `ModalHost` của HUD). Out: bước `GameplayInit`. Owner: Bootstrap (cơ chế); Gacha (khi nào khóa). |
+| Shelf & Synergy | Shelf phụ thuộc Bootstrap | Hard | In: `ActiveTab` / `TabChanged`. Out: bước `GameplayInit` (`RunsAfter` Economy, Inventory, `plinko.board`), gốc hình ảnh tab `Shelf`. |
 | Save/Load (VS) | Save/Load phụ thuộc Bootstrap | Hard | In: pha `SaveLoad`, `Paused` (mốc lưu), `Quitting`. Out: bước `SaveLoad` cốt lõi. *Provisional*. |
 | Time & Timers (VS) | Time phụ thuộc Bootstrap | Soft | In: `Paused` / `Resumed {awaySeconds}`. Out: bước `ServiceInit`. *Provisional*. |
 | Offline Earnings (VS) | Offline phụ thuộc Bootstrap | Hard | In: `Resumed {awaySeconds}`, `AdClosed {adSeconds}` (bù thời gian xem rewarded ad, B6.10.5). Out: bước màn chào. *Provisional*. |

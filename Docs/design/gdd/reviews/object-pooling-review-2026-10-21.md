@@ -1,6 +1,6 @@
 # Review — object-pooling — 2026-10-21 — Verdict: APPROVED
-Document: Docs/design/gdd/object-pooling.md (git hash-object 1236e295eff5a184c638ba2bba790d118b5b9aec)
-Registry: Docs/design/registry/entities.yaml (git hash-object e78ec78919d10f47b7cb6ad8f020cf07f4ced159)
+Document: Docs/design/gdd/object-pooling.md (git hash-object 3f928f818e7bd396ee126edf5976e80d5cd97dcd)
+Registry: Docs/design/registry/entities.yaml (git hash-object 86c897c269e1a6a58b77974d2f52fb7e6151614c)
 Round: Round 1
 Scope signal: M
 Specialists: none (lean review)

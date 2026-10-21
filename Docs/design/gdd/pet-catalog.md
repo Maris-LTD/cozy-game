@@ -1,6 +1,6 @@
 # Pet Catalog (Danh Mục Thú)
 
-> **Status**: Approved
+> **Status**: In Review
 > **Author**: Maris-LTD + Claude (game-designer)
 > **Last Updated**: 2026-10-21
 > **Last Verified**: 2026-10-21
@@ -12,6 +12,7 @@
 > **Revision 3 — 2026-10-21** (fix round 1 theo `Docs/design/gdd/reviews/pet-catalog-review-2026-10-21.md`): PC1-B1 — AC-14 ghi rõ ô kệ 1–5; PC1-B2 — mọi enum của Catalog có `None = 0` (giá trị hợp lệ bắt đầu từ 1), định nghĩa mặc định của `PetEffect` và luật trường bắt buộc theo loại hiệu ứng (R2, R6, R11, Edge Cases, AC-3, AC-8).
 > **Revision 4 — 2026-10-21** (fix round 2 theo cùng báo cáo review): PC2-B1 — AC-14 / AC-15 chỉ đếm modifier có `sourceId` thuộc hiệu ứng `PetEffect` của thú Hỗ trợ, không tính modifier combo nhóm của Shelf (R4.2); vế "không modifier tầng Boost / Prestige / Global" giữ cho mọi modifier.
 > **Revision 5 — 2026-10-21** (fix round 3 theo cùng báo cáo review Round 3 và `Docs/production/session-logs/gdd-consistency-2026-10-21-run2.json`; quyết định user sau design run 2 trong `decision-log.md`): PC3-B1 — quy tắc định dạng số trên thẻ thú (số < 1000 dùng `EconomyConfig.displaySigDigits` chữ số có nghĩa, làm tròn; ≥ 1000 theo `economy-core.md` R13), Economy Core sở hữu bộ định dạng, AC-39 nêu chuỗi kỳ vọng sau định dạng; đóng NEEDS-USER `scope` theo (a) — bỏ *provisional* ở R6.5, R8, bảng knob theo từng thú, `scope = Both` chỉ dành cho live-ops (knob `PetCatalog.scopeBothMinTier`, lỗi validator, AC-8); đóng phụ thuộc `idleCpsUnit` theo Economy (A) — `channel_parity` không còn nhãn NEEDS-USER, rủi ro theo dõi bằng mô phỏng; C2[11] — ngân sách Kẹo Bảy Màu ghi cùng ba con số với `plinko-board.md` (mục tiêu +32% ≈ 26, ước tính +40% ≈ 27.6, biên ≤ 30.7 × `baseCoinValue`/s); C2[12] — `bounce_uplift_at_cap` đọc `EconomyBalanceTargets.plinkoBounceUpliftAtCapAssumed`, xóa `PetBalanceTargets.bounceUpliftAtCapAssumed`.
+> **Revision 6 — 2026-10-21** (theo `gdd-consistency-2026-10-21-run5.json` C5[11]): bỏ knob `PetBalanceTargets.assumedRarityRates`; `collection_spins_estimate` và validator đọc `GachaConfig.rarityRates` (`gacha-machine.md`).
 
 ## Summary
 
@@ -65,7 +66,7 @@ Mọi tên trong `backtick` là knob ở `PetRarityConfig`, `PetCatalog`, `PetDe
 1. Bốn phẩm cấp với ID ổn định `common`, `rare`, `epic`, `legendary`; tên UI và khóa màu ở `PetRarityConfig.rarities`.
 2. Mỗi phẩm cấp có một hệ số: Thường = 1 là **hằng số** chuẩn hóa (đổi nó tương đương đổi `idleCpsUnit` của Economy Core); ba phẩm cấp còn lại là knob `PetRarityConfig.rarityCoefficients` = [Hiếm 2.5, Sử Thi 6, Huyền Thoại 15]. Hệ số tăng nghiêm ngặt theo phẩm cấp, bắt đầu từ trên 1 (cân bằng bắc cầu: độ hiếm nâng trần).
 3. **Đơn vị sức mạnh** của một thú = hệ số phẩm cấp × trọng số (`pet_power_units`). Đây là "ngân sách" mà sản lượng Idle, hiệu ứng Plinko và buff Hỗ trợ của thú đó cùng được đo theo (R10).
-4. Tỷ lệ rơi theo phẩm cấp và trọng số trong từng phẩm cấp thuộc Gacha Machine; Catalog không chứa (chỉ có giả định tham khảo trong `PetBalanceTargets`).
+4. Tỷ lệ rơi theo phẩm cấp và trọng số trong từng phẩm cấp thuộc Gacha Machine; Catalog không chứa (validator đọc `GachaConfig.rarityRates`).
 5. Catalog không chứa đường Sao. Mọi giá trị trong Catalog là giá trị ở 1 Sao; hệ số Sao và trần thuộc Star Progression.
 
 **R4. Nhóm**
@@ -335,7 +336,7 @@ Ký hiệu: r = phẩm cấp, w = trọng số, m = `magnitude` của hiệu ứ
 
 | Variable | Type | Range | Source | Description |
 |---|---|---|---|---|
-| assumed_rate[r] | float[4] | tổng = 1 | SO field `PetBalanceTargets.assumedRarityRates` | giả định 55/30/12/3 của FirstGDD; thay bằng tham chiếu `GachaConfig` khi Gacha GDD có |
+| assumed_rate[r] | float[4] | tổng = 1 | SO field `GachaConfig.rarityRates` (Gacha sở hữu, `gacha-machine.md` G1; đọc trực tiếp, Catalog không giữ bản sao) | tỷ lệ công bố của Gacha; mặc định 55/30/12/3 |
 | pool_count[r] | int | ≥ 1 | calculated (R9.2) | số thú trong pool của phẩm cấp r |
 | collection_spins_band | float[2] | [30–60, 60–150] | SO field `PetBalanceTargets.collectionSpinsBand` | khoảng mục tiêu số lượt để đủ bộ (chưa tính Sao) |
 | bước tích phân / sai số dừng / giới hạn tích phân | float | 0.1 lượt / 1e-6 / 10,000 lượt | constant | tham số số học của test, không phải knob thiết kế |
@@ -386,7 +387,7 @@ Upstream lúc chạy chỉ có Bootstrap. Economy Core và Plinko Board là ph�
 |---|---|---|---|
 | Bootstrap & Scene Flow | Catalog phụ thuộc Bootstrap (hợp đồng pha) | Hard | In: lượt chạy ở pha `DataLoad`, trước mọi bước `GameplayInit`; hạn `BootConfig.stepTimeoutSeconds`. Out: bước `IBootStep` `pet.catalog` (`Phase = DataLoad`, `IsCritical = true`, `RunsAfter` rỗng) báo `IsDone` / `IsFailed` (R12.1). Owner: Bootstrap (hợp đồng, thứ tự pha, BootFailed); Catalog (nội dung bước nạp). |
 | Inventory | Inventory phụ thuộc Catalog | Hard (với Inventory) | Out: `TryGetPet(id)`, danh sách thú đã phát hành, nhóm/phẩm cấp để lọc bộ sưu tập. Owner: Catalog (dữ liệu, ID); Inventory (sở hữu, số bản trùng, cách giữ ID lạ). *GDD Inventory chưa có.* |
-| Gacha Machine | Gacha phụ thuộc Catalog | Hard (với Gacha) | Out: Gacha pool theo phẩm cấp (R9.2), ID phẩm cấp (cũng là hậu tố cue `Gacha.RarityReveal.<phẩm cấp>` của Audio), sprite, khóa màu phẩm cấp. Owner: Catalog (pool); Gacha (tỷ lệ phẩm cấp, trọng số trong phẩm cấp, luật trùng, phẩm cấp có pool rỗng). *GDD chưa có.* |
+| Gacha Machine | Gacha phụ thuộc Catalog | Hard (với Gacha) | Out: Gacha pool theo phẩm cấp (R9.2), ID phẩm cấp (cũng là hậu tố cue `Gacha.RarityReveal.<phẩm cấp>` của Audio), sprite, khóa màu phẩm cấp. Owner: Catalog (pool); Gacha (tỷ lệ phẩm cấp, trọng số trong phẩm cấp, luật trùng, phẩm cấp có pool rỗng). |
 | Shelf & Synergy | Shelf phụ thuộc Catalog | Hard (với Shelf) | Out: vai, nhóm, `pet_power_units`, `idle_base_units`, `effects` (`type`, `magnitude`, `scope`, `targetGroup`, `includeBurstCoins`). Shelf thi hành: `RegisterIncomeSource` / modifier tầng Base, Synergy / `SubmitIncome(Plinko, …)` của Economy; `RegisterAutoDropRate(sourceId, magnitude)` / `RegisterBouncinessFactor(sourceId, magnitude)` / `Unregister(sourceId)` của Plinko (R12.4); nghe `PegHit` (`scored`), `JackpotHit` (lọc `origin` theo `includeBurstCoins`), `CoinResolved`. Owner: Catalog (dữ liệu, ngữ nghĩa từ vựng); Shelf (nơi duy nhất thi hành, D1). *GDD chưa có.* |
 | Star Progression (VS) | Star phụ thuộc Catalog | Hard (với Star) | Out: ID, phẩm cấp, giá trị 1 Sao (`idle_base_units`, `magnitude`). Owner: Star (hệ số Sao, số bản/cấp, trần). *GDD chưa có.* |
 | Neighbor Pranks (v1.1) | Neighbor phụ thuộc Catalog | Hard (với Neighbor) | Out: ID, nhóm, phẩm cấp (chọn mục tiêu "dụ đi chơi"). Đồ hàng xóm ở danh mục `gadget.` riêng (D2), không nằm trong Catalog. *GDD chưa có.* |
@@ -448,8 +449,7 @@ Dữ liệu không phải số (không phải knob cân bằng): `PetRarityConfi
 | Dung sai ngân sách | `PetBalanceTargets.budgetTolerance` | float | 0.25 | 0.1–0.4 | Thú lệch ngân sách lọt qua | Cảnh báo giả vì mô hình tuyến tính thô | mọi magnitude |
 | Mốc neo hai kênh | `PetBalanceTargets.parityCheckpointSpins` | int | 50 | 20–100 | Kênh Idle lấn suốt đầu tiệm | Kênh Plinko lấn từ sớm | parityBand, spinGrowth, coinValueExponent |
 | Dải chấp nhận cân hai kênh | `PetBalanceTargets.parityBand` | float[2] | [0.8, 1.25] | thấp 0.6–0.9, cao 1.1–1.5 | Một kênh thống trị lọt qua | Cảnh báo liên tục khi đổi đường giá | plinkoUpliftPerUnit, idleCpsUnit |
-| Dải lượt quay để đủ bộ | `PetBalanceTargets.collectionSpinsBand` | float[2] | [40, 90] | thấp 30–60, cao 60–150 | Tường gacha (rủi ro concept) | Bộ sưu tập xong quá nhanh | assumedRarityRates, roster |
-| Tỷ lệ phẩm cấp giả định | `PetBalanceTargets.assumedRarityRates` | float[4] | [0.55, 0.30, 0.12, 0.03] | tổng = 1, mỗi phần 0.01–0.7 | — | — | thay bằng `GachaConfig` khi có GDD Gacha |
+| Dải lượt quay để đủ bộ | `PetBalanceTargets.collectionSpinsBand` | float[2] | [40, 90] | thấp 30–60, cao 60–150 | Tường gacha (rủi ro concept) | Bộ sưu tập xong quá nhanh | `GachaConfig.rarityRates`, roster |
 | Đơn vị một thú kề điển hình | `PetBalanceTargets.referenceNeighborTargetUnits` | float | 2.5 | 1–6 | `NeighborBoost` bị cân quá yếu | `NeighborBoost` bị cân quá mạnh | magnitude Cáo |
 | Số thú cùng nhóm điển hình cạnh thủ lĩnh | `PetBalanceTargets.referenceGroupLeaderTargets` | int | 3 | 2–4 | Thủ lĩnh bị cân yếu khi kệ nhỏ | Thủ lĩnh mạnh quá khi kệ đầy | số ô kệ (Shelf), magnitude Mèo Hoàng Gia |
 | Thời gian nạp Catalog tối đa | `PetBalanceTargets.catalogLoadMaxMs` | float (ms) | 50 | 20–200 | Ăn vào ngân sách khởi động 2.0 s | Test trượt trên máy yếu | `BootConfig.maxBootToInteractiveSeconds` |
@@ -522,7 +522,7 @@ UX flag: hệ này có UI (thẻ thú dùng chung). Đặc tả UX theo màn hì
 | Trần và công thức bàn | `Docs/design/gdd/plinko-board.md` | `effective_bounciness`, `bounciness_cap` (0.85), `max_scored_peg_hits` (20), `auto_drop_interval`, `auto_drop_min_interval`, `jackpot_burst_count` (5), `bucket_probability_and_ev`, AC-13c, AC-30 | Giá trị khóa trong registry; Catalog không được vượt |
 | Cue phẩm cấp | `Docs/design/gdd/audio.md` | `Gacha.RarityReveal.<phẩm cấp>` | Hậu tố cue = ID phẩm cấp của Catalog |
 | Thi hành hiệu ứng, combo nhóm, khóa nguồn `shelf.slot<i>.idle/.plinko` | `Docs/design/gdd/shelf-and-synergy.md` *(chưa có)* | R6 (từ vựng hiệu ứng), `idle_base_units`, `pet_event_bonus` | Shelf là nơi duy nhất thi hành (D1) |
-| Gacha pool, tỷ lệ phẩm cấp | `Docs/design/gdd/gacha-machine.md` *(chưa có)* | R9.2, `assumedRarityRates` | Gacha thay giả định bằng `GachaConfig` |
+| Gacha pool, tỷ lệ phẩm cấp | `Docs/design/gdd/gacha-machine.md` | R9.2, `GachaConfig.rarityRates` | Catalog đọc `GachaConfig.rarityRates` (Gacha sở hữu) |
 | Sở hữu, ID lạ | `Docs/design/gdd/inventory.md` *(chưa có)* | R1, R12.2 `TryGetPet` | Inventory khóa theo `id` |
 | Hệ số Sao | `Docs/design/gdd/star-progression.md` *(chưa có)* | Giá trị 1 Sao, `star_multiplier` | Star sở hữu đường Sao |
 | Pillar, roster MVP, Quyết định 5 | `Docs/design/gdd/game-concept.md` | Pillar 2, 3, 4; MVP; Visual identity (Zero Art, màu phẩm cấp) | Nguồn của D3, D5, D6 |
@@ -581,7 +581,7 @@ Viết bởi game-designer (qa-lead không được gọi — workflow không ch
 - `AC-35 [EditMode]` `support_power_estimate` — **GIVEN** roster `V1_0`, **WHEN** tính, **THEN** Cáo 6.0; Mèo Hoàng Gia scope Idle 14.49, scope Both 18.54; `NeighborBoost` m = 0.2 → 1.0; khi mọi thú Hoàng Gia khác bị gỡ khỏi roster → 0.
 - `AC-36 [EditMode]` `budget_ratio` — **GIVEN** stub ước lượng cho một thú có target 1, **WHEN** estimate = 1 + `PT.budgetTolerance` và 1 − `PT.budgetTolerance`, **THEN** không cảnh báo; estimate vượt 1 + `budgetTolerance` một lượng bất kỳ > `ET.valueRelTolerance` → đúng 1 cảnh báo; **GIVEN** `RC.plinkoRoleIdleShare` = 1 (target thú Plinko = 0), **THEN** mỗi thú Plinko có đúng 1 lỗi "target = 0", không exception chia cho 0.
 - `AC-37 [EditMode]` `channel_parity` — **GIVEN** knob mặc định, **WHEN** n_ref = 50 / 0 / 100, **THEN** 0.959 / 0.222 / 4.147 (± 0.001) và n = 50 nằm trong `PT.parityBand`; **WHEN** `RC.plinkoUpliftPerUnit` = 0.08, **THEN** 1.535 ở n = 50 và validator có đúng 1 cảnh báo cân hai kênh.
-- `AC-38 [EditMode]` `collection_spins_estimate` — **GIVEN** `PT.assumedRarityRates` mặc định, **WHEN** tính cho pool `V1_0` / pool MVP / một thú duy nhất với p = 1, **THEN** 59.9 / 43.4 (± 0.3) / 1.0 (± bước tích phân); **GIVEN** `assumedRarityRates` = [0.5799, 0.30, 0.12, 0.0001], **WHEN** tính cho pool `V1_0`, **THEN** hàm trả trong giới hạn tích phân, kết quả ngoài `PT.collectionSpinsBand` và validator có đúng 1 cảnh báo, không treo.
+- `AC-38 [EditMode]` `collection_spins_estimate` — **GIVEN** `GachaConfig.rarityRates` mặc định (0.55 / 0.30 / 0.12 / 0.03), **WHEN** tính cho pool `V1_0` / pool MVP / một thú duy nhất với p = 1, **THEN** 59.9 / 43.4 (± 0.3) / 1.0 (± bước tích phân); **GIVEN** `GachaConfig.rarityRates` = [0.5799, 0.30, 0.12, 0.0001], **WHEN** tính cho pool `V1_0`, **THEN** hàm trả trong giới hạn tích phân, kết quả ngoài `PT.collectionSpinsBand` và validator có đúng 1 cảnh báo, không treo.
 
 **Trình bày thẻ thú (UI Requirements)**
 - `AC-39 [EditMode]` **GIVEN** `base_coin_value` = 1 và knob mặc định, **WHEN** tạo mô tả hiệu ứng cho 7 thú có hiệu ứng, **THEN** số trong mô tả là: Thỏ 0.017, Thiên Nga 0.0068, Mèo Chiêu Tài 3, Bánh Flan 0.086, Hamster `PL.autoDropBaseInterval` / 0.27 (7.41 s), Kẹo ×1.7 với trần `PL.bouncinessCap`, Mèo Hoàng Gia 180% kênh Idle nhóm Hoàng Gia, Cáo 120% kênh Plinko — trước khi định dạng; và chuỗi số sau định dạng theo quy tắc "Định dạng số trên thẻ thú" (UI Requirements, `EC.displaySigDigits` = 3) đúng bằng: Thỏ "+0.017", Thiên Nga "+0.0068", Mèo Chiêu Tài "+3", Bánh Flan "+0.086", Hamster "7.41", Kẹo "×1.7" và "0.85", Mèo Hoàng Gia "+180%", Cáo "+120%"; **WHEN** `base_coin_value` = `base_coin_value(100)` (18.679), **THEN** Thỏ "+0.318", Mèo Chiêu Tài "+56"; **WHEN** magnitude của Thỏ = cận dưới `PC.effectLimits[PegHitBonus]` (0.002) và `base_coin_value` = 1, **THEN** "+0.002"; **WHEN** định dạng giá trị 1234.5 bằng cùng quy tắc, **THEN** "1.23K" (khớp `display_format` của Economy R13).
@@ -607,7 +607,6 @@ Viết bởi game-designer (qa-lead không được gọi — workflow không ch
 | Assumed: bước `pet.catalog` là cốt lõi (`IsCritical = true`) — không có chế độ chơi không thú; lỗi nạp → BootFailed, "Thử lại" (Bootstrap B4). Thêm trạng thái Loading / Failed vào vòng đời Catalog để khớp hợp đồng bước. | game-designer | 2026-10-21 |
 | Assumed: hậu tố cue `Gacha.RarityReveal.<phẩm cấp>` của Audio dùng đúng ID phẩm cấp `common` / `rare` / `epic` / `legendary` (một nguồn ID, không bảng ánh xạ). | game-designer + Audio | 2026-10-21 |
 | Tên khóa nguồn của thú trên kệ (đề xuất `shelf.slot<i>.idle` / `.plinko`, R6.3) và cách kệ có hai bản cùng một thú hay không — Shelf & Synergy chốt. | Shelf & Synergy GDD | 2026-11-04 |
-| `PetBalanceTargets.assumedRarityRates` thay bằng tham chiếu `GachaConfig` khi có GDD Gacha; Gacha cũng chốt cách xử lý phẩm cấp có pool rỗng. | Gacha Machine GDD | 2026-11-04 |
 | Màu phẩm cấp (art bible) và cập nhật board Penpot còn 7 thú FirstGDD với số cũ; board thẻ thú dùng chung cho Gacha / Kho / Kệ (UX flag). | art-director | 2026-10-28 |
 | ADR: cách nạp Catalog (tham chiếu trực tiếp SO, không Addressables), bản địa hóa tên/flavor (Unity Localization hay bảng riêng), bảng tra ID không cấp phát, cơ chế đăng ký `IBootStep` (dùng chung ADR khởi động của Bootstrap). | game-adr | 2026-10-28 |
 | Cho bước Sync (không sửa trong bước này): systems index — hàng Pet Catalog thêm UX flag (thẻ thú dùng chung), Key deps đã có Bootstrap; registry — ứng viên entities 13 thú, constants `rarity_coefficients` (1 / 2.5 / 6 / 15), formulas `pet_power_units`, `idle_base_units`, `pet_event_bonus`; thêm `pet-catalog.md` vào `referenced_by` của `auto_drop_interval` (Hamster, AC-13, AC-39); giữ `pet-catalog.md` trong `referenced_by` của `effective_bounciness`, `bounciness_cap`, `max_scored_peg_hits`, `jackpot_burst_count`, `base_coin_value`; constant `idle_cps_unit`, `plinko_flat_per_coin_cap`, `synergy_tier_cap` (C1[6]) nhận `pet-catalog.md` vào `referenced_by`. Revision 5: systems index — hàng Pet Catalog không còn NEEDS-USER `scope` (đã đóng theo (a)); registry — nếu đăng ký `bounce_uplift_at_cap`, source là `economy-core.md` (`EconomyBalanceTargets.plinkoBounceUpliftAtCapAssumed` 0.40), referenced_by `pet-catalog.md`, `plinko-board.md`; `display_format` (nếu có trong registry) nhận `pet-catalog.md` vào `referenced_by`. | bước Sync | 2026-10-21 |

@@ -1,6 +1,6 @@
 # Economy Core (Lõi Kinh Tế)
 
-> **Status**: Approved
+> **Status**: In Review
 > **Author**: Maris-LTD + Claude (game-designer)
 > **Last Updated**: 2026-10-21
 > **Last Verified**: 2026-10-21
@@ -10,6 +10,8 @@
 > **Revision 2026-10-21** (đợt 2, theo `Docs/production/session-logs/gdd-consistency-2026-10-21-run2.json` C2[0], C2[10], C2[12], C2[15] và quyết định sau design run 2 trong `decision-log.md`): kênh Plinko là trần **mềm** — bỏ mọi chỗ coi ≈ 20 × `baseCoinValue` là trần cứng, cân bằng theo `raw_rate_ceiling` từng cấu hình của Plinko (R5.5, công thức `plinko_rate_model`, knob `EconomyBalanceTargets.plinkoRawRateCeilingAssumed`, AC-47); `idleCpsUnit` là hằng số trong tiệm (A) — bỏ nhãn provisional ở R11.2, `idle_cps`, `seconds_per_spin`, ghi rủi ro `channel_parity`; knob dự phòng `PlinkoConfig.baseCoinValue` = 1 chỉ cho test, khớp Plinko; nhận `EconomyBalanceTargets.plinkoBounceUpliftAtCapAssumed` từ Pet Catalog; dọn ghi chú hai chiều, Cross-References và Open Questions đã lỗi thời.
 > **Fix round 1 (2026-10-21, `reviews/economy-core-review-2026-10-21.md` EC-R1-B1)**: theo Bootstrap & Scene Flow Revision 4 (B6.5) — Idle chỉ cộng khi `IsSimulationRunning` của Bootstrap đúng (dt = 0 ở mọi khung khác); thêm trạng thái **Ready** sau `Run()` (API hoạt động, không cộng Idle) → Running khi `Interactive` hoặc khi `Resumed` mà `IsSimulationRunning` đúng; `Resumed` về `Booting.Curtain` giữ Ready (R6.2–R6.3, R16.3–R16.4, States, `idle_accrual`, Interactions/Dependencies hàng Bootstrap, "Hai chiều", AC-22, AC-46).
 > **Revision 2026-10-21** (đợt 3, `gdd-consistency-2026-10-21-run3.json` C3[6], C3[7] và quyết định user (b)): tiêu thụ `AdClosed` bù Idle (R6.4, `ad_idle_compensation`, AC-48); `CoinResolved(Overflow)` có thể đến ở Ready/Paused (R10.4, States, AC-49); Pet Catalog phụ thuộc mềm vào Economy.
+> **Revision 2026-10-21** (đợt 4, `gdd-consistency-2026-10-21-run5.json` C5[13]): thêm hàm thuần `PreviewIdleCps(plan)` / `GetSourceIdleCps(sourceKey)` (R7.5, `preview_idle_cps`, AC-50, AC-51), `TrySpend(ShopPurchase)` mở ô kệ; đồng bộ hàng Shelf, Gacha, Inventory (Interactions, Dependencies) với `shelf-and-synergy.md`, `gacha-machine.md`, `inventory.md`.
+> **Fix round 1b (2026-10-21, EC-1)**: `ResetForNewShop` phát thêm `WalletChanged(ShopReset)` và `SpinPriceChanged` trước `ShopEconomyReset`; định nghĩa payload (R12.2, R14, R15, AC-36).
 > [CD-GDD-ALIGN] skipped (lean)
 > game-designer / qa-lead không được gọi riêng (workflow không cho subagent): Formulas và Acceptance Criteria do game-designer viết trực tiếp, chưa qua review chuyên môn.
 
@@ -97,6 +99,9 @@ Mọi tên trong `backtick` là knob ở `EconomyConfig` (runtime) hoặc `Econo
 2. `PlinkoRateAvg`: tổng `creditedAmount` kênh Plinko trung bình trượt trên `plinkoRateWindowSeconds` (công thức `plinko_rate_avg`).
 3. Hai tốc độ được công bố **riêng**, không cộng gộp, để người chơi so sánh từng kênh trước/sau khi đổi kệ (Pillar 3). HUD quyết định cách hiển thị. Sự kiện `IncomeRatesChanged { idleCps, plinkoRateAvg }` phát không dày hơn một lần mỗi `ratesPublishInterval`.
 4. `OfflineRateSnapshot`: `idle_cps` tính lại khi bỏ mọi modifier `isTemporary` (toàn bộ tầng Boost). Hệ số offline và trần giờ thuộc Offline Earnings. Thu nhập auto-drop của Plinko không được quy đổi sang offline.
+5. **Hai hàm thuần cho Shelf (Shelf D5, S7)**, chỉ đọc, không đổi ví/modifier/cờ "bẩn", không phát sự kiện, dùng được ở Ready, Running và Paused:
+   - `PreviewIdleCps(plan)`: `plan` là bản kế hoạch giả định của Shelf = danh sách nguồn Idle `{sourceKey, baseRate, flatUnits}` + modifier tầng Base/Synergy `shelf.` giả định. Trả `idle_cps` như thể `plan` thay toàn bộ nguồn và modifier `shelf.` hiện có; tầng Boost/Prestige/Global lấy từ trạng thái thật (công thức `preview_idle_cps`).
+   - `GetSourceIdleCps(sourceKey)`: phần `idle_cps` của một nguồn Idle đang đăng ký, sau Synergy và ba tầng kênh (Σ mọi nguồn = `IdleCps`); `sourceKey` chưa đăng ký → 0. Giá trị theo trạng thái hiện tại, không cache lệch: đọc được cùng khung sau khi Shelf đăng ký/gỡ.
 
 **R8. Đường giá neo — giá quay Gacha (D1, D6)**
 1. Economy Core giữ bộ đếm `spinsThisShop` (n), số lượt quay **đã trả bằng xu** trong tiệm hiện tại.
@@ -122,7 +127,7 @@ Mọi tên trong `backtick` là knob ở `EconomyConfig` (runtime) hoặc `Econo
 
 **R12. Khởi đầu và tiệm mới**
 1. Game mới: Xu = `startingCoins`, n = 0, `baseCoinValue` = 1, không có modifier.
-2. `ResetForNewShop(playerAction)` (Prestige gọi sau khi người chơi xác nhận "Mở Tiệm Mới"): mọi tiền tệ có `resetsOnNewShop = true` về giá trị khởi đầu, n = 0, giá và `baseCoinValue` tính lại, phát `ShopEconomyReset`. Tem Tiệm và modifier tầng Prestige giữ nguyên. Modifier của Shelf/Boosts do chính các hệ đó gỡ hoặc đăng ký lại theo luật reset của Prestige.
+2. `ResetForNewShop(playerAction)` (Prestige gọi sau khi người chơi xác nhận "Mở Tiệm Mới"): mọi tiền tệ có `resetsOnNewShop = true` về giá trị khởi đầu, n = 0, giá và `baseCoinValue` tính lại. Phát theo thứ tự, cùng khung, sau khi trạng thái đã nhất quán: `WalletChanged { currencyId, previous, current, delta, reason = ShopReset }` cho mỗi tiền tệ reset có số dư đổi (Xu về `startingCoins`; không phát nếu bằng nhau), `SpinPriceChanged { 0, spinBasePrice, 1 }` (luôn phát, kể cả khi n đã = 0), rồi `ShopEconomyReset { resetCurrencyIds[], spinsThisShop = 0 }`. Tem Tiệm và modifier tầng Prestige giữ nguyên. Modifier của Shelf/Boosts do chính các hệ đó gỡ hoặc đăng ký lại theo luật reset của Prestige.
 3. Đây là thao tác giảm số dư duy nhất ngoài `TrySpend` và chỉ chạy với ngữ cảnh hành động người chơi (R3.1).
 
 **R13. Định dạng số**
@@ -140,15 +145,16 @@ Mọi tên trong `backtick` là knob ở `EconomyConfig` (runtime) hoặc `Econo
 | Faucet | Bù Idle thời gian xem rewarded ad | Xu | `Add(AdIdleCompensation)` (R6.4) | Alpha |
 | Faucet | Quà Bác Bảo Vệ, phần thưởng quảng cáo | Xu | `Add(AdReward)` | Alpha |
 | Faucet | Prestige "Mở Tiệm Mới" | Tem Tiệm | `Add(Prestige)` | Alpha |
+| Sink (không phải chi tiêu) | `ResetForNewShop`: Xu về `startingCoins` (R12.2), chỉ khi người chơi xác nhận | Xu | `WalletChanged(ShopReset)` | Alpha |
 | Sink chính | Vặn trứng Gacha | Xu | `TryPaySpin` | MVP |
-| Sink | Mở ô kệ, boost, Flash Deal | Xu | `TrySpend(ShopPurchase)` | VS / Alpha |
+| Sink | Mở ô kệ (Shelf `TryUnlockNextSlot`, giá `slot_unlock_price` của Shelf), boost, Flash Deal | Xu | `TrySpend(ShopPurchase)` | VS / Alpha |
 | Sink | Nâng cấp vĩnh viễn | Tem Tiệm | `TrySpend(PrestigeUpgrade)` | Alpha |
 | Sink | Tiền kẹo đón thú về (người chơi tự chọn trả) | Xu | `TrySpend(NeighborCandy)` | v1.1 |
 
 Cân bằng faucet/sink nhắm phiên 5–15 phút: mục tiêu nhịp lượt quay nằm ở `EconomyBalanceTargets` (Formulas `seconds_per_spin`). Mọi `reason` của `WalletChanged` phải thuộc bảng này.
 
 **R15. Sự kiện công bố**
-`WalletChanged { currencyId, previous, current, delta, reason }` (cộng Idle gộp tối đa một sự kiện mỗi khung), `IncomeCredited` (R5.4, chỉ kênh Plinko và `SubmitIncome`), `SpendRejected { currencyId, amount, reason }`, `SpinPriceChanged`, `IncomeRatesChanged`, `ShopEconomyReset`. Cơ chế phát sự kiện (C# event / bus) → ADR, dùng chung với Plinko.
+`WalletChanged { currencyId, previous, current, delta, reason }` (cộng Idle gộp tối đa một sự kiện mỗi khung), `IncomeCredited` (R5.4, chỉ kênh Plinko và `SubmitIncome`), `SpendRejected { currencyId, amount, reason }`, `SpinPriceChanged`, `IncomeRatesChanged`, `ShopEconomyReset { resetCurrencyIds[], spinsThisShop }` (R12.2). Cơ chế phát sự kiện (C# event / bus) → ADR, dùng chung với Plinko.
 
 **R16. Khởi động qua hợp đồng pha của Bootstrap** (C1[14], C1[15])
 1. Economy Core tự đăng ký **một** bước khởi động theo hợp đồng `IBootStep` của Bootstrap & Scene Flow (B2): `Id` = `economy.core`, `Phase` = `GameplayInit`, `RunsAfter` rỗng, `IsCritical` = đúng. Bootstrap chỉ biết interface, không tham chiếu Economy Core; Economy Core phụ thuộc Bootstrap, không có chiều ngược.
@@ -177,8 +183,9 @@ Trạng thái của một modifier: `Registered` (đang tính) → `Unregistered
 | Hệ | Economy Core nhận vào | Economy Core phát ra | Chủ interface |
 |---|---|---|---|
 | Plinko Board | `CoinResolved { coinId, origin, bucketIndex \| none, multiplier, rawValue, scoredPegHits, reason }` (`reason ∈ {Bucket, Stuck, Overflow}`) | Cài đặt `IBaseCoinValueSource` (đăng ký trong `Run()`); Plinko tự đọc `BaseCoinValue` lúc giải quyết xu (kéo, R10.2–R10.4) — Economy Core không ghi gì vào Plinko | Plinko sở hữu sự kiện `CoinResolved` và interface `IBaseCoinValueSource`; Economy Core sở hữu cài đặt và công thức `base_coin_value` |
-| Gacha Machine | `TryPaySpin(playerAction)`, truy vấn `GetSpinPrice()` | `SpinPriceChanged`, kết quả `bool` | Economy Core |
-| Shelf & Synergy | `RegisterIncomeSource` / `Unregister`, modifier tầng Base và Synergy, `SubmitIncome(Plinko)` cho thưởng sự kiện thú | `idleCpsUnit`, `baseCoinValue` (để tính thưởng thú theo bội số), `IncomeRatesChanged` | Economy Core sở hữu hợp đồng modifier; Shelf sở hữu giá trị |
+| Gacha Machine | `TryPaySpin(playerAction)` → `bool`, `GetSpinPrice()`, `CanAfford(coin, amount)` | `SpinPriceChanged { spinsThisShop, spinPrice, baseCoinValue }`, `SpendRejected` (khi `TryPaySpin` thất bại) | Economy Core (đường neo); Gacha không định nghĩa giá |
+| Shelf & Synergy | `RegisterIncomeSource` / `Unregister`, modifier tầng Base và Synergy, `SubmitIncome(Plinko)` cho thưởng sự kiện thú, `TrySpend(coin, price, ShopPurchase, playerAction)` mở ô kệ (giá do Shelf tính), `PreviewIdleCps(plan)`, `GetSourceIdleCps(sourceKey)` (R7.5) | `idleCpsUnit`, `baseCoinValue` (để tính thưởng thú theo bội số), `derived_price`, `IncomeRatesChanged`, `SpendRejected`, kết quả hai hàm thuần | Economy Core sở hữu hợp đồng modifier và hai hàm thuần; Shelf sở hữu giá trị, bản kế hoạch và giá ô |
+| Inventory | — (không có dữ liệu; bước `inventory.core` khai `RunsAfter` `economy.core`) | — | Bootstrap (thứ tự khởi tạo); Inventory không gọi Economy Core, không đọc ví |
 | Pet Catalog | — (Catalog không gọi Economy Core) | `idleCpsUnit` được Shelf nhân với số của Catalog | Pet Catalog sở hữu bảng phẩm cấp × trọng số |
 | HUD & Tab Navigation | Truy vấn số dư, `IdleCps`, `PlinkoRateAvg`, chuỗi đã định dạng | `WalletChanged`, `IncomeRatesChanged`, `SpinPriceChanged` | Economy Core (dữ liệu, bộ định dạng); HUD (cách hiển thị) |
 | Feedback & Juice | — | `IncomeCredited` (`creditedAmount` cho số bay; `coinId`, `bucketIndex` để đặt và gộp số bay theo hũ), `SpendRejected` | Economy Core |
@@ -301,6 +308,18 @@ Ký hiệu: n = `spinsThisShop`; c = kênh (`Idle` | `Plinko`); s = nguồn. Gi�
 
 **Output range:** 0 (kệ trống) đến vài nghìn trong MVP; trần thực tế do Pet Catalog / Star / trần tầng.
 **Example:** thú A gốc 10 (Synergy nhắm A +0.5 và combo kênh +0.5 → 2.0) = 20; thú B gốc 4, cộng phẳng 1 đơn vị (= 2 xu/s), combo kênh → (4 + 2) × 1.5 = 9; tổng 29; Trà +1.0 → **58 xu/s**.
+
+### preview_idle_cps
+
+`source_idle_cps(s) = (base_rate_s + flat_units_s × idle_cps_unit) × M_Synergy(s) × M_Boost(Idle) × M_Prestige(Idle) × M_Global(Idle)`; `GetSourceIdleCps(s)` = `source_idle_cps(s)` (0 nếu chưa đăng ký); `PreviewIdleCps(plan)` = `idle_cps` với Σ_s thay bằng nguồn và modifier `shelf.` của `plan`, các tầng Boost/Prestige/Global giữ nguyên
+
+| Variable | Type | Range | Source | Description |
+|---|---|---|---|---|
+| plan | danh sách nguồn + modifier `shelf.` | — | calculated (Shelf, S7) | trạng thái kệ giả định; giá trị không hợp lệ qua `sanitize` |
+| các biến còn lại | — | — | xem `idle_cps` | cùng định nghĩa, cùng trần tầng |
+
+**Output range:** ≥ 0; Σ `GetSourceIdleCps` = `idle_cps`; `PreviewIdleCps(plan hiện tại)` = `idle_cps`.
+**Example:** cấu hình AC-20: `GetSourceIdleCps(A)` = 10 × (1 + 0.5 + 0.5) × 2.0 (Trà) = **40**; B = (4 + 2) × 1.5 × 2 = **18**; tổng **58**.
 
 ### plinko_credit
 
@@ -485,8 +504,9 @@ Ký hiệu: n = `spinsThisShop`; c = kênh (`Idle` | `Plinko`); s = nguồn. Gi�
 | Plinko Board | **Economy Core phụ thuộc hợp đồng của Plinko** (upstream duy nhất về gameplay): sự kiện `CoinResolved` và interface `IBaseCoinValueSource`, cả hai do Plinko sở hữu. Economy Core chỉ tham chiếu hợp đồng, không tham chiếu cài đặt Plinko và không ghi gì vào Plinko; Plinko không tham chiếu Economy Core | Hard (với Economy Core); Soft (với Plinko: chạy được với dự phòng `PlinkoConfig.baseCoinValue`, không khai `RunsAfter` `economy.core`) | In: `CoinResolved { coinId, origin, bucketIndex \| none, multiplier, rawValue, scoredPegHits, reason ∈ {Bucket, Stuck, Overflow} }`. Out: cài đặt `IBaseCoinValueSource` (getter `BaseCoinValue` = `base_coin_value(n)` hiện tại), đăng ký qua cơ chế đăng ký dịch vụ (ADR); Plinko kéo giá trị lúc giải quyết xu (R10.2–R10.4). Owner: Plinko (sự kiện, interface, dự phòng); Economy Core (cài đặt, modifier, ví, công thức). Thông lượng: Plinko chỉ cho trần mô hình `raw_rate_ceiling`, không trần cứng (R5.5). Khớp `plinko-board.md` Revision 3–4 (R9.2, R12, `raw_rate_ceiling`, AC-45). |
 | Bootstrap & Scene Flow | Economy Core phụ thuộc (Bootstrap không tham chiếu Economy Core) | Hard | In: hợp đồng bước khởi động `IBootStep` và thứ tự pha (bước `GameplayInit` chạy sau `SaveLoad`); `Paused {reason}` / `Resumed {reason, awaySeconds}` (cùng tín hiệu với Plinko R11); `Interactive` + `IsSimulationRunning` (chỉ cộng Idle khi vòng đời `Running`; đọc `IsSimulationRunning` sau `Resumed`, B6.5 — R6.2–R6.3, trạng thái Ready); `AdClosed {adSeconds}` (B6.10.5, R6.4). Out: bước `economy.core` (pha `GameplayInit`, cốt lõi, R16). Owner: Bootstrap (hợp đồng pha, sự kiện vòng đời); Economy Core (bước của mình). Khớp hàng Economy Core trong Dependencies của `bootstrap-and-scene-flow.md`. |
 | Save/Load (VS) | Economy Core phụ thuộc (đăng ký dữ liệu) | Soft, VS (MVP chạy không lưu) | Out: mảng cặp `currencyId / double`, `spinsThisShop`. Owner: Save/Load (định dạng file, version); Economy Core (nội dung, kẹp khi nạp). |
-| Gacha Machine | Gacha phụ thuộc Economy Core | Hard (với Gacha) | In: `TryPaySpin(playerAction)`, `GetSpinPrice()`, `CanAfford`. Out: `SpinPriceChanged`. Owner: Economy Core (đường neo, D1). |
-| Shelf & Synergy | Shelf phụ thuộc Economy Core | Hard (với Shelf) | In: `RegisterIncomeSource`, modifier tầng Base/Synergy (`shelf.`), `SubmitIncome(Plinko)`. Out: `idleCpsUnit`, `baseCoinValue`, `IncomeRatesChanged`. Owner: Economy Core (hợp đồng, trần tầng); Shelf (giá trị). |
+| Gacha Machine | Gacha phụ thuộc Economy Core | Hard (với Gacha) | In: `TryPaySpin(playerAction)` → `bool`, `GetSpinPrice()`, `CanAfford`. Out: `SpinPriceChanged { spinsThisShop, spinPrice, baseCoinValue }`, `SpendRejected`. Owner: Economy Core (đường neo, D1); khớp `gacha-machine.md` (G3, G4). |
+| Shelf & Synergy | Shelf phụ thuộc Economy Core | Hard (với Shelf) | In: `RegisterIncomeSource`, modifier tầng Base/Synergy (`shelf.`), `SubmitIncome(Plinko)`, `TrySpend(ShopPurchase)` mở ô. Out: `idleCpsUnit`, `baseCoinValue`, `derived_price`, `IncomeRatesChanged`, `PreviewIdleCps(plan)`, `GetSourceIdleCps(sourceKey)` (khóa như `shelf.slot2` → `shelf.slot2.idle`; Shelf ẩn Δ và nhãn CPS ô khi thiếu hai hàm). Owner: Economy Core (hợp đồng, trần tầng, hai hàm thuần); Shelf (giá trị, giá ô). Khớp `shelf-and-synergy.md` S7. |
+| Inventory | Inventory chỉ khai thứ tự khởi tạo sau Economy Core | Soft (chỉ thứ tự) | Không có dữ liệu vào/ra; `inventory.core` `RunsAfter` `economy.core` (R16.2). Owner: Bootstrap. Khớp `inventory.md`. |
 | Pet Catalog | Pet Catalog phụ thuộc Economy Core | Soft (lúc làm nội dung: validator của Pet đọc `EconomyConfig`; runtime Economy không gọi Catalog) | Catalog giữ hệ số không thứ nguyên; Shelf nhân với `idleCpsUnit`, thưởng kênh Plinko theo bội số `baseCoinValue` (Pet D4). |
 | HUD & Tab Navigation | HUD phụ thuộc Economy Core | Hard (với HUD) | Out: số dư, `IdleCps`, `PlinkoRateAvg`, chuỗi định dạng, `WalletChanged`, `IncomeRatesChanged`, `SpinPriceChanged`. Owner: Economy Core. |
 | Feedback & Juice | Feedback phụ thuộc Economy Core | Hard (với Feedback, cho số bay) | Out: `IncomeCredited` (`creditedAmount`, `coinId`, `bucketIndex`), `SpendRejected`. Owner: Economy Core. |
@@ -687,7 +707,7 @@ Viết bởi game-designer (qa-lead không được gọi — workflow không ch
 - `AC-35 [EditMode]` **GIVEN** n = 5, **WHEN** gọi mọi API public của Economy Core ngoại trừ `TryPaySpin` thành công và `ResetForNewShop`, **THEN** n vẫn là 5 (lượt quay miễn phí không tăng giá).
 
 **Tiệm mới (R12)**
-- `AC-36 [EditMode]` **GIVEN** Xu = 5,000, Tem = 7, n = 40, một modifier `prestige.x` +1.0, **WHEN** `ResetForNewShop` có ngữ cảnh hành động, **THEN** Xu = `C.startingCoins`, Tem = 7, n = 0, giá quay = `C.spinBasePrice`, Plinko giả đọc `IBaseCoinValueSource.BaseCoinValue` = 1 ngay sau lời gọi (trước n = 40 nó đọc `base_coin_value(40)`), modifier `prestige.x` vẫn tính, đúng một `ShopEconomyReset`.
+- `AC-36 [EditMode]` **GIVEN** Xu = 5,000, Tem = 7, n = 40, một modifier `prestige.x` +1.0, **WHEN** `ResetForNewShop` có ngữ cảnh hành động, **THEN** Xu = `C.startingCoins`, Tem = 7, n = 0, giá quay = `C.spinBasePrice`, Plinko giả đọc `IBaseCoinValueSource.BaseCoinValue` = 1 ngay sau lời gọi (trước n = 40 nó đọc `base_coin_value(40)`), modifier `prestige.x` vẫn tính, đúng một `WalletChanged` (`currency.coin`, previous 5,000, current `C.startingCoins`, reason `ShopReset`), đúng một `SpinPriceChanged { 0, C.spinBasePrice, 1 }` và đúng một `ShopEconomyReset { [currency.coin], 0 }`, theo thứ tự đó.
 
 **Định dạng (R13, display_format)**
 - `AC-37 [EditMode]` **GIVEN** `C.displaySigDigits` = 3, **WHEN** định dạng số dư 0, 999.9, 1,000, 1,234.5, 12,345, 999,999.6, 1e6, 1e9, 1e12, 1e15, 1e18, 1e300, NaN, **THEN** = "0", "999", "1.00K", "1.23K", "12.3K", "999K", "1.00M", "1.00B", "1.00T", "1.00aa", "1.00ab", "1.00dr", "0".
@@ -700,6 +720,10 @@ Viết bởi game-designer (qa-lead không được gọi — workflow không ch
 - `AC-40 [EditMode]` **GIVEN** `C` và `T` mặc định, **WHEN** tính `first_spin_time`, **THEN** kết quả (13.8 s) ≤ `T.firstSpinMaxSeconds` (30).
 - `AC-41 [EditMode]` **GIVEN** `T.spinCheckpoints`, **WHEN** tính `seconds_per_spin` tại từng mốc, **THEN** test in bảng (11.3 / 31.3 / 84.4 s) và mỗi giá trị ≤ phần tử tương ứng của `T.plinkoOnlySpinSecondsMax` (30 / 60 / 120).
 - `AC-42 [Play mode]` **GIVEN** game mới, seed cố định, **WHEN** `InputTestFixture` chạm Plinko với nhịp `T.realisticTapRate`, **THEN** Xu ≥ `C.spinBasePrice` trước `T.firstSpinMaxSeconds` và nút vặn trứng chuyển sang trạng thái bấm được ngay khi `CanAfford` = true.
+
+**Hàm thuần cho Shelf (R7.5, preview_idle_cps)**
+- `AC-50 [EditMode]` **GIVEN** cấu hình của AC-20 (`idle_cps` = 58) và nguồn `shelf.slot1.idle` = A, `shelf.slot2.idle` = B, **WHEN** gọi `GetSourceIdleCps` cho A, B và một khóa chưa đăng ký, rồi gỡ B, **THEN** = 40, 18, 0; sau khi gỡ B, A = 40 và Σ = `IdleCps`; mỗi lần Σ các giá trị = `IdleCps` trong sai số `T.valueRelTolerance`.
+- `AC-51 [EditMode]` **GIVEN** cấu hình của AC-20, bộ đếm ví/modifier/sự kiện và bộ đếm tính lại `idle_cps` (AC-24), **WHEN** gọi `PreviewIdleCps` với (a) plan = trạng thái hiện tại; (b) plan thêm nguồn C gốc 4 không modifier; (c) plan bỏ B; (d) plan có `baseRate` NaN hoặc modifier −0.5; ở Running, Ready và Paused, **THEN** (a) = 58; (b) = 58 + 4 × 2 (Trà) = 66; (c) = 40; (d) bằng kết quả khi giá trị đó coi là 0; sau mọi lời gọi `IdleCps`, số dư, danh sách modifier không đổi, 0 sự kiện, bộ đếm tính lại không tăng.
 
 **Hiệu năng**
 - `AC-43 [Perf]` **GIVEN** trạng thái ổn định, Idle cộng mỗi khung, 24 `CoinResolved`/s, số dư và hai tốc độ được định dạng mỗi khung, **WHEN** ghi 600 khung bằng `ProfilerRecorder` "GC Allocated In Frame", **THEN** 0 B mỗi khung do Economy Core và bộ định dạng.
@@ -774,4 +798,5 @@ Viết bởi game-designer (qa-lead không được gọi — workflow không ch
 | Assumed (revision C2[10]): safe range của dự phòng `PlinkoConfig.baseCoinValue` là "= 1, chỉ cho test" như `plinko-board.md` hiện tại, thay "1–10" của bản trước (giá trị runtime không có trần nên khoảng rộng hơn cho dự phòng không có ích). | game-designer | 2026-10-21 |
 | Assumed (revision C2[12]): tên knob `EconomyBalanceTargets.plinkoBounceUpliftAtCapAssumed`, giá trị 0.40, safe range 0.2–0.55 giữ nguyên từ Pet Catalog (tiền tố `plinko` như ba knob giả định đo đã chuyển trước). | game-designer | 2026-10-21 |
 | Assumed (revision C2[0]): AC-43 / AC-44 giữ tải 24 `CoinResolved` làm kịch bản tải hiệu năng, không phải trần thông lượng; xem lại khi ADR hiệu năng chốt kịch bản xấu nhất (Mưa Đồng Xu + auto-drop + trần nảy). | game-designer + technical-director | 2026-11-04 |
+| Assumed (revision C5[13]): `GetSourceIdleCps` trả phần của nguồn sau Synergy **và** ba tầng kênh (Σ = `IdleCps`, nhãn ô khớp header); `PreviewIdleCps` chỉ thay nguồn/modifier `shelf.`, giữ Boost/Prestige/Global thật; cấu trúc `plan` do Shelf định nghĩa, Economy chỉ đọc. Hai hàm không có knob mới (ngân sách CPU `ShelfBalanceTargets.previewMaxMs` do Shelf giữ). | game-designer + Shelf & Synergy GDD | 2026-10-21 |
 | Assumed (fix round 1, EC-R1-B1): tên trạng thái mới là **Ready** (sau `Run()`, API hoạt động, không cộng Idle); Economy Core đọc `IsSimulationRunning` mỗi khung làm chốt chặn cuối (dt = 0 khi sai) ngoài việc nghe `Interactive` / `Paused` / `Resumed`, và vào Running ngay nếu truy vấn đã đúng lúc vào Ready (theo lời "truy vấn kèm sự kiện cho hệ đăng ký muộn" của Bootstrap B6.5); `Interactive` khi đã Running không làm gì. | game-designer | 2026-10-21 |

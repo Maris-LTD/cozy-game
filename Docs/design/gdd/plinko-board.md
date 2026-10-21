@@ -1,6 +1,6 @@
 # Plinko Board
 
-> **Status**: Approved
+> **Status**: In Review
 > **Author**: Maris-LTD + Claude (game-designer consulted for Formulas)
 > **Last Updated**: 2026-10-21
 > **Last Verified**: 2026-10-21
@@ -15,6 +15,7 @@
 > **Revision 5 — 2026-10-21** (fix round 3 theo `Docs/design/gdd/reviews/plinko-board-review-2026-10-21.md` Round 3 PB3-B1 và `Docs/production/session-logs/gdd-consistency-2026-10-21-run2.json` C2[9], C2[10], C2[11], C2[13], C2[17]; quyết định user sau design run 2 trong `Docs/production/session-logs/decision-log.md`): mọi tham số test trong AC thành knob `PlinkoBalanceTargets` hoặc ghi "constant (lý do)"/dữ liệu fixture, AC-36 dùng `BootTestTargets.perfReferenceDevice`, AC-40/41 có sai số, Game Feel trỏ AC-31/AC-35 (PB3-B1); đóng NEEDS-USER trần thu nhập theo (a) — trần **mềm**, trần test tách theo bốn cấu hình (thêm `T.maxRawPayoutPerSecondPerBaseCoinAutoAndCap`, AC-13d), Overflow là nguồn vượt trần; đóng hiệu ứng tan theo B (pool `feedback.coinFizzle`, `pools[plinko.coin].headroom` = 0); thêm R11.3 — khi `Paused`, hàng đợi loạt được trả ngay toàn bộ với `reason = Overflow` (AC-47), rewarded ad mở không tạm dừng (Bootstrap B6.10); thêm R13 — bước khởi động `plinko.board` (AC-48); dự phòng `baseCoinValue` = 1 chỉ cho test, Edge Case giá trị 0 theo range ≥ 1; ngân sách Kẹo Bảy Màu theo `pet-catalog.md` (+32% mục tiêu, +40% ước tính); ghi chủ sở hữu tương lai của `PlinkoFeedbackConfig`, thêm `fizzleMaxOnScreen`.
 > **Revision 6 — 2026-10-21** (fix round 1 theo `Docs/design/gdd/reviews/plinko-board-review-2026-10-21.md` Round 1, mục chặn PB-B1; Bootstrap B6.5, B6.9, Q8): mô phỏng chỉ tiến khi `IsSimulationRunning` đúng, bắt đầu ở `Interactive`, sau `Resumed` đọc lại `IsSimulationRunning` vì vòng đời có thể về `Booting.Curtain` (R11.2, R11.4 mới); hành vi trước `Interactive` (đăng ký nguồn được nhận, `RequestBurst` xếp hàng, `WorldPress` bỏ im lặng, `Paused` ở `Booting.Curtain` vẫn xả hàng đợi theo R11.3); trạng thái bàn mới "Chờ mở cửa", sửa lối ra của Paused; R13.2 kết thúc ở "Chờ mở cửa"; thêm `Interactive` + `IsSimulationRunning` vào Interactions, Dependencies, Cross-References; AC-29 thêm ca `Resumed` về `Booting.Curtain`, AC-48 thêm ca `IsSimulationRunning` sai. Quyết định user giữ nguyên (trần mềm (a), hiệu ứng tan B, xả hàng đợi khi `Paused`, rewarded ad không tạm dừng).
 > **Revision 7 — 2026-10-21** (đồng bộ run3 `gdd-consistency-2026-10-21-run3.json` C3[0], C3[8], C3[12]): bounce uplift tham chiếu `EconomyBalanceTargets.plinkoBounceUpliftAtCapAssumed` (output `raw_rate_ceiling`, Cross-References, AC-13c); thêm kẹp bước mô phỏng `PlinkoConfig.maxSimStep` (R11.4.1, AC-49); bỏ ghi chú cross-doc đã lỗi thời. C3[2]: `fizzleMaxOnScreen` đã có (= 4), không cần sửa. Assumed: `maxSimStep` = 0.25 s, knob riêng bằng `EconomyConfig.maxFrameDelta` (cùng khoảng 0.1–0.5, hai hệ không lệch nhau).
+> **Revision 8 — 2026-10-21** (C5[14] phần Plinko): Shelf không nghe `CoinResolved` ở v1.0 (Interactions, Dependencies); knob trình bày tham chiếu `FeedbackConfig` (FB D1), `dropZoneLineAlpha` thuộc `FeedbackConfig` (FB D1; Tutorial ghi đè), không còn ở `PlinkoConfig`.
 
 ## Summary
 
@@ -171,7 +172,7 @@ Trạng thái của bàn:
 | Hệ | Plinko nhận vào | Plinko phát ra | Chủ interface |
 |---|---|---|---|
 | Economy Core (`economy-core.md`) | `baseCoinValue` runtime: Plinko kéo `IBaseCoinValueSource.BaseCoinValue` lúc giải quyết xu; Economy Core cài đặt nguồn theo `base_coin_value` (D4, R10); không có nguồn → dự phòng `PlinkoConfig.baseCoinValue` (= 1) | `CoinResolved { coinId, origin, bucketIndex \| none, multiplier, rawValue, scoredPegHits, reason ∈ {Bucket, Stuck, Overflow} }` | Plinko sở hữu sự kiện và interface `IBaseCoinValueSource`; Economy Core phụ thuộc Plinko, sở hữu cài đặt, công thức `base_coin_value`, modifier và ví |
-| Shelf & Synergy | `RegisterAutoDropRate` / `RegisterBouncinessFactor` / `Unregister` (R12.4) với độ lớn lấy từ Pet Catalog | `PegHit` (`scored`), `JackpotHit` (`origin`), `CoinResolved` để thú phản ứng (Thỏ, Mèo Chiêu Tài) | Plinko sở hữu API modifier, luật cộng dồn và các trần |
+| Shelf & Synergy | `RegisterAutoDropRate` / `RegisterBouncinessFactor` / `Unregister` (R12.4) với độ lớn lấy từ Pet Catalog | `PegHit` (`scored`), `JackpotHit` (`origin`) để thú phản ứng (Thỏ, Mèo Chiêu Tài); Shelf không nghe `CoinResolved` ở v1.0 | Plinko sở hữu API modifier, luật cộng dồn và các trần |
 | Boosts | `RequestBurst(count, Rain)`; tốc độ auto-drop / hệ số nảy tạm thời qua cùng API đăng ký nguồn | — | Plinko |
 | Rewarded Ads (Alpha) | `RequestBurst(count, Rain)` | — | Plinko |
 | Object Pooling | Đối tượng xu (pool `plinko.coin`) | Trả đối tượng ngay khi Resolved | Object Pooling |
@@ -415,7 +416,7 @@ với `auto_drop_rate = 1 / auto_drop_interval` khi auto-drop chạy, = 0 khi d�
 | Shelf & Synergy | Shelf phụ thuộc Plinko | Hard (với Shelf) | In: `RegisterAutoDropRate` / `RegisterBouncinessFactor` / `Unregister` (R12.4; Plinko cộng/nhân rồi kẹp). Out: `PegHit` (`scored`), `JackpotHit` (`origin`), `CoinResolved`. Owner: Plinko (API, luật cộng dồn, trần); Pet Catalog (độ lớn hiệu ứng thú). Shelf GDD phải liệt kê Plinko là phụ thuộc. |
 | Boosts | Boosts phụ thuộc Plinko | Hard (với Boosts) | In: `RequestBurst(count, origin = Rain)`; tốc độ auto-drop / hệ số nảy tạm thời qua `RegisterAutoDropRate` / `RegisterBouncinessFactor` / `Unregister`. Owner: Plinko. |
 | Rewarded Ads | Ads phụ thuộc Plinko | Soft | In: `RequestBurst(count, origin = Rain)`. Owner: Plinko. |
-| Feedback & Juice | Feedback phụ thuộc Plinko | Hard (với Feedback) | Out: `CoinSpawned`, `PegHit`, `JackpotHit`, `CoinResolved`, `CoinStuck`, `BoardBusy` (payload R12). Owner: Plinko (sự kiện); Feedback (trình bày, pool số bay `feedback.floatingText` và pool hiệu ứng tan `feedback.coinFizzle` của nó; knob trình bày hiện ở asset tạm `PlinkoFeedbackConfig`, Tuning Knobs). |
+| Feedback & Juice | Feedback phụ thuộc Plinko | Hard (với Feedback) | Out: `CoinSpawned`, `PegHit`, `JackpotHit`, `CoinResolved`, `CoinStuck`, `BoardBusy` (payload R12). Owner: Plinko (sự kiện); Feedback (trình bày, pool số bay `feedback.floatingText` và pool hiệu ứng tan `feedback.coinFizzle` của nó; knob trình bày thuộc `FeedbackConfig` của feedback-and-juice.md, FB D1). |
 | Tutorial & Onboarding | Tutorial phụ thuộc Plinko | Soft | In: cờ `acceptManualTaps` (R4.6). Out: `CoinResolved` đầu tiên. Owner: Plinko (cờ); cổng chặn chạm world toàn cục thuộc Bootstrap (B7). |
 | Save/Load (VS) | Plinko không phụ thuộc | — | Plinko không có trạng thái cần lưu trong MVP; hàng đợi loạt đã được trả ở `Paused` (R11.3); xu đang rơi khi đóng phiên → Open Question. |
 
@@ -522,35 +523,35 @@ Hai asset: `PlinkoConfig` (runtime) và `PlinkoBalanceTargets` (chỉ dùng cho 
 
 Knob test do hệ khác sở hữu, tham chiếu chứ không lặp: thiết bị đo [Perf] `BootTestTargets.perfReferenceDevice` (tạm, tới khi ADR hiệu năng thay — AC-36, AC-37); số khung đo GC `PoolingTestTargets.perfSampleFrames` (600, cùng kịch bản với Object Pooling AC-25 — AC-38); `targetFps` của studio config (60).
 
-**Phản hồi** (`PlinkoFeedbackConfig` — **asset tạm** do Plinko giữ cho tới khi có GDD Feedback & Juice; Plinko không đọc knob nào trong đó để mô phỏng)
+**Phản hồi** (`FeedbackConfig` — tham chiếu asset của feedback-and-juice.md (FB D1), Feedback & Juice là chủ duy nhất; Plinko không đọc knob nào trong đó để mô phỏng)
 
-Chủ sở hữu theo hành vi (C2[13]): mọi knob dưới đây do **Feedback & Juice** thi hành (R12.3: Feedback vẽ pop-in, đinh sáng, punch hũ, "nín thở" jackpot, hạt, bàn bận, số bay, hiệu ứng tan, xu ma, rung) và chuyển sang asset của Feedback & Juice khi GDD đó được viết — **trừ** `dropZoneLineAlpha`, thuộc Plinko (hai khấc và đường vùng thả là phần tĩnh của bàn, presenter tối thiểu của story Plinko). `idleHintDelay` có thể thuộc Tutorial & Onboarding (VS). Hệ khác đang tham chiếu tạm: Object Pooling lấy `client_declared_max` của `feedback.floatingText` từ `floatingTextMaxOnScreen` và của `feedback.coinFizzle` từ `fizzleMaxOnScreen`; Audio tham chiếu `busyFeedbackMinInterval` và `floatingTextMergeWindow`. Khi chuyển, chỉ tên asset đổi, giá trị và safe range giữ nguyên.
+Chủ sở hữu (FB D1): mọi knob dưới đây thuộc `FeedbackConfig` của `feedback-and-juice.md` (asset đã đổi chủ; giá trị và safe range giữ nguyên), bảng chỉ để tham chiếu. `idleHintDelay` có thể thuộc Tutorial & Onboarding (VS). Object Pooling lấy `client_declared_max` của `feedback.floatingText` từ `floatingTextMaxOnScreen` và của `feedback.coinFizzle` từ `fizzleMaxOnScreen`; Audio tham chiếu `busyFeedbackMinInterval` và `floatingTextMergeWindow`.
 
 | Knob | Asset.field | Type | Current | Safe range | Too high | Too low | Interacts with |
 |---|---|---|---|---|---|---|---|
-| Thời lượng pop-in xu | `PlinkoFeedbackConfig.spawnPopDuration` | float (s) | 0.08 | 0.05–0.15 | Xu xuất hiện chậm | Không thấy pop | tapToSpawnMaxMs |
-| Thời lượng sáng đinh | `PlinkoFeedbackConfig.pegFlashDuration` | float (s) | 0.08 | 0.05–0.15 | Bàn nhấp nháy loạn | Không thấy chạm | maxActiveCoins |
-| Punch scale đinh | `PlinkoFeedbackConfig.pegPunchScale` | float | 1.1 | 1.0–1.2 | Đinh trông lỏng | Không có cảm giác va | — |
-| Punch scale hũ | `PlinkoFeedbackConfig.bucketPunchScale` | float | 1.12 | 1.05–1.2 | Hũ nhảy loạn khi nhiều xu | Không thấy hũ nhận xu | bucketPunchDuration |
-| Thời lượng punch hũ | `PlinkoFeedbackConfig.bucketPunchDuration` | float (s) | 0.15 | 0.1–0.25 | Punch chồng nhau | Giật | — |
-| Cửa sổ gộp số bay | `PlinkoFeedbackConfig.floatingTextMergeWindow` | float (s) | 0.25 | 0.1–0.5 | Số cộng dồn trễ | Quá nhiều số, tốn draw | floatingTextMaxOnScreen |
-| Số bay tối đa trên màn | `PlinkoFeedbackConfig.floatingTextMaxOnScreen` | int | 10 | 6–16 | Rối, tốn draw call | Mất thông tin | Object Pooling |
-| Scale "nín thở" jackpot | `PlinkoFeedbackConfig.jackpotHoldScale` | float | 1.15 | 1.1–1.25 | Lố, kiểu casino | Không thấy khoảnh khắc | — |
-| Thời lượng "nín thở" jackpot | `PlinkoFeedbackConfig.jackpotHoldDuration` | float (s) | 0.12 | 0.08–0.25 | Cảm giác khựng | Không thấy | burstSpawnInterval |
-| Hạt tối đa vòng sáng jackpot | `PlinkoFeedbackConfig.jackpotParticleMax` | int | 12 | 6–20 | Overdraw additive trên WebGL mobile | Mờ nhạt | boardDrawCallBudget |
-| Biên độ lắc bàn bận | `PlinkoFeedbackConfig.busyShakeDistancePx` | float (px) | 4 | 2–8 | Trông như lỗi | Không thấy | — |
-| Khoảng tối thiểu phản hồi bàn bận | `PlinkoFeedbackConfig.busyFeedbackMinInterval` | float (s) | 0.5 | 0.3–1.0 | Bỏ lỡ phản hồi | Spam âm thanh khi autoclick | tapCooldown |
-| Trễ gợi ý khi Idle (VS) | `PlinkoFeedbackConfig.idleHintDelay` | float (s) | 5 | 3–10 | Người mới không biết chạm | Gây phiền | Tutorial |
-| Rung khi chạm được nhận (VS) | `PlinkoFeedbackConfig.hapticTapMs` | int (ms) | 10 | 0–20 | Rung khó chịu khi spam | Không cảm nhận | tapCooldown |
-| Độ mờ đường vùng thả | `PlinkoFeedbackConfig.dropZoneLineAlpha` | float | 0.3 | 0.15–0.5 | Rối mắt | Không thấy vùng thả | — |
-| Độ mờ xu ma (VS) | `PlinkoFeedbackConfig.ghostCoinAlpha` | float | 0.4 | 0.25–0.6 | Nhầm với xu thật | Không thấy | — |
-| Số chấm khi xu kẹt | `PlinkoFeedbackConfig.fizzleDotCount` | int | 3 | 2–6 | Kẹt trông như sự kiện lớn | Không thấy xu biến mất | — |
-| Độ mờ số của xu kẹt | `PlinkoFeedbackConfig.fizzleTextAlpha` | float | 0.6 | 0.4–0.8 | Nhầm với thưởng thật | Không đọc được | — |
-| Số hiệu ứng tan tối đa cùng lúc | `PlinkoFeedbackConfig.fizzleMaxOnScreen` | int | 4 | 2–8 | Tốn đối tượng pool, nhiều xu kẹt trông như sự kiện lớn | Hiệu ứng tan cũ bị tái chế sớm (RecycleOldest) khi nhiều xu kẹt cùng lúc | `client_declared_max` của pool `feedback.coinFizzle` (Object Pooling, headroom 0), stuckRateMax, fizzleDotCount |
+| Thời lượng pop-in xu | `FeedbackConfig.spawnPopDuration` | float (s) | 0.08 | 0.05–0.15 | Xu xuất hiện chậm | Không thấy pop | tapToSpawnMaxMs |
+| Thời lượng sáng đinh | `FeedbackConfig.pegFlashDuration` | float (s) | 0.08 | 0.05–0.15 | Bàn nhấp nháy loạn | Không thấy chạm | maxActiveCoins |
+| Punch scale đinh | `FeedbackConfig.pegPunchScale` | float | 1.1 | 1.0–1.2 | Đinh trông lỏng | Không có cảm giác va | — |
+| Punch scale hũ | `FeedbackConfig.bucketPunchScale` | float | 1.12 | 1.05–1.2 | Hũ nhảy loạn khi nhiều xu | Không thấy hũ nhận xu | bucketPunchDuration |
+| Thời lượng punch hũ | `FeedbackConfig.bucketPunchDuration` | float (s) | 0.15 | 0.1–0.25 | Punch chồng nhau | Giật | — |
+| Cửa sổ gộp số bay | `FeedbackConfig.floatingTextMergeWindow` | float (s) | 0.25 | 0.1–0.5 | Số cộng dồn trễ | Quá nhiều số, tốn draw | floatingTextMaxOnScreen |
+| Số bay tối đa trên màn | `FeedbackConfig.floatingTextMaxOnScreen` | int | 10 | 6–16 | Rối, tốn draw call | Mất thông tin | Object Pooling |
+| Scale "nín thở" jackpot | `FeedbackConfig.jackpotHoldScale` | float | 1.15 | 1.1–1.25 | Lố, kiểu casino | Không thấy khoảnh khắc | — |
+| Thời lượng "nín thở" jackpot | `FeedbackConfig.jackpotHoldDuration` | float (s) | 0.12 | 0.08–0.25 | Cảm giác khựng | Không thấy | burstSpawnInterval |
+| Hạt tối đa vòng sáng jackpot | `FeedbackConfig.jackpotParticleMax` | int | 12 | 6–20 | Overdraw additive trên WebGL mobile | Mờ nhạt | boardDrawCallBudget |
+| Biên độ lắc bàn bận | `FeedbackConfig.busyShakeDistancePx` | float (px) | 4 | 2–8 | Trông như lỗi | Không thấy | — |
+| Khoảng tối thiểu phản hồi bàn bận | `FeedbackConfig.busyFeedbackMinInterval` | float (s) | 0.5 | 0.3–1.0 | Bỏ lỡ phản hồi | Spam âm thanh khi autoclick | tapCooldown |
+| Trễ gợi ý khi Idle (VS) | `FeedbackConfig.idleHintDelay` | float (s) | 5 | 3–10 | Người mới không biết chạm | Gây phiền | Tutorial |
+| Rung khi chạm được nhận (VS) | `FeedbackConfig.hapticTapMs` | int (ms) | 10 | 0–20 | Rung khó chịu khi spam | Không cảm nhận | tapCooldown |
+| Độ mờ đường vùng thả | `FeedbackConfig.dropZoneLineAlpha` | float | 0.3 | 0.15–0.5 | Rối mắt | Không thấy vùng thả | Tutorial |
+| Độ mờ xu ma (VS) | `FeedbackConfig.ghostCoinAlpha` | float | 0.4 | 0.25–0.6 | Nhầm với xu thật | Không thấy | — |
+| Số chấm khi xu kẹt | `FeedbackConfig.fizzleDotCount` | int | 3 | 2–6 | Kẹt trông như sự kiện lớn | Không thấy xu biến mất | — |
+| Độ mờ số của xu kẹt | `FeedbackConfig.fizzleTextAlpha` | float | 0.6 | 0.4–0.8 | Nhầm với thưởng thật | Không đọc được | — |
+| Số hiệu ứng tan tối đa cùng lúc | `FeedbackConfig.fizzleMaxOnScreen` | int | 4 | 2–8 | Tốn đối tượng pool, nhiều xu kẹt trông như sự kiện lớn | Hiệu ứng tan cũ bị tái chế sớm (RecycleOldest) khi nhiều xu kẹt cùng lúc | `client_declared_max` của pool `feedback.coinFizzle` (Object Pooling, headroom 0), stuckRateMax, fizzleDotCount |
 
 ## Visual/Audio Requirements
 
-Nguồn: art-director (2026-10-21) + lựa chọn của user. Màu hũ theo **thang ấm**: x1 gỗ nhạt/kem, x2 matcha `#7EA172`, x5 mật ong `#F59E0B` — đọc được bằng độ sáng và cỡ số tăng dần, không chỉ bằng sắc màu. Các board Penpot có hũ x2 màu xanh và hũ x5 ở giữa phải cập nhật theo bố cục `[x5][x2][x1][x2][x5]`. Âm thanh: marimba / gỗ ASMR (chưa có agent audio — mô tả ý đồ). Plinko không phát tiếng: Feedback & Juice ánh xạ sự kiện R12 sang cue `Plinko.*` của `audio.md` (bảng cue), mọi dB, cao độ và giới hạn voice thuộc `SoundCue`. Mọi thời lượng/số lượng hình ảnh dưới đây là knob ở `PlinkoFeedbackConfig` (Tuning Knobs).
+Nguồn: art-director (2026-10-21) + lựa chọn của user. Màu hũ theo **thang ấm**: x1 gỗ nhạt/kem, x2 matcha `#7EA172`, x5 mật ong `#F59E0B` — đọc được bằng độ sáng và cỡ số tăng dần, không chỉ bằng sắc màu. Các board Penpot có hũ x2 màu xanh và hũ x5 ở giữa phải cập nhật theo bố cục `[x5][x2][x1][x2][x5]`. Âm thanh: marimba / gỗ ASMR (chưa có agent audio — mô tả ý đồ). Plinko không phát tiếng: Feedback & Juice ánh xạ sự kiện R12 sang cue `Plinko.*` của `audio.md` (bảng cue), mọi dB, cao độ và giới hạn voice thuộc `SoundCue`. Mọi thời lượng/số lượng hình ảnh dưới đây là knob ở `FeedbackConfig` (feedback-and-juice.md, FB D1) (Tuning Knobs).
 
 | Event | Visual feedback | Audio feedback | Priority |
 |---|---|---|---|
@@ -565,7 +566,7 @@ Nguồn: art-director (2026-10-21) + lựa chọn của user. Màu hũ theo **th
 | Vòng sáng lan khi jackpot | Một vòng tròn mềm, tối đa `jackpotParticleMax` hạt từ ParticleSystem dùng chung | — | VS |
 | Xu kẹt (fizzle, theo `CoinStuck`) | Xu thật đã về pool (R9.1); Feedback & Juice vẽ bản sao xu mờ + co lại tại `CoinStuck.worldPosition` bằng đối tượng của pool trang trí `feedback.coinFizzle` (tối đa `fizzleMaxOnScreen` cùng lúc), bung `fizzleDotCount` chấm kem, số nhỏ màu ink độ mờ `fizzleTextAlpha` | "Phụt" hơi rất nhỏ | MVP |
 | Bàn bận (chạm bị bỏ) | Khấc vùng thả mờ đi và lắc ngang `busyShakeDistancePx`; **không dùng màu coral, không có chữ** | Gỗ bị bịt rất khẽ, tối đa 1 lần / `busyFeedbackMinInterval` | MVP |
-| Vùng thả (thường trực) | Hai khấc gỗ `#A77443` ở hai đầu vùng thả trên vạch thả, nối bằng đường chấm mảnh độ mờ `dropZoneLineAlpha`; không khung, không tô nền | — | MVP |
+| Vùng thả (thường trực) | Hai khấc gỗ `#A77443` ở hai đầu vùng thả trên vạch thả, nối bằng đường chấm mảnh độ mờ `FeedbackConfig.dropZoneLineAlpha` (Feedback & Juice sở hữu, Tutorial ghi đè); không khung, không tô nền | — | MVP |
 | Bàn Idle lâu | Hai khấc "thở" nhẹ sau `idleHintDelay` để gợi ý chạm | — | VS (cùng Tutorial) |
 | Xu ma theo ngón tay / chuột | Xu độ mờ `ghostCoinAlpha` theo x của điểm chạm/hover, ẩn khi có xu đang rơi | — | VS |
 
@@ -626,12 +627,12 @@ UX flag: this system has UI. A UX spec per screen is recommended before epics; U
 | Pillars, Quyết định 5, MVP Definition | `Docs/design/gdd/game-concept.md` | Pillar 1, Pillar 3 (hai kênh thu nhập), bố cục 3 tab | Ràng buộc thiết kế |
 | Thu nhập kênh Plinko | `Docs/design/gdd/economy-core.md` | R5.1 (`CoinResolved`, mọi origin/reason qua kênh Plinko), R5.4 (`IncomeCredited`, số bay = `creditedAmount`), R7.4 (auto-drop không quy đổi offline), R10 + D4 (`base_coin_value`, `IBaseCoinValueSource`) | Economy Core tiêu thụ `CoinResolved` và cài đặt nguồn `baseCoinValue` của Plinko |
 | Độ lớn hiệu ứng thú | `Docs/design/gdd/pet-catalog.md` | R6 (loại hiệu ứng, `includeBurstCoins`), R8 (Kẹo Bảy Màu `BouncinessModifier` 1.7, Mèo Chiêu Tài `JackpotBonus`, Hamster `AutoDropRate`), `plinko_target_uplift` (Kẹo 0.324), `EconomyBalanceTargets.plinkoBounceUpliftAtCapAssumed` (0.40) | Pet Catalog sở hữu độ lớn và ngân sách; Plinko sở hữu sự kiện, API và trần; AC-13c đo lại giả định |
-| Hiệu ứng thú lên Plinko | `Docs/design/gdd/shelf-and-synergy.md` *(chưa có)* | Kẹo Bảy Màu (độ nảy), Thỏ (chạm đinh được tính), Mèo Chiêu Tài (jackpot), tốc độ auto-drop | Shelf tiêu thụ sự kiện + đăng ký nguồn qua API R12.4 |
+| Hiệu ứng thú lên Plinko | `Docs/design/gdd/shelf-and-synergy.md` (v1.0 không nghe `CoinResolved`) | Kẹo Bảy Màu (độ nảy), Thỏ (chạm đinh được tính), Mèo Chiêu Tài (jackpot), tốc độ auto-drop | Shelf tiêu thụ sự kiện + đăng ký nguồn qua API R12.4 |
 | Mưa Đồng Xu, Trà Sốt Dẻo | `Docs/design/gdd/boosts.md` *(chưa có)* | `RequestBurst(Rain)`, auto-drop tạm thời qua `RegisterAutoDropRate` | Boosts gọi API Plinko |
 | Mưa xu qua quảng cáo | `Docs/design/gdd/rewarded-ads.md` *(chưa có)* | `RequestBurst(Rain)` | Ads gọi API Plinko |
 | Pool xu | `Docs/design/gdd/object-pooling.md` | Pool `plinko.coin` (`client_declared_max` = `maxActiveCoins`, Fixed, `forbid_recycle`), R7.1 (Fixed cạn), `pools[plinko.coin].headroom` = 0 và pool hiệu ứng tan `feedback.coinFizzle` (phương án B, quyết định user, Revision 4) | Phụ thuộc kỹ thuật |
 | Âm thanh | `Docs/design/gdd/audio.md` | D1, A15 (Audio không nghe Plinko), D5/A8 (bus Plinko −12 dB khi bàn ẩn), bảng cue `Plinko.*`, `SoundCue[Plinko.PegHitScored].pitchJitterRatio` | Gián tiếp qua Feedback & Juice |
-| Phản hồi | `Docs/design/gdd/feedback-and-juice.md` *(chưa có)* | `PlinkoFeedbackConfig` có thể chuyển sở hữu sang đây; ánh xạ sự kiện R12 → cue; pool số bay và pool hiệu ứng tan | Feedback tiêu thụ sự kiện |
+| Phản hồi | `Docs/design/gdd/feedback-and-juice.md` | `FeedbackConfig` (FB D1) sở hữu mọi knob trình bày; ánh xạ sự kiện R12 → cue; pool số bay và pool hiệu ứng tan | Feedback tiêu thụ sự kiện |
 | Hướng dẫn | `Docs/design/gdd/tutorial-and-onboarding.md` *(chưa có)* | Cờ `acceptManualTaps`, `CoinResolved` đầu tiên | Tutorial điều khiển |
 | Input, tab, vòng đời | `Docs/design/gdd/bootstrap-and-scene-flow.md` | B2/B3 (hợp đồng `IBootStep`, bước `plinko.board`), B6 (`Paused`/`Resumed`, Boot D3; B6.5 `Interactive` + `IsSimulationRunning`; B6.9 trạng thái trả về sau `Resumed`; B6.10 cờ "ad đang mở"), B7 (cổng chặn input, ranh giới `acceptManualTaps`), B9 (`ActiveTab`/`TabChanged`, router `WorldPress`), `BootTestTargets.perfReferenceDevice` | Phụ thuộc kỹ thuật → ADR |
 | Lỗi chặn đã xử lý | `Docs/design/gdd/reviews/first-gdd-review-2026-10-21.md` | BLOCKING #1, #2, #4 + phần Plinko của #3 | Truy vết |
@@ -640,7 +641,7 @@ UX flag: this system has UI. A UX spec per screen is recommended before epics; U
 
 ## Acceptance Criteria
 
-Nguồn: qa-lead (2026-10-21). Ký hiệu `C.` = `PlinkoConfig`, `T.` = `PlinkoBalanceTargets`, `F.` = `PlinkoFeedbackConfig`. "Sim" = scene vật lý cục bộ trong EditMode (`LocalPhysicsMode.Physics2D`), bước `PhysicsScene2D.Simulate(fixedDeltaTime)` gọi tay, RNG seed cố định, đồng hồ được inject (không dùng giờ thực); vì xu không va nhau (R1.4) có thể thả cả lô xu một lượt. Test sim nặng (gắn `[Slow]`) chạy trong category NUnit `Slow`: bắt buộc trước khi đóng story Plinko và trên CI đêm; chỉ assert cân bằng trên Editor (thứ tự giải của Box2D có thể khác giữa nền tảng). Các con số trong ngoặc là giá trị hiện tại của knob, không phải literal của test. Mọi tham số test (số xu, số giây, tần suất chạm, dung sai, số khung, độ phân giải) là knob `T.` hoặc knob test của hệ khác (`BootTestTargets.perfReferenceDevice`, `PoolingTestTargets.perfSampleFrames`). Còn lại là **dữ liệu fixture — constant** (giá trị chọn để chạm biên một luật, đổi nó không phải tuning): giá trị RNG giả của AC-5; các lớp modifier/tốc độ của AC-14, AC-15, AC-27, AC-43 (và tốc độ auto-drop 1 của nguồn "a" ở AC-29, AC-48); cấu hình cố ý sai của AC-19; giá trị nguồn giả của AC-45 (2.68 và 18.68 = `base_coin_value` ở n = 10 và n = 100 với α 0.6 của Economy D4); số 1 trong "+ 1" của AC-12 (cú chạm ở t = 0); ε của AC-8 (một tích tắc của đồng hồ inject). Test của Plinko không đăng ký `IBaseCoinValueSource` (trừ AC-45), nên `C.baseCoinValue` trong các AC là giá trị `base_coin_value` Plinko đọc được lúc giải quyết xu (R9.2).
+Nguồn: qa-lead (2026-10-21). Ký hiệu `C.` = `PlinkoConfig`, `T.` = `PlinkoBalanceTargets`, `F.` = `FeedbackConfig`. "Sim" = scene vật lý cục bộ trong EditMode (`LocalPhysicsMode.Physics2D`), bước `PhysicsScene2D.Simulate(fixedDeltaTime)` gọi tay, RNG seed cố định, đồng hồ được inject (không dùng giờ thực); vì xu không va nhau (R1.4) có thể thả cả lô xu một lượt. Test sim nặng (gắn `[Slow]`) chạy trong category NUnit `Slow`: bắt buộc trước khi đóng story Plinko và trên CI đêm; chỉ assert cân bằng trên Editor (thứ tự giải của Box2D có thể khác giữa nền tảng). Các con số trong ngoặc là giá trị hiện tại của knob, không phải literal của test. Mọi tham số test (số xu, số giây, tần suất chạm, dung sai, số khung, độ phân giải) là knob `T.` hoặc knob test của hệ khác (`BootTestTargets.perfReferenceDevice`, `PoolingTestTargets.perfSampleFrames`). Còn lại là **dữ liệu fixture — constant** (giá trị chọn để chạm biên một luật, đổi nó không phải tuning): giá trị RNG giả của AC-5; các lớp modifier/tốc độ của AC-14, AC-15, AC-27, AC-43 (và tốc độ auto-drop 1 của nguồn "a" ở AC-29, AC-48); cấu hình cố ý sai của AC-19; giá trị nguồn giả của AC-45 (2.68 và 18.68 = `base_coin_value` ở n = 10 và n = 100 với α 0.6 của Economy D4); số 1 trong "+ 1" của AC-12 (cú chạm ở t = 0); ε của AC-8 (một tích tắc của đồng hồ inject). Test của Plinko không đăng ký `IBaseCoinValueSource` (trừ AC-45), nên `C.baseCoinValue` trong các AC là giá trị `base_coin_value` Plinko đọc được lúc giải quyết xu (R9.2).
 
 **Hình học (R1)**
 - `AC-1 [EditMode]` **GIVEN** `C` mặc định, **WHEN** dựng bàn, **THEN** có `C.pegRows` tầng; tường tại ±`C.pegsPerRow`·`C.pegSpacing`/2; tầng chẵn có `C.pegsPerRow` − 2 đinh tự do tại x = (k − (`C.pegsPerRow`−1)/2)·`C.pegSpacing`, k = 1…`C.pegsPerRow`−2, cộng 2 nửa đinh bán kính `C.wallBumpRadius` có tâm trên mặt tường; tầng lẻ có `C.pegsPerRow` − 1 đinh tại x = (k − (`C.pegsPerRow`−2)/2)·`C.pegSpacing`; khoảng tầng = `C.rowSpacingRatio` × `C.pegSpacing` (sai số ≤ `T.geometryTolerance`).

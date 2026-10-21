@@ -1,7 +1,7 @@
 # Review — audio — 2026-10-21 — Verdict: APPROVED
 Round 1 (lượt pipeline này; tài liệu đã qua Revision 5)
-Document: Docs/design/gdd/audio.md (git hash-object fe08e7f53399713d1a928c2f346110eeb1de7b0b)
-Registry: Docs/design/registry/entities.yaml (git hash-object 5935a087f1d2559383f92678fef20999f0580e46)
+Document: Docs/design/gdd/audio.md (git hash-object b65efb272993a1710ee1147dad61246c7b2d96e5)
+Registry: Docs/design/registry/entities.yaml (git hash-object 86c897c269e1a6a58b77974d2f52fb7e6151614c)
 Scope signal: L
 Specialists: none (lean review)
 Blocking items: 0 | Recommended: 14

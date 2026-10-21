@@ -430,3 +430,50 @@ constants:
     source: Docs/design/gdd/bootstrap-and-scene-flow.md
     referenced_by:
       - Docs/design/gdd/plinko-board.md
+  - name: gacha_rarity_rates
+    value: [0.55, 0.30, 0.12, 0.03]
+    source: Docs/design/gdd/gacha-machine.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: gacha_pity_threshold
+    value: 50
+    source: Docs/design/gdd/gacha-machine.md
+    referenced_by: []
+  - name: gacha_copies_per_spin
+    value: 1
+    source: Docs/design/gdd/gacha-machine.md
+    referenced_by:
+      - Docs/design/gdd/inventory.md
+  - name: gacha_first_spin_rarity_role
+    value: "common / Idle"
+    source: Docs/design/gdd/gacha-machine.md
+    referenced_by: []
+  - name: shelf_slot_count_start
+    value: 3
+    source: Docs/design/gdd/shelf-and-synergy.md
+    referenced_by: []
+  - name: shelf_slot_count_max
+    value: 5
+    source: Docs/design/gdd/shelf-and-synergy.md
+    referenced_by: []
+  - name: shelf_group_combo_bonuses
+    value: [0.25, 0.5, 0.75, 1.0]
+    source: Docs/design/gdd/shelf-and-synergy.md
+    referenced_by: []
+  - name: shelf_source_keys
+    value: "shelf.slot<i>.idle, shelf.slot<i>.plinko, shelf.slot<i>.fx, shelf.combo.<group>"
+    source: Docs/design/gdd/shelf-and-synergy.md
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+      - Docs/design/gdd/feedback-and-juice.md
+      - Docs/design/gdd/pet-catalog.md
+  - name: reveal_max_seconds
+    value: 4.0
+    source: Docs/design/gdd/feedback-and-juice.md
+    referenced_by:
+      - Docs/design/gdd/gacha-machine.md
+  - name: modal_stack_max
+    value: 3
+    source: Docs/design/gdd/hud-and-tab-navigation.md
+    referenced_by:
+      - Docs/design/gdd/gacha-machine.md
