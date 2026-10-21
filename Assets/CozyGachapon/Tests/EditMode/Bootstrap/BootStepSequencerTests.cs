@@ -3,11 +3,20 @@ using System.Collections.Generic;
 using CozyGachapon.Contracts;
 using CozyGachapon.Foundation;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace CozyGachapon.Tests.Bootstrap
 {
     public class BootStepSequencerTests
     {
+        private static BootStepSequencer CreateSequencer(float stepTimeout = 10f)
+        {
+            BootConfig bootConfig = ScriptableObject.CreateInstance<BootConfig>();
+            bootConfig.SetStepTimeoutForTest(stepTimeout);
+            SceneFlowConfig sceneFlowConfig = ScriptableObject.CreateInstance<SceneFlowConfig>();
+            return new BootStepSequencer(bootConfig, sceneFlowConfig);
+        }
+
         private sealed class MockBootStep : IBootStep
         {
             private readonly Action _onRun;
@@ -39,7 +48,7 @@ namespace CozyGachapon.Tests.Bootstrap
         [Test]
         public void AC1_ExecutionOrder_FollowsPhasesSequentially_AndInvokesCompletedOnce()
         {
-            BootStepSequencer sequencer = new BootStepSequencer();
+            BootStepSequencer sequencer = CreateSequencer();
             List<string> executedIds = new List<string>();
             int completedCount = 0;
 
@@ -70,7 +79,7 @@ namespace CozyGachapon.Tests.Bootstrap
         [Test]
         public void AC2_TopologicalOrder_ResolvesRunsAfter_AndAlphabeticalFallback()
         {
-            BootStepSequencer sequencer = new BootStepSequencer();
+            BootStepSequencer sequencer = CreateSequencer();
             List<string> executedIds = new List<string>();
 
             MockBootStep stepZeta = new MockBootStep("zeta", BootPhase.GameplayInit, null, true, true, () => executedIds.Add("zeta"));
@@ -93,7 +102,7 @@ namespace CozyGachapon.Tests.Bootstrap
         [Test]
         public void AC3_MultiFrameStep_BlocksDependentStepsUntilDone()
         {
-            BootStepSequencer sequencer = new BootStepSequencer();
+            BootStepSequencer sequencer = CreateSequencer();
             List<string> executedIds = new List<string>();
 
             MockBootStep stepA = new MockBootStep("step_a", BootPhase.GameplayInit, null, false, true, () => executedIds.Add("step_a"));
@@ -124,7 +133,7 @@ namespace CozyGachapon.Tests.Bootstrap
         [Test]
         public void AC4_EmptyPhase_PassesWithoutExtraFrameDelay()
         {
-            BootStepSequencer sequencer = new BootStepSequencer();
+            BootStepSequencer sequencer = CreateSequencer();
             MockBootStep stepService = new MockBootStep("service_step", BootPhase.ServiceInit);
             MockBootStep stepPrewarm = new MockBootStep("prewarm_step", BootPhase.Prewarm);
 
@@ -140,7 +149,7 @@ namespace CozyGachapon.Tests.Bootstrap
         [Test]
         public void AC6_DuplicateId_TriggersBootFailed_AndRejectsRegistration()
         {
-            BootStepSequencer sequencer = new BootStepSequencer();
+            BootStepSequencer sequencer = CreateSequencer();
             BootFailedEvent? failedEvent = null;
             sequencer.OnBootFailed += evt => failedEvent = evt;
 
@@ -157,7 +166,7 @@ namespace CozyGachapon.Tests.Bootstrap
         [Test]
         public void AC6_RegisterAfterStart_IsRejected()
         {
-            BootStepSequencer sequencer = new BootStepSequencer();
+            BootStepSequencer sequencer = CreateSequencer();
             MockBootStep step1 = new MockBootStep("step_1", BootPhase.ServiceInit);
             MockBootStep step2 = new MockBootStep("step_2", BootPhase.ServiceInit);
 
@@ -169,7 +178,7 @@ namespace CozyGachapon.Tests.Bootstrap
         [Test]
         public void AC2_CyclicDependency_TriggersBootFailed()
         {
-            BootStepSequencer sequencer = new BootStepSequencer();
+            BootStepSequencer sequencer = CreateSequencer();
             BootFailedEvent? failedEvent = null;
             sequencer.OnBootFailed += evt => failedEvent = evt;
 
@@ -187,7 +196,7 @@ namespace CozyGachapon.Tests.Bootstrap
         [Test]
         public void AC6_NonCriticalStepFailure_IsSkipped_AndBootProceeds()
         {
-            BootStepSequencer sequencer = new BootStepSequencer();
+            BootStepSequencer sequencer = CreateSequencer();
             MockBootStep failStep = new MockBootStep("non_crit", BootPhase.ServiceInit, null, false, false);
             failStep.IsFailed = true;
             MockBootStep okStep = new MockBootStep("crit_ok", BootPhase.ServiceInit);
@@ -205,7 +214,7 @@ namespace CozyGachapon.Tests.Bootstrap
         [Test]
         public void AC6_CriticalStepException_TriggersBootFailed()
         {
-            BootStepSequencer sequencer = new BootStepSequencer();
+            BootStepSequencer sequencer = CreateSequencer();
             BootFailedEvent? failedEvent = null;
             sequencer.OnBootFailed += evt => failedEvent = evt;
 

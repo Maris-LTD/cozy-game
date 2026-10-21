@@ -9,6 +9,10 @@ namespace CozyGachapon.Foundation
         private readonly List<IBootStep> _registeredSteps = new List<IBootStep>();
         private readonly HashSet<string> _registeredIds = new HashSet<string>(StringComparer.Ordinal);
         private readonly List<IBootStep> _executionPlan = new List<IBootStep>();
+        private readonly List<string> _skippedNonCriticalStepIds = new List<string>();
+        private BootConfig _bootConfig;
+        private SceneFlowConfig _sceneFlowConfig;
+        private BootWatchdog _watchdog;
         private int _currentStepIndex = -1;
         private bool _currentStepRan;
         private float _elapsedTime;
@@ -24,6 +28,24 @@ namespace CozyGachapon.Foundation
         public bool HasFailed => _hasFailed;
         public float ElapsedTime => _elapsedTime;
         public int RegisteredCount => _registeredSteps.Count;
+        public IReadOnlyList<string> SkippedNonCriticalStepIds => _skippedNonCriticalStepIds;
+
+        public BootStepSequencer(BootConfig bootConfig = null, SceneFlowConfig sceneFlowConfig = null)
+        {
+            _bootConfig = bootConfig;
+            _sceneFlowConfig = sceneFlowConfig;
+        }
+
+        public void SetConfigs(BootConfig bootConfig, SceneFlowConfig sceneFlowConfig)
+        {
+            if (_isStarted)
+            {
+                return;
+            }
+
+            _bootConfig = bootConfig;
+            _sceneFlowConfig = sceneFlowConfig;
+        }
 
         public bool RegisterStep(IBootStep step)
         {
@@ -51,19 +73,27 @@ namespace CozyGachapon.Foundation
                 return false;
             }
 
+            if (_bootConfig == null || _sceneFlowConfig == null)
+            {
+                _hasFailed = true;
+                OnBootFailed?.Invoke(new BootFailedEvent(string.Empty, BootPhase.ServiceInit, "Missing mandatory configuration"));
+                return false;
+            }
+
             if (!BuildExecutionPlan())
             {
                 _hasFailed = true;
                 return false;
             }
 
+            _watchdog = new BootWatchdog(_bootConfig.StepTimeoutSeconds);
             _isStarted = true;
             _currentStepIndex = 0;
             _currentStepRan = false;
             return true;
         }
 
-        public void Tick(float deltaTime)
+        public void Tick(float deltaTime, bool isVisible = true)
         {
             if (!_isStarted || _isCompleted || _hasFailed)
             {
@@ -79,6 +109,7 @@ namespace CozyGachapon.Foundation
                 if (!_currentStepRan)
                 {
                     _currentStepRan = true;
+                    _watchdog?.ResetStep();
                     try
                     {
                         currentStep.Run();
@@ -92,8 +123,10 @@ namespace CozyGachapon.Foundation
                             return;
                         }
 
+                        _skippedNonCriticalStepIds.Add(currentStep.Id);
                         _currentStepIndex++;
                         _currentStepRan = false;
+                        _watchdog?.ResetStep();
                         continue;
                     }
                 }
@@ -107,18 +140,38 @@ namespace CozyGachapon.Foundation
                         return;
                     }
 
+                    _skippedNonCriticalStepIds.Add(currentStep.Id);
                     _currentStepIndex++;
                     _currentStepRan = false;
+                    _watchdog?.ResetStep();
                     continue;
                 }
 
                 if (!currentStep.IsDone)
                 {
+                    _watchdog?.Tick(deltaTime, isVisible);
+                    if (_watchdog != null && _watchdog.IsCurrentStepTimedOut)
+                    {
+                        if (currentStep.IsCritical)
+                        {
+                            _hasFailed = true;
+                            OnBootFailed?.Invoke(new BootFailedEvent(currentStep.Id, currentStep.Phase, "Step timed out"));
+                            return;
+                        }
+
+                        _skippedNonCriticalStepIds.Add(currentStep.Id);
+                        _currentStepIndex++;
+                        _currentStepRan = false;
+                        _watchdog.ResetStep();
+                        continue;
+                    }
+
                     return;
                 }
 
                 _currentStepIndex++;
                 _currentStepRan = false;
+                _watchdog?.ResetStep();
             }
 
             _isCompleted = true;
@@ -128,111 +181,20 @@ namespace CozyGachapon.Foundation
         private bool BuildExecutionPlan()
         {
             _executionPlan.Clear();
-            Array phases = Enum.GetValues(typeof(BootPhase));
-
-            for (int i = 0; i < phases.Length; i++)
+            if (!BootStepOrderResolver.TryBuildExecutionPlan(
+                _registeredSteps,
+                out List<IBootStep> plan,
+                out string errorStepId,
+                out BootPhase errorPhase,
+                out string errorMessage))
             {
-                BootPhase phase = (BootPhase)phases.GetValue(i);
-                List<IBootStep> phaseSteps = new List<IBootStep>();
-
-                for (int j = 0; j < _registeredSteps.Count; j++)
-                {
-                    if (_registeredSteps[j].Phase == phase)
-                    {
-                        phaseSteps.Add(_registeredSteps[j]);
-                    }
-                }
-
-                if (phaseSteps.Count == 0)
-                {
-                    continue;
-                }
-
-                if (!SortPhaseSteps(phaseSteps, out List<IBootStep> sortedSteps))
-                {
-                    _hasFailed = true;
-                    OnBootFailed?.Invoke(new BootFailedEvent(string.Empty, phase, "Invalid or cyclic dependency in phase " + phase));
-                    return false;
-                }
-
-                _executionPlan.AddRange(sortedSteps);
+                _hasFailed = true;
+                OnBootFailed?.Invoke(new BootFailedEvent(errorStepId, errorPhase, errorMessage));
+                return false;
             }
 
+            _executionPlan.AddRange(plan);
             return true;
-        }
-
-        private static bool SortPhaseSteps(List<IBootStep> phaseSteps, out List<IBootStep> sorted)
-        {
-            sorted = new List<IBootStep>(phaseSteps.Count);
-            Dictionary<string, IBootStep> stepMap = new Dictionary<string, IBootStep>(StringComparer.Ordinal);
-            Dictionary<string, int> inDegrees = new Dictionary<string, int>(StringComparer.Ordinal);
-            Dictionary<string, List<string>> dependents = new Dictionary<string, List<string>>(StringComparer.Ordinal);
-
-            for (int i = 0; i < phaseSteps.Count; i++)
-            {
-                IBootStep step = phaseSteps[i];
-                stepMap[step.Id] = step;
-                inDegrees[step.Id] = 0;
-                dependents[step.Id] = new List<string>();
-            }
-
-            for (int i = 0; i < phaseSteps.Count; i++)
-            {
-                IBootStep step = phaseSteps[i];
-                IReadOnlyList<string> runsAfter = step.RunsAfter;
-                if (runsAfter == null)
-                {
-                    continue;
-                }
-
-                HashSet<string> seen = new HashSet<string>(StringComparer.Ordinal);
-                for (int j = 0; j < runsAfter.Count; j++)
-                {
-                    string depId = runsAfter[j];
-                    if (string.IsNullOrEmpty(depId) || !stepMap.ContainsKey(depId))
-                    {
-                        return false;
-                    }
-
-                    if (seen.Add(depId))
-                    {
-                        inDegrees[step.Id]++;
-                        dependents[depId].Add(step.Id);
-                    }
-                }
-            }
-
-            List<string> ready = new List<string>();
-            foreach (KeyValuePair<string, int> pair in inDegrees)
-            {
-                if (pair.Value == 0)
-                {
-                    ready.Add(pair.Key);
-                }
-            }
-
-            ready.Sort(StringComparer.Ordinal);
-
-            while (ready.Count > 0)
-            {
-                string nextId = ready[0];
-                ready.RemoveAt(0);
-                sorted.Add(stepMap[nextId]);
-
-                List<string> deps = dependents[nextId];
-                for (int i = 0; i < deps.Count; i++)
-                {
-                    string dep = deps[i];
-                    inDegrees[dep]--;
-                    if (inDegrees[dep] == 0)
-                    {
-                        ready.Add(dep);
-                        ready.Sort(StringComparer.Ordinal);
-                    }
-                }
-            }
-
-            return sorted.Count == phaseSteps.Count;
         }
     }
 }

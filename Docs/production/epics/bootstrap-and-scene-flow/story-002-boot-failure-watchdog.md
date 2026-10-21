@@ -1,11 +1,11 @@
 # Story 002: Boot Failure Watchdog & Timeout Handler
 
 > **Epic**: Bootstrap & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1-2 days
-> **Last Updated**: [set by game-dev when implementation begins]
+> **Last Updated**: 2026-10-22
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,11 +34,11 @@
 
 *From Docs/design/gdd/bootstrap-and-scene-flow.md, scoped to this story:*
 
-- [ ] `AC-5 [EditMode]`: Khi có cấu hình sai (`RunsAfter` trỏ `Id` không tồn tại, trỏ bước khác pha, hoặc vòng lặp phụ thuộc), validator phải báo lỗi và quá trình khởi động chuyển sang trạng thái `BootFailed` trong ≤ 1 khung hình mà không bị treo.
-- [ ] `AC-8 [EditMode]`: Khi một bước không cốt lõi (`IsCritical = false`, ví dụ Audio) báo `IsFailed` hoặc ném ngoại lệ trong `Run()`, chuỗi khởi động vẫn tiếp tục chạy các bước sau và phát `BootCompleted`, ghi nhận bước lỗi vào nhật ký khởi động mà không vào `BootFailed`.
-- [ ] `AC-9 [EditMode]`: Khi một bước cốt lõi (`IsCritical = true`, ví dụ Pet Catalog) báo `IsFailed`, chuỗi khởi động phát đúng 1 sự kiện `BootFailed {stepId, phase}`, dừng ngay các bước kế tiếp và kích hoạt trạng thái lỗi.
-- [ ] `AC-11 [EditMode]`: Khi một bước cốt lõi không báo xong vượt quá `stepTimeoutSeconds` (10 s), chuỗi khởi động kích hoạt `BootFailed`; thời gian đếm timeout chỉ tính thời gian trang đang hiển thị (`step_elapsed_visible`). Nếu bước không cốt lõi bị timeout thì phát `BootCompleted` thay vì `BootFailed`.
-- [ ] `AC-12 [EditMode]`: Nếu thiếu asset cấu hình bắt buộc `BootConfig` hoặc `SceneFlowConfig`, chuỗi khởi động lập tức vào `BootFailed` trước khi gọi bất kỳ `Run()` nào.
+- [x] `AC-5 [EditMode]`: Khi có cấu hình sai (`RunsAfter` trỏ `Id` không tồn tại, trỏ bước khác pha, hoặc vòng lặp phụ thuộc), validator phải báo lỗi và quá trình khởi động chuyển sang trạng thái `BootFailed` trong ≤ 1 khung hình mà không bị treo.
+- [x] `AC-8 [EditMode]`: Khi một bước không cốt lõi (`IsCritical = false`, ví dụ Audio) báo `IsFailed` hoặc ném ngoại lệ trong `Run()`, chuỗi khởi động vẫn tiếp tục chạy các bước sau và phát `BootCompleted`, ghi nhận bước lỗi vào nhật ký khởi động mà không vào `BootFailed`.
+- [x] `AC-9 [EditMode]`: Khi một bước cốt lõi (`IsCritical = true`, ví dụ Pet Catalog) báo `IsFailed`, chuỗi khởi động phát đúng 1 sự kiện `BootFailed {stepId, phase}`, dừng ngay các bước kế tiếp và kích hoạt trạng thái lỗi.
+- [x] `AC-11 [EditMode]`: Khi một bước cốt lõi không báo xong vượt quá `stepTimeoutSeconds` (10 s), chuỗi khởi động kích hoạt `BootFailed`; thời gian đếm timeout chỉ tính thời gian trang đang hiển thị (`step_elapsed_visible`). Nếu bước không cốt lõi bị timeout thì phát `BootCompleted` thay vì `BootFailed`.
+- [x] `AC-12 [EditMode]`: Nếu thiếu asset cấu hình bắt buộc `BootConfig` hoặc `SceneFlowConfig`, chuỗi khởi động lập tức vào `BootFailed` trước khi gọi bất kỳ `Run()` nào.
 
 ## Implementation Notes
 
@@ -62,9 +62,21 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Bootstrap/BootFailureHandlerTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Created `Assets/CozyGachapon/Tests/EditMode/Bootstrap/BootFailureHandlerTests.cs` (6 unit tests, passing in `unity-harness all`)
 
 ## Dependencies
 
 - Depends on: Story 001
 - Unlocks: Story 003, Story 009
+
+## Completion Notes
+
+**Completed**: 2026-10-22
+**Criteria**: 5/5 passing (0 deferred)
+**Harness**: unity-harness all (rules: PASS 7 files, compile: PASS, tests: PASS CozyGachapon.Tests.EditMode 16/16)
+**Run result**: N/A - pure C# logic sequencer watchdog without visual surface
+**Deviations**: None
+**Test Evidence**: Assets/CozyGachapon/Tests/EditMode/Bootstrap/BootFailureHandlerTests.cs (16/16 total suite passing)
+**Visual sign-off**: n/a (not Visual/Feel or UI)
+**Code Review**: unity-reviewer: 0 blocker / 0 major / 0 minor open (all resolved); LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none
