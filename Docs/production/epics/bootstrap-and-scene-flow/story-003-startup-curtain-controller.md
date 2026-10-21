@@ -1,11 +1,11 @@
 # Story 003: Startup Curtain Controller & Interactive Milestone
 
 > **Epic**: Bootstrap & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1-2 days
-> **Last Updated**: [set by game-dev when implementation begins]
+> **Last Updated**: 2026-10-22
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,10 +34,10 @@
 
 *From Docs/design/gdd/bootstrap-and-scene-flow.md, scoped to this story:*
 
-- [ ] `AC-13 [EditMode]`: Rèm che hiển thị tối thiểu `curtainMinDisplaySeconds` (0.4 s), thời gian kéo mở `curtainRevealDuration` (0.35 s); nếu `BootCompleted` phát sớm hơn 0.4 s thì rèm vẫn chờ đủ 0.4 s mới bắt đầu mở; nếu tổng thời gian vượt `maxBootToInteractiveSeconds` (2.0 s) thì ghi nhận cảnh báo vượt ngân sách.
-- [ ] `AC-14 [EditMode]`: Tại khung hình đầu tiên của scene, rèm ở trạng thái `Covering` và giữ 1 token chặn input; trong suốt trạng thái `Covering` và `Revealing`, mọi tương tác vào world space đều bị chặn; khi rèm mở hoàn tất (`Open`), token được nhả và vòng đời chuyển sang `Running`.
-- [ ] `AC-38 [EditMode]`: Khi ứng dụng bị ẩn trong lúc rèm đang kéo mở, rèm chuyển sang trạng thái đóng băng `RevealFrozen`, giữ nguyên tiến độ mở và token chặn; sau khi ứng dụng phục hồi (`Resumed`), rèm tiếp tục kéo mở phần còn lại và chỉ nhả token khi đã `Open` hoàn toàn.
-- [ ] `AC-40 [EditMode]`: Thuộc tính `IsSimulationRunning` trả về `false` trong suốt quá trình khởi động (cả `Booting.Steps` và `Booting.Curtain`); đúng 1 sự kiện `Interactive` được phát tại khung hình rèm đạt trạng thái `Open`, và từ khung hình này `IsSimulationRunning` chuyển thành `true`. Nếu khởi động lỗi (`BootFailed`), `Interactive` không bao giờ được phát.
+- [x] `AC-13 [EditMode]`: Rèm che hiển thị tối thiểu `curtainMinDisplaySeconds` (0.4 s), thời gian kéo mở `curtainRevealDuration` (0.35 s); nếu `BootCompleted` phát sớm hơn 0.4 s thì rèm vẫn chờ đủ 0.4 s mới bắt đầu mở; nếu tổng thời gian vượt `maxBootToInteractiveSeconds` (2.0 s) thì ghi nhận cảnh báo vượt ngân sách.
+- [x] `AC-14 [EditMode]`: Tại khung hình đầu tiên của scene, rèm ở trạng thái `Covering` và giữ 1 token chặn input; trong suốt trạng thái `Covering` và `Revealing`, mọi tương tác vào world space đều bị chặn; khi rèm mở hoàn tất (`Open`), token được nhả và vòng đời chuyển sang `Running`.
+- [x] `AC-38 [EditMode]`: Khi ứng dụng bị ẩn trong lúc rèm đang kéo mở, rèm chuyển sang trạng thái đóng băng `RevealFrozen`, giữ nguyên tiến độ mở và token chặn; sau khi ứng dụng phục hồi (`Resumed`), rèm tiếp tục kéo mở phần còn lại và chỉ nhả token khi đã `Open` hoàn toàn.
+- [x] `AC-40 [EditMode]`: Thuộc tính `IsSimulationRunning` trả về `false` trong suốt quá trình khởi động (cả `Booting.Steps` và `Booting.Curtain`); đúng 1 sự kiện `Interactive` được phát tại khung hình rèm đạt trạng thái `Open`, và từ khung hình này `IsSimulationRunning` chuyển thành `true`. Nếu khởi động lỗi (`BootFailed`), `Interactive` không bao giờ được phát.
 
 ## Implementation Notes
 
@@ -62,9 +62,21 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Bootstrap/StartupCurtainControllerTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Created `Assets/CozyGachapon/Tests/EditMode/Bootstrap/StartupCurtainControllerTests.cs` (5 unit tests, passing in `unity-harness all`)
 
 ## Dependencies
 
 - Depends on: Story 001, Story 002
 - Unlocks: Story 004, Story 009
+
+## Completion Notes
+
+**Completed**: 2026-10-22
+**Criteria**: 4/4 passing (0 deferred)
+**Harness**: unity-harness all (rules: PASS 7 files, compile: PASS, tests: PASS CozyGachapon.Tests.EditMode 21/21)
+**Run result**: N/A - pure C# curtain state controller without visual surface
+**Deviations**: None
+**Test Evidence**: Assets/CozyGachapon/Tests/EditMode/Bootstrap/StartupCurtainControllerTests.cs (21/21 total suite passing)
+**Visual sign-off**: n/a (not Visual/Feel or UI)
+**Code Review**: unity-reviewer: 0 blocker / 0 major / 0 minor (clean approval); LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none
