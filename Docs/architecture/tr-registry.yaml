@@ -1,0 +1,321 @@
+version: 1
+last_updated: 2026-10-21
+requirements:
+  - id: TR-economy-001
+    system: economy-core
+    gdd: economy-core.md
+    requirement: Multi-currency wallet tracking double-precision Coin amounts without negative balances
+    domain: Economy
+    layer: Core
+    status: active
+  - id: TR-economy-002
+    system: economy-core
+    gdd: economy-core.md
+    requirement: Layered Income Pipeline with additive base and multiplicative tier caps
+    domain: Economy
+    layer: Core
+    status: active
+  - id: TR-economy-003
+    system: economy-core
+    gdd: economy-core.md
+    requirement: Dynamic formula family for base coin value scaling with gacha cost
+    domain: Economy
+    layer: Core
+    status: active
+  - id: TR-economy-004
+    system: economy-core
+    gdd: economy-core.md
+    requirement: Exponential gacha pull cost curve 100 * 1.05^n
+    domain: Economy
+    layer: Core
+    status: active
+  - id: TR-economy-005
+    system: economy-core
+    gdd: economy-core.md
+    requirement: Compact string formatting for big numbers (K, M, B, T) backed by double values
+    domain: Economy
+    layer: Core
+    status: active
+
+  - id: TR-pet-001
+    system: pet-catalog
+    gdd: pet-catalog.md
+    requirement: Data-driven ScriptableObject catalog with immutable IDs, groups, roles, and rarities
+    domain: Data
+    layer: Core
+    status: active
+  - id: TR-pet-002
+    system: pet-catalog
+    gdd: pet-catalog.md
+    requirement: Multiplier calculation based on rarity factor and base idle CPS unit
+    domain: Economy
+    layer: Core
+    status: active
+  - id: TR-pet-003
+    system: pet-catalog
+    gdd: pet-catalog.md
+    requirement: Editor validation for pet parameter bounds and group assignments
+    domain: Tooling
+    layer: Core
+    status: active
+
+  - id: TR-boot-001
+    system: bootstrap-and-scene-flow
+    gdd: bootstrap-and-scene-flow.md
+    requirement: Phased startup sequence using IBootStep interface in single-scene architecture
+    domain: Core
+    layer: Foundation
+    status: active
+  - id: TR-boot-002
+    system: bootstrap-and-scene-flow
+    gdd: bootstrap-and-scene-flow.md
+    requirement: Simulation pause lifecycle on application hidden/background and continue on focus loss
+    domain: Core
+    layer: Foundation
+    status: active
+  - id: TR-boot-003
+    system: bootstrap-and-scene-flow
+    gdd: bootstrap-and-scene-flow.md
+    requirement: Content view tab router with central input blocking barrier
+    domain: UI
+    layer: Foundation
+    status: active
+  - id: TR-boot-004
+    system: bootstrap-and-scene-flow
+    gdd: bootstrap-and-scene-flow.md
+    requirement: Fixed 9:16 to 9:21 vertical aspect viewport layout with letterbox bounds
+    domain: UI
+    layer: Foundation
+    status: active
+  - id: TR-boot-005
+    system: bootstrap-and-scene-flow
+    gdd: bootstrap-and-scene-flow.md
+    requirement: Startup curtain coordination covering prewarm operations until ready
+    domain: UI
+    layer: Foundation
+    status: active
+
+  - id: TR-pooling-001
+    system: object-pooling
+    gdd: object-pooling.md
+    requirement: Zero-allocation object pool service with prewarming for transient visual objects
+    domain: Core
+    layer: Foundation
+    status: active
+  - id: TR-pooling-002
+    system: object-pooling
+    gdd: object-pooling.md
+    requirement: Per-pool exhaustion policies supporting Fixed and RecycleOldest behaviours
+    domain: Core
+    layer: Foundation
+    status: active
+  - id: TR-pooling-003
+    system: object-pooling
+    gdd: object-pooling.md
+    requirement: Lease-based borrow and release guards preventing double or stale releases
+    domain: Core
+    layer: Foundation
+    status: active
+  - id: TR-pooling-004
+    system: object-pooling
+    gdd: object-pooling.md
+    requirement: Diagnostic tracking for active instances, peaks, and leak detection
+    domain: Core
+    layer: Foundation
+    status: active
+
+  - id: TR-audio-001
+    system: audio
+    gdd: audio.md
+    requirement: Central SoundCue repository with hierarchical bus gain routing
+    domain: Audio
+    layer: Foundation
+    status: active
+  - id: TR-audio-002
+    system: audio
+    gdd: audio.md
+    requirement: Fixed 16-voice pool with priority stealing and pitch randomization
+    domain: Audio
+    layer: Foundation
+    status: active
+  - id: TR-audio-003
+    system: audio
+    gdd: audio.md
+    requirement: WebGL audio context unlock on first user pointer interaction
+    domain: Audio
+    layer: Foundation
+    status: active
+  - id: TR-audio-004
+    system: audio
+    gdd: audio.md
+    requirement: Mute reason stack tracking for ad presentation and user preference
+    domain: Audio
+    layer: Foundation
+    status: active
+
+  - id: TR-plinko-001
+    system: plinko-board
+    gdd: plinko-board.md
+    requirement: 2D Box2D physics simulation rendered in dedicated World Space camera
+    domain: Physics
+    layer: Core
+    status: active
+  - id: TR-plinko-002
+    system: plinko-board
+    gdd: plinko-board.md
+    requirement: Spawning rate limiter and hard concurrent active coin cap
+    domain: Physics
+    layer: Core
+    status: active
+  - id: TR-plinko-003
+    system: plinko-board
+    gdd: plinko-board.md
+    requirement: Five bucket multipliers with bounded bounciness factor < 1.0
+    domain: Physics
+    layer: Core
+    status: active
+  - id: TR-plinko-004
+    system: plinko-board
+    gdd: plinko-board.md
+    requirement: Event publication for PegHit, JackpotHit, CoinResolved, and CoinStuck
+    domain: Physics
+    layer: Core
+    status: active
+  - id: TR-plinko-005
+    system: plinko-board
+    gdd: plinko-board.md
+    requirement: Despawn watchdog timer recovering stuck coins back to pool
+    domain: Physics
+    layer: Core
+    status: active
+
+  - id: TR-inventory-001
+    system: inventory
+    gdd: inventory.md
+    requirement: In-memory store tracking owned pet IDs, duplicate counts, and Star rank
+    domain: Gameplay
+    layer: Feature
+    status: active
+  - id: TR-inventory-002
+    system: inventory
+    gdd: inventory.md
+    requirement: Mutation events for pet acquisition and duplicate increments
+    domain: Gameplay
+    layer: Feature
+    status: active
+  - id: TR-inventory-003
+    system: inventory
+    gdd: inventory.md
+    requirement: Read-only query interfaces for shelf loadout selection
+    domain: Gameplay
+    layer: Feature
+    status: active
+
+  - id: TR-gacha-001
+    system: gacha-machine
+    gdd: gacha-machine.md
+    requirement: Single-pull gacha machine with dynamic coin cost querying Economy Core
+    domain: Gameplay
+    layer: Feature
+    status: active
+  - id: TR-gacha-002
+    system: gacha-machine
+    gdd: gacha-machine.md
+    requirement: Drop pool resolver with public rarity weights producing starter pets
+    domain: Gameplay
+    layer: Feature
+    status: active
+  - id: TR-gacha-003
+    system: gacha-machine
+    gdd: gacha-machine.md
+    requirement: Atomic integration dispatching new acquisitions to Inventory
+    domain: Gameplay
+    layer: Feature
+    status: active
+  - id: TR-gacha-004
+    system: gacha-machine
+    gdd: gacha-machine.md
+    requirement: Reveal orchestration lifecycle with skip and fast-forward handling
+    domain: Gameplay
+    layer: Feature
+    status: active
+
+  - id: TR-shelf-001
+    system: shelf-and-synergy
+    gdd: shelf-and-synergy.md
+    requirement: 3 to 5 shelf slot loadout state reading from Inventory
+    domain: Gameplay
+    layer: Feature
+    status: active
+  - id: TR-shelf-002
+    system: shelf-and-synergy
+    gdd: shelf-and-synergy.md
+    requirement: Synergy evaluation for group matching and adjacent slot bonuses
+    domain: Gameplay
+    layer: Feature
+    status: active
+  - id: TR-shelf-003
+    system: shelf-and-synergy
+    gdd: shelf-and-synergy.md
+    requirement: Dual-channel income modifier calculation for Idle CPS and Plinko boosts
+    domain: Gameplay
+    layer: Feature
+    status: active
+  - id: TR-shelf-004
+    system: shelf-and-synergy
+    gdd: shelf-and-synergy.md
+    requirement: Dynamic modifier registration and deregistration into Income Pipeline
+    domain: Gameplay
+    layer: Feature
+    status: active
+
+  - id: TR-hud-001
+    system: hud-and-tab-navigation
+    gdd: hud-and-tab-navigation.md
+    requirement: Top header displaying formatted coin balance, CPS rate, and active boost
+    domain: UI
+    layer: Presentation
+    status: active
+  - id: TR-hud-002
+    system: hud-and-tab-navigation
+    gdd: hud-and-tab-navigation.md
+    requirement: Bottom navigation bar triggering tab transitions through Bootstrap router
+    domain: UI
+    layer: Presentation
+    status: active
+  - id: TR-hud-003
+    system: hud-and-tab-navigation
+    gdd: hud-and-tab-navigation.md
+    requirement: uGUI Canvas Scaler configured for 1080x1920 reference resolution
+    domain: UI
+    layer: Presentation
+    status: active
+
+  - id: TR-feedback-001
+    system: feedback-and-juice
+    gdd: feedback-and-juice.md
+    requirement: Event-to-feedback translator coordinating audio cues, floating text, and tweens
+    domain: Presentation
+    layer: Presentation
+    status: active
+  - id: TR-feedback-002
+    system: feedback-and-juice
+    gdd: feedback-and-juice.md
+    requirement: Zero-allocation floating text display borrowed from Object Pooling
+    domain: Presentation
+    layer: Presentation
+    status: active
+  - id: TR-feedback-003
+    system: feedback-and-juice
+    gdd: feedback-and-juice.md
+    requirement: Gacha reveal animation sequence with rarity glow and skip integration
+    domain: Presentation
+    layer: Presentation
+    status: active
+  - id: TR-feedback-004
+    system: feedback-and-juice
+    gdd: feedback-and-juice.md
+    requirement: Global ReduceMotion flag disabling intense screenshake and flashing
+    domain: Presentation
+    layer: Presentation
+    status: active

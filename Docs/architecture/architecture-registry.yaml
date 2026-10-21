@@ -1,0 +1,213 @@
+version: 1
+last_updated: "2026-10-21"
+state_ownership:
+  - state: wallet_coins
+    status: active
+    owner_system: economy-core
+    adr: Docs/architecture/adr-0005-layered-income-pipeline.md
+    interface: "IWallet.Coins (read-only double)"
+    write_access: owner-only
+    referenced_by:
+      - Docs/architecture/adr-0005-layered-income-pipeline.md
+      - Docs/architecture/adr-0006-world-space-plinko-physics.md
+    added: "2026-10-21"
+  - state: income_pipeline
+    status: active
+    owner_system: economy-core
+    adr: Docs/architecture/adr-0005-layered-income-pipeline.md
+    interface: "IIncomePipeline.CalculateCurrentCps()"
+    write_access: owner-only
+    referenced_by:
+      - Docs/architecture/adr-0005-layered-income-pipeline.md
+    added: "2026-10-21"
+  - state: active_coins_physics
+    status: active
+    owner_system: plinko-board
+    adr: Docs/architecture/adr-0006-world-space-plinko-physics.md
+    interface: "IPlinkoBoard.TryDropCoin(float normalizedX)"
+    write_access: owner-only
+    referenced_by:
+      - Docs/architecture/adr-0006-world-space-plinko-physics.md
+    added: "2026-10-21"
+  - state: active_audio_voices
+    status: active
+    owner_system: audio
+    adr: Docs/architecture/adr-0004-priority-voice-management.md
+    interface: "IAudioService.PlayCue(string cueId)"
+    write_access: owner-only
+    referenced_by:
+      - Docs/architecture/adr-0004-priority-voice-management.md
+    added: "2026-10-21"
+  - state: object_pool_instances
+    status: active
+    owner_system: object-pooling
+    adr: Docs/architecture/adr-0003-zero-allocation-object-pooling.md
+    interface: "IPoolService.Get(string poolId)"
+    write_access: owner-only
+    referenced_by:
+      - Docs/architecture/adr-0003-zero-allocation-object-pooling.md
+      - Docs/architecture/adr-0006-world-space-plinko-physics.md
+      - Docs/architecture/adr-0007-event-driven-feedback-pipeline.md
+    added: "2026-10-21"
+
+interfaces:
+  - name: IBootStep
+    status: active
+    adr: Docs/architecture/adr-0002-bootstrap-composition-root.md
+    signature: "string StepId; BootPhase Phase; bool IsCritical; bool IsDone; bool IsFailed; void Run();"
+    layer: Foundation
+    added: "2026-10-21"
+  - name: IInputRouter
+    status: active
+    adr: Docs/architecture/adr-0002-bootstrap-composition-root.md
+    signature: "bool IsInputBlocked; int ActiveTab; void SwitchTab(int tabIndex); event Action<int, int> TabChanged;"
+    layer: Foundation
+    added: "2026-10-21"
+  - name: IPoolService
+    status: active
+    adr: Docs/architecture/adr-0003-zero-allocation-object-pooling.md
+    signature: "void RegisterPool(string poolId, GameObject prefab, int capacity, PoolExhaustionPolicy policy); PoolLease Get(string poolId); void Release(in PoolLease lease);"
+    layer: Foundation
+    added: "2026-10-21"
+  - name: IAudioService
+    status: active
+    adr: Docs/architecture/adr-0004-priority-voice-management.md
+    signature: "void PlayCue(string cueId, float pitchOffset = 0f, float volumeMultiplier = 1f); void SetBusVolume(AudioBus bus, float volumeLinear); void SetMuteReason(MuteReason reason, bool isActive); void UnlockAudioContext();"
+    layer: Foundation
+    added: "2026-10-21"
+  - name: IWallet
+    status: active
+    adr: Docs/architecture/adr-0005-layered-income-pipeline.md
+    signature: "double Coins; event Action<double> CoinsChanged; void Credit(double amount); bool TrySpend(double amount); bool CanAfford(double amount);"
+    layer: Core
+    added: "2026-10-21"
+  - name: IIncomePipeline
+    status: active
+    adr: Docs/architecture/adr-0005-layered-income-pipeline.md
+    signature: "double CalculateCurrentCps(); void RegisterModifier(IncomeModifier modifier); void UnregisterModifier(string modifierId); event Action ModifiersChanged;"
+    layer: Core
+    added: "2026-10-21"
+  - name: IBaseCoinValueSource
+    status: active
+    adr: Docs/architecture/adr-0005-layered-income-pipeline.md
+    signature: "double GetCurrentBaseCoinValue();"
+    layer: Core
+    added: "2026-10-21"
+  - name: IPlinkoBoard
+    status: active
+    adr: Docs/architecture/adr-0006-world-space-plinko-physics.md
+    signature: "bool CanDropCoin; bool TryDropCoin(float normalizedDropX); event Action<PegHitInfo> PegHit; event Action<CoinResolvedInfo> CoinResolved; event Action<int> JackpotHit; event Action CoinStuck;"
+    layer: Core
+    added: "2026-10-21"
+  - name: IFeedbackService
+    status: active
+    adr: Docs/architecture/adr-0007-event-driven-feedback-pipeline.md
+    signature: "bool ReduceMotion; void SpawnFloatingText(string text, Vector2 worldPos, Color color); void PlayCameraShake(float intensity, float duration);"
+    layer: Presentation
+    added: "2026-10-21"
+  - name: IGachaRevealHandler
+    status: active
+    adr: Docs/architecture/adr-0007-event-driven-feedback-pipeline.md
+    signature: "void RequestReveal(PetData pet, Action onRevealComplete); void SkipReveal();"
+    layer: Presentation
+    added: "2026-10-21"
+
+performance_budgets:
+  - metric: target_fps
+    budget: "60 FPS on mobile and WebGL"
+    adr: Docs/architecture/architecture.md
+    added: "2026-10-21"
+  - metric: draw_calls
+    budget: "<= 100 draw calls"
+    adr: Docs/architecture/adr-0006-world-space-plinko-physics.md
+    added: "2026-10-21"
+  - metric: runtime_memory
+    budget: "<= 1024 MB"
+    adr: Docs/architecture/architecture.md
+    added: "2026-10-21"
+  - metric: runtime_gc
+    budget: "0 B GC/frame during gameplay"
+    adr: Docs/architecture/adr-0003-zero-allocation-object-pooling.md
+    added: "2026-10-21"
+  - metric: audio_voices
+    budget: "16 pooled AudioSources"
+    adr: Docs/architecture/adr-0004-priority-voice-management.md
+    added: "2026-10-21"
+  - metric: max_active_coins
+    budget: "48 concurrent active coins"
+    adr: Docs/architecture/adr-0006-world-space-plinko-physics.md
+    added: "2026-10-21"
+
+api_decisions:
+  - topic: assembly_architecture
+    status: active
+    adr: Docs/architecture/adr-0001-layered-assembly-architecture.md
+    choice: "5 layered asmdefs: Contracts, Foundation, Core, Features, Presentation"
+    added: "2026-10-21"
+  - topic: composition_root
+    status: active
+    adr: Docs/architecture/adr-0002-bootstrap-composition-root.md
+    choice: "Pure C# Composition Root via IBootStep phased lifecycle in BootstrapController"
+    added: "2026-10-21"
+  - topic: object_pooling
+    status: active
+    adr: Docs/architecture/adr-0003-zero-allocation-object-pooling.md
+    choice: "Central zero-allocation ObjectPoolService with prewarming, Fixed and RecycleOldest policies"
+    added: "2026-10-21"
+  - topic: audio_engine
+    status: active
+    adr: Docs/architecture/adr-0004-priority-voice-management.md
+    choice: "Lightweight 16-voice pool with priority stealing and software gain bus hierarchy"
+    added: "2026-10-21"
+  - topic: economy_pipeline
+    status: active
+    adr: Docs/architecture/adr-0005-layered-income-pipeline.md
+    choice: "Layered IncomePipeline with double-precision IEEE 754 floats"
+    added: "2026-10-21"
+  - topic: plinko_rendering
+    status: active
+    adr: Docs/architecture/adr-0006-world-space-plinko-physics.md
+    choice: "2D Box2D physics simulation rendered in dedicated World Space camera separated from Canvas UI"
+    added: "2026-10-21"
+  - topic: feedback_pipeline
+    status: active
+    adr: Docs/architecture/adr-0007-event-driven-feedback-pipeline.md
+    choice: "Event-driven presentation translator using DOTween and pooled floating text"
+    added: "2026-10-21"
+
+forbidden_patterns:
+  - pattern: circular_assembly_dependency
+    status: active
+    adr: Docs/architecture/adr-0001-layered-assembly-architecture.md
+    rule: "Modules must never reference higher layers; Core must not reference Features or Presentation."
+    added: "2026-10-21"
+  - pattern: monolithic_runtime_assembly
+    status: active
+    adr: Docs/architecture/adr-0001-layered-assembly-architecture.md
+    rule: "Domain logic must not reside in a single unlayered assembly or Assembly-CSharp."
+    added: "2026-10-21"
+  - pattern: global_singletons_or_findobjectoftype
+    status: active
+    adr: Docs/architecture/adr-0002-bootstrap-composition-root.md
+    rule: "Classes must never use FindObjectOfType or static instance singletons for service location."
+    added: "2026-10-21"
+  - pattern: runtime_instantiate_destroy
+    status: active
+    adr: Docs/architecture/adr-0003-zero-allocation-object-pooling.md
+    rule: "Programmers must never call Instantiate or Destroy at runtime outside the Prewarm boot phase."
+    added: "2026-10-21"
+  - pattern: direct_audiosource_instantiation
+    status: active
+    adr: Docs/architecture/adr-0004-priority-voice-management.md
+    rule: "Subsystems must never instantiate AudioSource components directly in prefabs; all sound must route through IAudioService."
+    added: "2026-10-21"
+  - pattern: canvas_physics_coupling
+    status: active
+    adr: Docs/architecture/adr-0006-world-space-plinko-physics.md
+    rule: "Programmers must never parent moving Rigidbody2D or Collider2D components under a Canvas hierarchy."
+    added: "2026-10-21"
+  - pattern: presentation_code_in_gameplay
+    status: active
+    adr: Docs/architecture/adr-0007-event-driven-feedback-pipeline.md
+    rule: "Core gameplay and economy code must never reference DOTween, TextMeshPro, or ParticleSystem directly."
+    added: "2026-10-21"
