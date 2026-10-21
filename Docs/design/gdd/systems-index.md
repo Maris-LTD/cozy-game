@@ -2,7 +2,7 @@
 
 > **Status**: Draft
 > **Created**: 2026-10-21
-> **Last Updated**: 2026-10-21
+> **Last Updated**: 2026-10-21 (Sync batch 2026-10-21, lần 4: Bootstrap & Scene Flow, Economy Core, Plinko Board, Audio → Approved; Audio nhận `Interactive` làm mốc nhạc VS thay `BootCompleted` theo audio.md Revision 5; registry áp thay đổi đã duyệt)
 > **Source Concept**: Docs/design/gdd/game-concept.md
 
 > [TD-SYSTEM-BOUNDARY] skipped (lean)
@@ -13,12 +13,12 @@
 Game cần 24 hệ thống quanh một vòng lặp duy nhất: Plinko sinh xu → Gacha tiêu xu ra thú → Kệ biến thú thành thu nhập → Tiệm mở rộng kệ. Mọi nguồn thu và mọi bùa lợi đi qua một Income Pipeline chung (Economy Core), nên các hệ gameplay chỉ đăng ký modifier vào pipeline thay vì gọi lẫn nhau. Raid/Kidnap của FirstGDD đã đổi thành **Neighbor Pranks** và dời sang v1.1 (Quyết định 2, 3 của concept).
 
 **MVP** (11 hệ) — trả lời giả thuyết "Plinko + vặn trứng + kệ 3 ô đủ vui để chơi tiếp 15 phút":
-- **Economy Core**: ví Xu, số lớn dạng double + định dạng K/M/B, Income Pipeline với hai kênh (CPS idle / Plinko chủ động), thứ tự cộng/nhân modifier, trần, xu khởi đầu, họ công thức giá theo CPS hoặc giá quay. Gỡ các BLOCKING về công thức thu nhập và giá cố định (Pillar 3).
+- **Economy Core**: ví Xu, số lớn dạng double + định dạng K/M/B, Income Pipeline với hai kênh (CPS idle / Plinko chủ động), thứ tự cộng/nhân modifier, trần, xu khởi đầu, họ công thức giá theo giá quay (đường neo; giá không phụ thuộc CPS hay đội hình kệ). Gỡ các BLOCKING về công thức thu nhập và giá cố định (Pillar 3).
 - **Pet Catalog**: danh mục thú dạng ScriptableObject — nhóm, kênh thu nhập, phẩm cấp, chỉ số gốc, hiệu ứng. Nơi cân lại Mèo Hoàng Gia và Kẹo Bảy Màu (Quyết định 5, Pillar 3).
-- **Bootstrap & Scene Flow** *(suy ra)*: một scene, trình tự khởi động, chuyển 3 tab. GDD ngắn, chi tiết chốt bằng ADR.
+- **Bootstrap & Scene Flow** *(suy ra)*: một scene, trình tự khởi động theo pha (`IBootStep`), vòng đời tạm dừng/tiếp tục, trạng thái tab + khóa tab, input router + cổng chặn, khung 9:16–9:21, hàng đợi màn chào. HUD chỉ vẽ nav. GDD ngắn, chi tiết chốt bằng ADR.
 - **Object Pooling** *(suy ra)*: pool xu Plinko và số bay để giữ 60 FPS trên WebGL. GDD ngắn / ADR.
-- **Audio** *(suy ra)*: mixer, pool SFX, nhạc nền — khung cho âm thanh ASMR (Pillar 1). GDD ngắn.
-- **Plinko Board**: chạm thả + tự thả, 5 hũ nhân, điểm thả được phép, trần nảy, trần tốc độ thả và số xu đồng thời; công bố sự kiện `PegHit` / `CoinLanded(bucket)` (Pillar 1).
+- **Audio** *(suy ra)*: voice tự quản (16), kho SoundCue, bus, nhạc nền (VS), tắt tiếng theo lý do — khung cho âm thanh ASMR (Pillar 1). GDD ngắn.
+- **Plinko Board**: chạm thả + tự thả, 5 hũ nhân, điểm thả được phép, trần nảy, trần tốc độ thả và số xu đồng thời; công bố sự kiện `CoinSpawned` / `PegHit` / `JackpotHit` / `CoinResolved` / `CoinStuck` / `BoardBusy`, API `RequestBurst` / `RegisterAutoDropRate` / `RegisterBouncinessFactor` / `Unregister`, cờ `acceptManualTaps` và interface `IBaseCoinValueSource` (Pillar 1).
 - **Inventory / Kho**: sở hữu thú, số bản trùng; là kho mà Gacha ghi vào và Kệ đọc ra.
 - **Gacha Machine**: giá quay, drop pool v1.0 (chỉ thú), tỷ lệ trong từng phẩm cấp và công khai, luật trùng, nhịp mở trứng có nút tua (Pillar 2).
 - **Shelf & Synergy**: 3–5 ô, buff theo nhóm, ô kề nhau và hai kênh thu nhập; không có đội hình tối ưu cho cả hai kênh (Pillar 3).
@@ -48,26 +48,26 @@ Game cần 24 hệ thống quanh một vòng lặp duy nhất: Plinko sinh xu �
 
 | # | System Name | Category | Priority | Status | Design Doc | Depends On |
 |---|-------------|----------|----------|--------|------------|------------|
-| 1 | Economy Core | Economy | MVP | Not Started | — | — |
-| 2 | Pet Catalog | Economy | MVP | Not Started | — | — |
-| 3 | Bootstrap & Scene Flow (inferred) | Core | MVP | Not Started | — | — |
-| 4 | Object Pooling (inferred) | Core | MVP | Not Started | — | — |
-| 5 | Audio (inferred) | Audio | MVP | Not Started | — | — |
-| 6 | Plinko Board | Gameplay | MVP | Not Started | — | Economy Core, Object Pooling, Audio |
-| 7 | Inventory | Economy | MVP | Not Started | — | Pet Catalog |
-| 8 | Gacha Machine | Gameplay | MVP | Not Started | — | Economy Core, Pet Catalog, Inventory |
-| 9 | Shelf & Synergy | Gameplay | MVP | Not Started | — | Economy Core, Pet Catalog, Inventory, Plinko Board |
-| 10 | HUD & Tab Navigation | UI | MVP | Not Started | — | Economy Core, Shelf & Synergy, Bootstrap & Scene Flow |
-| 11 | Feedback & Juice | UI | MVP | Not Started | — | Plinko Board, Gacha Machine, Shelf & Synergy, Audio, Object Pooling |
-| 12 | Save/Load | Persistence | Vertical Slice | Not Started | — | — |
-| 13 | Time & Timers (inferred) | Core | Vertical Slice | Not Started | — | — |
+| 1 | Economy Core | Economy | MVP | Approved | Docs/design/gdd/economy-core.md | Plinko Board (hợp đồng: `CoinResolved`, `IBaseCoinValueSource`), Bootstrap & Scene Flow (`IBootStep` pha `GameplayInit`, `Paused`/`Resumed`, `Interactive` + `IsSimulationRunning`), Save/Load (soft, từ VS) |
+| 2 | Pet Catalog | Economy | MVP | Approved | Docs/design/gdd/pet-catalog.md | Bootstrap & Scene Flow (bước `pet.catalog`, pha `DataLoad`); Economy Core, Plinko Board (soft, chỉ lúc làm nội dung: validator đọc knob); Settings & Accessibility (soft, Alpha: ngôn ngữ) |
+| 3 | Bootstrap & Scene Flow (inferred) | Core | MVP | Approved | Docs/design/gdd/bootstrap-and-scene-flow.md | — |
+| 4 | Object Pooling (inferred) | Core | MVP | Approved | Docs/design/gdd/object-pooling.md | Bootstrap & Scene Flow (hợp đồng pha: `ServiceInit`, `Prewarm`) |
+| 5 | Audio (inferred) | Audio | MVP | Approved | Docs/design/gdd/audio.md | Bootstrap & Scene Flow (soft: bước `audio.service` pha `ServiceInit`, `Paused`/`Resumed`, `FirstInteraction`, `Interactive`: mốc nhạc VS) |
+| 6 | Plinko Board | Gameplay | MVP | Approved | Docs/design/gdd/plinko-board.md | Object Pooling, Bootstrap & Scene Flow |
+| 7 | Inventory | Economy | MVP | Not Started | — | Pet Catalog, Bootstrap & Scene Flow (*provisional*) |
+| 8 | Gacha Machine | Gameplay | MVP | Not Started | — | Economy Core, Pet Catalog, Inventory, Bootstrap & Scene Flow (*provisional*) |
+| 9 | Shelf & Synergy | Gameplay | MVP | Not Started | — | Economy Core, Pet Catalog, Inventory, Plinko Board, Bootstrap & Scene Flow (*provisional*) |
+| 10 | HUD & Tab Navigation | UI | MVP | Not Started | — | Economy Core, Shelf & Synergy, Bootstrap & Scene Flow, Audio (soft: nút loa), Pet Catalog (soft: dữ liệu thẻ thú) |
+| 11 | Feedback & Juice | UI | MVP | Not Started | — | Plinko Board, Gacha Machine, Shelf & Synergy, Audio, Object Pooling, Economy Core (`IncomeCredited`, `SpendRejected`), Bootstrap & Scene Flow (`TabChanged`, provisional), Pet Catalog (soft: dữ liệu thẻ thú) |
+| 12 | Save/Load | Persistence | Vertical Slice | Not Started | — | Bootstrap & Scene Flow (*provisional*) |
+| 13 | Time & Timers (inferred) | Core | Vertical Slice | Not Started | — | Bootstrap & Scene Flow (soft, *provisional*) |
 | 14 | Star Progression | Progression | Vertical Slice | Not Started | — | Economy Core, Pet Catalog, Inventory, Gacha Machine |
 | 15 | Boosts (inferred) | Economy | Vertical Slice | Not Started | — | Economy Core, Plinko Board, Time & Timers |
 | 16 | Shop | Economy | Vertical Slice | Not Started | — | Economy Core, Inventory, Shelf & Synergy, Boosts, Time & Timers |
-| 17 | Offline Earnings | Economy | Vertical Slice | Not Started | — | Economy Core, Shelf & Synergy, Save/Load, Time & Timers |
-| 18 | Tutorial & Onboarding (inferred) | Meta | Vertical Slice | Not Started | — | Plinko Board, Gacha Machine, Shelf & Synergy, Shop |
-| 19 | Platform Services (inferred) | Meta | Alpha | Not Started | — | — |
-| 20 | Rewarded Ads | Meta | Alpha | Not Started | — | Platform Services, Economy Core, Time & Timers |
+| 17 | Offline Earnings | Economy | Vertical Slice | Not Started | — | Economy Core, Shelf & Synergy, Save/Load, Time & Timers, Bootstrap & Scene Flow (*provisional*) |
+| 18 | Tutorial & Onboarding (inferred) | Meta | Vertical Slice | Not Started | — | Plinko Board, Gacha Machine, Shelf & Synergy, Shop, Bootstrap & Scene Flow (*provisional*) |
+| 19 | Platform Services (inferred) | Meta | Alpha | Not Started | — | Bootstrap & Scene Flow (*provisional*), Audio (soft: `SetMuteReason(Ad)`) |
+| 20 | Rewarded Ads | Meta | Alpha | Not Started | — | Platform Services, Economy Core, Time & Timers, Audio (soft: `SetMuteReason(Ad)`), Plinko Board (soft: `RequestBurst`) |
 | 21 | Prestige | Progression | Alpha | Not Started | — | Economy Core, Inventory, Star Progression, Shelf & Synergy, Shop, Save/Load |
 | 22 | Settings & Accessibility (inferred) | UI | Alpha | Not Started | — | Audio, Save/Load, Feedback & Juice |
 | 23 | Analytics Hooks (inferred) | Meta | Full Vision | Not Started | — | Platform Services |
@@ -105,29 +105,30 @@ Game cần 24 hệ thống quanh một vòng lặp duy nhất: Plinko sinh xu �
 
 ## Dependency Map
 
-### Foundation Layer (no dependencies)
-1. Economy Core — framework mà mọi nguồn thu, mọi bùa lợi và mọi giá đều cắm vào (Income Pipeline + họ công thức giá).
-2. Pet Catalog — dữ liệu tĩnh của thú; Inventory, Gacha, Shelf, Sao đều đọc.
-3. Bootstrap & Scene Flow — trình tự khởi động và chuyển tab.
-4. Object Pooling — dùng bởi Plinko và Feedback & Juice.
-5. Audio — khung phát âm thanh; nội dung SFX map ở Feedback & Juice.
-6. Save/Load — framework lưu trữ; mọi hệ có trạng thái đăng ký dữ liệu vào đây (từ Vertical Slice).
-7. Time & Timers — nguồn thời gian và timer dùng chung.
-8. Platform Services — lớp trừu tượng SDK theo nền tảng.
+### Foundation Layer
+Tầng Foundation không còn "không phụ thuộc": hầu hết hệ ở đây phụ thuộc Bootstrap & Scene Flow qua hợp đồng pha (cùng tầng). Ba mũi tên đi lên chưa gỡ: Economy Core → Plinko Board (Core, Hard, chỉ hợp đồng), Pet Catalog → Plinko Board (Core, soft, chỉ lúc làm nội dung: validator đọc `PlinkoConfig`) và Pet Catalog → Settings & Accessibility (Presentation, soft, Alpha) — xem Circular Dependencies.
+1. Economy Core — framework mà mọi nguồn thu, mọi bùa lợi và mọi giá đều cắm vào (Income Pipeline + họ công thức giá). Depends on: Plinko Board (Hard, chỉ hợp đồng `CoinResolved` và `IBaseCoinValueSource` do Plinko sở hữu; Economy Core cài đặt `IBaseCoinValueSource`, Plinko kéo `baseCoinValue` và không tham chiếu Economy Core), Bootstrap & Scene Flow (Hard: bước `economy.core` pha `GameplayInit`, `Paused`/`Resumed`, `Interactive` + `IsSimulationRunning` — chỉ cộng Idle khi vòng đời `Running`), Save/Load (soft, từ VS). Mũi tên Foundation → Core: `game-systems` chọn chuyển Economy Core sang tầng Core (sau Plinko) hoặc tách hợp đồng Plinko thành module Foundation.
+2. Pet Catalog — dữ liệu tĩnh của thú; Inventory, Gacha, Shelf, Sao, HUD, Feedback đều đọc. Depends on: Bootstrap & Scene Flow (Hard: bước `pet.catalog` pha `DataLoad`); Economy Core, Plinko Board (soft, chỉ lúc làm nội dung: validator đọc knob và hợp đồng sự kiện, không phụ thuộc lúc chạy); Settings & Accessibility (soft, Alpha: ngôn ngữ).
+3. Bootstrap & Scene Flow — trình tự khởi động theo pha, vòng đời, tab + khóa tab, input router + cổng chặn. Không phụ thuộc hệ nào.
+4. Object Pooling — dùng bởi Plinko và Feedback & Juice. Depends on: Bootstrap & Scene Flow (Hard: bước `pooling.service` pha `ServiceInit`, `pooling.prewarm` pha `Prewarm`).
+5. Audio — khung phát âm thanh; nội dung SFX map ở Feedback & Juice. Depends on: Bootstrap & Scene Flow (soft: bước `audio.service` pha `ServiceInit` không cốt lõi, `Paused`/`Resumed`, `FirstInteraction`, `Interactive`: mốc nhạc VS, B5.3).
+6. Save/Load — framework lưu trữ; mọi hệ có trạng thái đăng ký dữ liệu vào đây (từ Vertical Slice). Depends on: Bootstrap & Scene Flow (pha `SaveLoad`, `Paused`, `Quitting`; *provisional*).
+7. Time & Timers — nguồn thời gian và timer dùng chung. Depends on: Bootstrap & Scene Flow (soft, `Paused`/`Resumed {awaySeconds}`; *provisional*).
+8. Platform Services — lớp trừu tượng SDK theo nền tảng. Depends on: Bootstrap & Scene Flow (`BootCompleted`, `Interactive`, `FirstInteraction`, `Paused`, `Resumed`, `BootFailed`, `IsAdOpen`; out: `SetAdOpen(true/false)` quanh mỗi rewarded ad, B6.10; *provisional*), Audio (soft, `SetMuteReason(Ad)`).
 
 ### Core Layer
-1. Plinko Board — depends on: Economy Core, Object Pooling, Audio. Công bố hợp đồng sự kiện và tham số vật lý có trần.
-2. Inventory — depends on: Pet Catalog.
-3. Rewarded Ads — depends on: Platform Services, Economy Core, Time & Timers.
+1. Plinko Board — depends on: Object Pooling (pool `plinko.coin`), Bootstrap & Scene Flow (input `WorldPress`, tab, vòng đời `Paused`/`Resumed`, `Interactive` + `IsSimulationRunning`, `FrameChanged`). Audio chỉ gián tiếp qua Feedback & Juice (Plinko không gọi Audio). Công bố sự kiện `CoinSpawned`, `PegHit`, `JackpotHit`, `CoinResolved`, `CoinStuck`, `BoardBusy`; API `RequestBurst` / `RegisterAutoDropRate` / `RegisterBouncinessFactor` / `Unregister`; cờ `acceptManualTaps`; tham số vật lý có trần. Plinko công bố `IBaseCoinValueSource`, Economy Core cài đặt (Plinko có dự phòng `PlinkoConfig.baseCoinValue`).
+2. Inventory — depends on: Pet Catalog, Bootstrap & Scene Flow (*provisional*).
+3. Rewarded Ads — depends on: Platform Services, Economy Core, Time & Timers, Audio (soft, `SetMuteReason(Ad)`), Plinko Board (soft, `RequestBurst`).
 
 ### Feature Layer
-1. Gacha Machine — depends on: Economy Core, Pet Catalog, Inventory.
-2. Shelf & Synergy — depends on: Economy Core, Pet Catalog, Inventory, Plinko Board (sự kiện).
+1. Gacha Machine — depends on: Economy Core, Pet Catalog, Inventory, Bootstrap & Scene Flow (*provisional*).
+2. Shelf & Synergy — depends on: Economy Core, Pet Catalog, Inventory, Plinko Board (sự kiện, API modifier bàn), Bootstrap & Scene Flow (*provisional*).
 3. Star Progression — depends on: Economy Core, Pet Catalog, Inventory, Gacha Machine.
 4. Boosts — depends on: Economy Core, Plinko Board, Time & Timers.
 5. Shop — depends on: Economy Core, Inventory, Shelf & Synergy, Boosts, Time & Timers.
-6. Offline Earnings — depends on: Economy Core, Shelf & Synergy, Save/Load, Time & Timers.
-7. Tutorial & Onboarding — depends on: Plinko Board, Gacha Machine, Shelf & Synergy, Shop.
+6. Offline Earnings — depends on: Economy Core, Shelf & Synergy, Save/Load, Time & Timers, Bootstrap & Scene Flow (*provisional*).
+7. Tutorial & Onboarding — depends on: Plinko Board, Gacha Machine, Shelf & Synergy, Shop, Bootstrap & Scene Flow (*provisional*).
 8. Prestige — depends on: Economy Core, Inventory, Star Progression, Shelf & Synergy, Shop, Save/Load.
 9. Analytics Hooks — depends on: Platform Services (lắng nghe sự kiện của các hệ gameplay).
 10. Neighbor Pranks — depends on: Economy Core, Pet Catalog, Inventory, Shelf & Synergy, Time & Timers, Save/Load, Rewarded Ads.
@@ -135,12 +136,12 @@ Game cần 24 hệ thống quanh một vòng lặp duy nhất: Plinko sinh xu �
 Rewarded Ads là placement trong Shop (quà Bác Bảo Vệ), Offline Earnings (x2), Boosts (Mưa Xu) từ Alpha; các hệ đó gọi Rewarded Ads qua một API placement, không đổi tầng của chúng.
 
 ### Presentation Layer
-1. HUD & Tab Navigation — depends on: Economy Core, Shelf & Synergy, Bootstrap & Scene Flow.
-2. Feedback & Juice — depends on: Plinko Board, Gacha Machine, Shelf & Synergy, Audio, Object Pooling.
+1. HUD & Tab Navigation — depends on: Economy Core, Shelf & Synergy, Bootstrap & Scene Flow, Audio (soft, nút loa), Pet Catalog (soft, dữ liệu thẻ thú).
+2. Feedback & Juice — depends on: Plinko Board, Gacha Machine, Shelf & Synergy, Audio, Object Pooling, Economy Core (`IncomeCredited`, `SpendRejected`), Bootstrap & Scene Flow (`TabChanged`, provisional), Pet Catalog (soft, dữ liệu thẻ thú).
 3. Settings & Accessibility — depends on: Audio, Save/Load, Feedback & Juice.
 
-**Điểm nghẽn** (nhiều hệ phụ thuộc): Economy Core (11), Shelf & Synergy (7), Inventory (6), Pet Catalog (5), Plinko Board (4).
-**Lá** (không hệ nào phụ thuộc, rủi ro thấp): HUD & Tab Navigation, Tutorial & Onboarding, Offline Earnings, Prestige, Settings & Accessibility, Analytics Hooks, Neighbor Pranks.
+**Điểm nghẽn** (nhiều hệ phụ thuộc, đếm cả cạnh soft và *provisional* trong cột Depends On): Bootstrap & Scene Flow (15), Economy Core (12), Pet Catalog (7), Plinko Board (7), Shelf & Synergy (7), Inventory (6), Audio (5), Save/Load (5), Time & Timers (5).
+**Lá** (không hệ nào phụ thuộc, rủi ro thấp): HUD & Tab Navigation, Tutorial & Onboarding, Offline Earnings, Prestige, Analytics Hooks, Neighbor Pranks.
 
 ## Recommended Design Order
 
@@ -176,8 +177,10 @@ Effort: S = one session, M = 2-3 sessions, L = 4+ sessions (a session produces o
 Economy Core được mở lại một lần sau khi Plinko Board và Shelf & Synergy có số liệu (mô phỏng bảng tính giá quay vs thu nhập), và lần nữa khi thiết kế Star Progression và Prestige.
 
 ## Circular Dependencies
-- `Plinko Board <-> Shelf & Synergy`: thú trên kệ đổi thưởng/vật lý Plinko (Mèo Chiêu Tài, Thỏ, Kẹo Bảy Màu), còn sự kiện Plinko kích hoạt hiệu ứng thú. Cách gỡ: Plinko công bố hợp đồng sự kiện (`PegHit`, `CoinLanded(bucket, value)`) và bộ tham số vật lý có trần do Plinko sở hữu; thưởng xu đi qua Income Pipeline. Shelf phụ thuộc Plinko, Plinko không biết Shelf.
-- `Economy Core <-> các nguồn thu (Shelf, Boosts, Star Progression, Prestige)`: cách gỡ: Economy Core chỉ định nghĩa hợp đồng modifier (kênh, thứ tự cộng/nhân, trần); các hệ đăng ký modifier vào pipeline. Economy Core không phụ thuộc hệ nào.
+- `Plinko Board <-> Shelf & Synergy`: thú trên kệ đổi thưởng/vật lý Plinko (Mèo Chiêu Tài, Thỏ, Kẹo Bảy Màu), còn sự kiện Plinko kích hoạt hiệu ứng thú. Cách gỡ: Plinko công bố hợp đồng sự kiện (`CoinSpawned`, `PegHit`, `JackpotHit`, `CoinResolved`, `CoinStuck`, `BoardBusy`), API `RegisterAutoDropRate` / `RegisterBouncinessFactor` / `Unregister` và bộ tham số vật lý có trần do Plinko sở hữu; thưởng xu đi qua Income Pipeline. Shelf phụ thuộc Plinko, Plinko không biết Shelf.
+- `Economy Core <-> các nguồn thu (Shelf, Boosts, Star Progression, Prestige)`: cách gỡ: Economy Core chỉ định nghĩa hợp đồng modifier (kênh, thứ tự cộng/nhân, trần); các hệ đăng ký modifier vào pipeline. Economy Core không phụ thuộc hệ nào ngoài Bootstrap & Scene Flow (hợp đồng pha, vòng đời), Save/Load (soft, từ VS) và hợp đồng Plinko (`CoinResolved`, `IBaseCoinValueSource`).
+- `Economy Core <-> Plinko Board` (giá trị xu gốc): không còn vòng. Mô hình kéo: Plinko sở hữu `IBaseCoinValueSource`, Economy Core cài đặt; Plinko không tham chiếu Economy Core. Còn mở: Economy Core (Foundation) phụ thuộc Plinko (Core) — `game-systems` quyết định chuyển tầng hay tách module hợp đồng (`CoinResolved`, `IBaseCoinValueSource`) thành module Foundation.
+- `Pet Catalog -> Plinko Board` (mũi tên đi lên, không phải vòng): Pet Catalog (Foundation) phụ thuộc mềm lúc làm nội dung vào Plinko Board (Core) — validator đọc `PlinkoConfig` (`jackpotBurstCount`, `autoDropBaseInterval`, `basePegBounciness`, `bouncinessCap`) và ngữ nghĩa hợp đồng sự kiện; không phụ thuộc lúc chạy. Cùng hướng xử lý với mũi tên Economy Core → Plinko Board.
 - `Gacha Machine <-> Economy Core` (đường giá quay vs thu nhập): cách gỡ: họ công thức giá nằm ở Economy Core; Gacha chỉ tham chiếu. Thiết kế cùng nhau, mở lại Economy Core sau khi có số Plinko/Shelf.
 - `Shop <-> Shelf & Synergy`: Shop mở ô, Shelf sở hữu số ô. Cách gỡ: Shelf cung cấp API mở ô; Shop phụ thuộc Shelf một chiều.
 
@@ -185,7 +188,7 @@ Economy Core được mở lại một lần sau khi Plinko Board và Shelf & Sy
 
 | System | Risk type (Technical / Design / Scope) | What could go wrong | Mitigation |
 |---|---|---|---|
-| Economy Core | Design | Giá quay vượt thu nhập tạo tường; prestige đến quá sớm/muộn; giá cố định mất ý nghĩa | Họ công thức giá theo CPS/giá quay; mô phỏng bảng tính trước khi khóa số; mở lại sau Plinko/Shelf |
+| Economy Core | Design | Giá quay vượt thu nhập tạo tường; prestige đến quá sớm/muộn; giá cố định mất ý nghĩa | Họ công thức giá theo giá quay (đường neo): mọi giá = hệ số × giá quay; mô phỏng bảng tính trước khi khóa số; mở lại sau Plinko/Shelf |
 | Plinko Board | Technical + Design | Hũ x5 giữa dễ trúng (EV ~x3); lực nảy > 1 + Thỏ → xu vô hạn; autoclicker; nhiều xu làm tụt FPS WebGL | Điểm thả/hũ cân lại; trần nảy và despawn; trần tốc độ thả và số xu đồng thời; pooling; prototype đo FPS sớm |
 | Shelf & Synergy | Design | Hội tụ về một đội hình tối ưu duy nhất, phá Pillar 3 | Hai kênh thu nhập cân bằng; combo nhóm cần thú Thường; kiểm tra bằng bảng so sánh đội hình theo cách chơi |
 | Platform Services / Rewarded Ads | Technical | SDK khác nhau theo nền tảng; LevelPlay/AdMob không chạy WebGL; chính sách cổng game | Adapter theo nền tảng sau một interface; ADR chọn SDK; cap/cooldown theo nền tảng |
@@ -197,14 +200,14 @@ Economy Core được mở lại một lần sau khi Plinko Board và Shelf & Sy
 | Metric | Count |
 |---|---|
 | Total systems | 24 |
-| GDDs started | 0 |
-| GDDs reviewed | 0 |
-| GDDs approved | 0 |
-| MVP systems designed | 0 / 11 |
+| GDDs started | 6 |
+| GDDs reviewed | 6 |
+| GDDs approved | 6 |
+| MVP systems designed | 6 / 11 |
 | Vertical Slice systems designed | 0 / 7 |
 
 ## Next Steps
 - [x] Approve this enumeration (2026-10-21)
 - [ ] Design MVP systems first with game-design (bắt đầu: Economy Core)
-- [ ] Review each GDD with game-design-review
+- [ ] Review each GDD with game-design-review (6 GDD đợt 2026-10-21 đã Approved; còn 5 hệ MVP chưa có GDD)
 - [ ] Run game-gate technical-setup when the MVP systems are designed

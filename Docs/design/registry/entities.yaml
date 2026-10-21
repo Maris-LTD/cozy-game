@@ -1,0 +1,432 @@
+entities:
+  - name: pet.woody_duck
+    source: Docs/design/gdd/pet-catalog.md
+    attributes: { display_name: "Woody Duck / Vịt Gỗ", group: animal, rarity: common, role: Idle, weight: 1.0, effect: none, release: Mvp }
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+  - name: pet.sleepy_hamster
+    source: Docs/design/gdd/pet-catalog.md
+    attributes: { display_name: "Sleepy Hamster / Chuột Hamster Ngủ Gật", group: animal, rarity: common, role: Plinko, weight: 1.0, effect: "AutoDropRate 0.27", release: V1_0 }
+    referenced_by:
+      - Docs/design/gdd/plinko-board.md
+  - name: pet.bouncy_bunny
+    source: Docs/design/gdd/pet-catalog.md
+    attributes: { display_name: "Bouncy Bunny / Thỏ Nhào Lộn", group: animal, rarity: rare, role: Plinko, weight: 1.1, effect: "PegHitBonus 0.017", release: Mvp }
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+      - Docs/design/gdd/plinko-board.md
+  - name: pet.cozy_fox
+    source: Docs/design/gdd/pet-catalog.md
+    attributes: { display_name: "Cozy Fox / Cáo Khăn Len", group: animal, rarity: epic, role: Support, weight: 1.0, effect: "NeighborBoost 1.2, scope Plinko", release: Mvp }
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+      - Docs/design/gdd/plinko-board.md
+  - name: pet.dango_trio
+    source: Docs/design/gdd/pet-catalog.md
+    attributes: { display_name: "Dango Trio / Bánh Dango Ba Viên", group: sweet, rarity: common, role: Idle, weight: 1.1, effect: none, release: V1_0 }
+    referenced_by: []
+  - name: pet.wobbly_pudding
+    source: Docs/design/gdd/pet-catalog.md
+    attributes: { display_name: "Wobbly Pudding / Bánh Flan Rung Rinh", group: sweet, rarity: common, role: Plinko, weight: 1.0, effect: "FlatPerCoin 0.086", release: V1_0 }
+    referenced_by: []
+  - name: pet.sprinkle_cupcake
+    source: Docs/design/gdd/pet-catalog.md
+    attributes: { display_name: "Sprinkle Cupcake / Bánh Cupcake Rắc Cốm", group: sweet, rarity: rare, role: Idle, weight: 1.0, effect: none, release: V1_0 }
+    referenced_by: []
+  - name: pet.rainbow_candy
+    source: Docs/design/gdd/pet-catalog.md
+    attributes: { display_name: "Rainbow Candy / Kẹo Bảy Màu", group: sweet, rarity: epic, role: Plinko, weight: 1.2, effect: "BouncinessModifier 1.7 (reaches bounciness_cap)", release: Mvp }
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+      - Docs/design/gdd/plinko-board.md
+  - name: pet.dreamy_frog
+    source: Docs/design/gdd/pet-catalog.md
+    attributes: { display_name: "Dreamy Frog / Ếch Cốm", group: royal, rarity: common, role: Idle, weight: 1.2, effect: none, release: Mvp }
+    referenced_by: []
+  - name: pet.velvet_swan
+    source: Docs/design/gdd/pet-catalog.md
+    attributes: { display_name: "Velvet Swan / Thiên Nga Nhung", group: royal, rarity: common, role: Plinko, weight: 1.1, effect: "PegHitBonus 0.0068", release: V1_0 }
+    referenced_by: []
+  - name: pet.lucky_cat
+    source: Docs/design/gdd/pet-catalog.md
+    attributes: { display_name: "Lucky Cat / Mèo Chiêu Tài", group: royal, rarity: rare, role: Plinko, weight: 1.0, effect: "JackpotBonus 3.0, includeBurstCoins = false", release: Mvp }
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+      - Docs/design/gdd/plinko-board.md
+  - name: pet.proud_peacock
+    source: Docs/design/gdd/pet-catalog.md
+    attributes: { display_name: "Proud Peacock / Công Kiêu Hãnh", group: royal, rarity: epic, role: Idle, weight: 1.1, effect: none, release: V1_0 }
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+  - name: pet.chubby_king_cat
+    source: Docs/design/gdd/pet-catalog.md
+    attributes: { display_name: "Chubby King Cat / Mèo Hoàng Gia Béo Múp", group: royal, rarity: legendary, role: Support, weight: 1.0, effect: "GroupLeader 1.8, targetGroup royal, scope Idle", release: Mvp }
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+
+items: []
+
+formulas:
+  - name: raw_payout
+    source: Docs/design/gdd/plinko-board.md
+    variables: [base_coin_value, bucket_multipliers]
+    output: "1-5 × base_coin_value per coin"
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+  - name: effective_bounciness
+    source: Docs/design/gdd/plinko-board.md
+    variables: [base_peg_bounciness, bounciness_modifier, bounciness_cap]
+    output: "0.5-0.85, always < 1.0"
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: tap_admitted
+    source: Docs/design/gdd/plinko-board.md
+    variables: [tap_cooldown, max_active_coins, active_coins_after_queue_spawn]
+    output: "bool; <= 1/tap_cooldown admitted taps per second"
+    referenced_by:
+      - Docs/design/gdd/bootstrap-and-scene-flow.md
+  - name: auto_drop_interval
+    source: Docs/design/gdd/plinko-board.md
+    variables: [auto_drop_base_interval, auto_rate_multiplier, auto_drop_min_interval]
+    output: ">= auto_drop_min_interval (0.4 s), không có trần trên; dừng khi tổng tốc độ = 0"
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: coin_rate_ceiling
+    source: Docs/design/gdd/plinko-board.md
+    variables: [tap_cooldown, auto_drop_rate, auto_drop_min_interval, max_active_coins, median_fall_time]
+    output: "trần MỀM theo cấu hình (quyết định user (a), decision-log 2026-10-21): min(1/tap_cooldown + auto_drop_rate, max_active_coins/median_fall_time) xu sơ cấp/s; 6.67 khi không auto-drop, ≈ 9.17 khi auto-drop ở sàn; Overflow (Bùng Xu/Mưa Xu tràn hàng đợi) trả ngay nên thu nhập có thể vượt sức chứa bàn"
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+      - Docs/design/gdd/audio.md
+  - name: raw_rate_ceiling
+    source: Docs/design/gdd/plinko-board.md
+    variables: [coin_rate_ceiling, ev_effective_mean, effective_bounciness, base_coin_value]
+    output: "trần mềm theo cấu hình (cận trên mô hình, không phải trần cứng): ~20 × base_coin_value raw coins/s (base bounciness, no auto-drop); ~27.1 (auto-drop at floor); ~26 to <= 30.7 (bounciness at cap); <= ~42 (both)"
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+      - Docs/design/gdd/pet-catalog.md
+  - name: bucket_probability_and_ev
+    source: Docs/design/gdd/plinko-board.md
+    variables: [pegs_per_row, bucket_width_weights, bucket_multipliers, sigma, jackpot_burst_count]
+    output: "design model, verified by simulation: p_jackpot mean 10-13% (~10.9%), EV_mean 1.85-2.05 (~1.919), EV_effective_mean ~2.96, aim_ratio <= 1.20; at bounciness_cap p_jackpot mean <= 20%, EV_mean <= 2.3"
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+      - Docs/design/gdd/pet-catalog.md
+  - name: base_coin_value
+    source: Docs/design/gdd/economy-core.md
+    variables: [spin_growth, coin_value_exponent, spins_this_shop]
+    output: ">= 1; 1 tại n=0, ~18.7 tại n=100 (alpha 0.6)"
+    referenced_by:
+      - Docs/design/gdd/plinko-board.md
+      - Docs/design/gdd/pet-catalog.md
+  - name: idle_cps
+    source: Docs/design/gdd/economy-core.md
+    variables: [base_rate, flat_units, idle_cps_unit, multiplier_synergy, tier_multiplier]
+    output: "0 (empty shelf) to a few thousand coins/s in MVP"
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+      - Docs/design/gdd/bootstrap-and-scene-flow.md
+  - name: pet_power_units
+    source: Docs/design/gdd/pet-catalog.md
+    variables: [rarity_coefficients, weight]
+    output: "0.8-18 units (common w 0.8 to legendary w 1.2)"
+    referenced_by: []
+  - name: idle_base_units
+    source: Docs/design/gdd/pet-catalog.md
+    variables: [pet_power_units, role_idle_share]
+    output: "0 (Support) to 18 units; roster v1.0 max 6.6"
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+  - name: pet_event_bonus
+    source: Docs/design/gdd/pet-catalog.md
+    variables: [magnitude, base_coin_value]
+    output: "0 to 10 × base_coin_value per event"
+    referenced_by: []
+  - name: plinko_effect_uplift
+    source: Docs/design/gdd/pet-catalog.md
+    variables: [magnitude, plinko_jackpot_prob_mean_assumed, jackpot_burst_count, plinko_scored_peg_hits_per_coin_assumed, plinko_ev_effective_assumed, auto_drop_base_interval, realistic_tap_rate, base_peg_bounciness, bounciness_cap, bounce_uplift_at_cap]
+    output: "0 to ~0.55 per pet (balance model only)"
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+  - name: boot_to_interactive
+    source: Docs/design/gdd/bootstrap-and-scene-flow.md
+    variables: [t_boot_completed, curtain_min_display_seconds, curtain_reveal_duration, max_boot_to_interactive_seconds]
+    output: ">= 0.75 s; within budget <= 2.0 s when t_boot_completed <= 1.65 s"
+    referenced_by: []
+  - name: away_seconds
+    source: Docs/design/gdd/bootstrap-and-scene-flow.md
+    variables: [t_pause_utc, t_resume_utc]
+    output: "0 to unbounded seconds; never negative"
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+      - Docs/design/gdd/audio.md
+      - Docs/design/gdd/plinko-board.md
+  - name: prewarm_frames
+    source: Docs/design/gdd/object-pooling.md
+    variables: [pool_capacity, prewarm_per_frame, target_fps, prewarm_max_seconds]
+    output: "1-64 frames; MVP 4 frames (~0.067 s) <= prewarm_max_seconds"
+    referenced_by:
+      - Docs/design/gdd/bootstrap-and-scene-flow.md
+  - name: display_format
+    source: Docs/design/gdd/economy-core.md
+    variables: [v, display_sig_digits, rate_decimals]
+    output: "chuỗi <= 6 ký tự; cắt xuống display_sig_digits chữ số có nghĩa + hậu tố K/M/B/T rồi aa..zz; v < 1000 → floor(v) hoặc rate_decimals chữ số thập phân"
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: plinko_target_uplift
+    source: Docs/design/gdd/pet-catalog.md
+    variables: [pet_power_units, plinko_uplift_per_unit, plinko_role_idle_share]
+    output: "0.036-0.81 (roster v1.0: 0.045-0.324) phần thu nhập kênh Plinko"
+    referenced_by:
+      - Docs/design/gdd/plinko-board.md
+  - name: budget_ratio
+    source: Docs/design/gdd/pet-catalog.md
+    variables: [plinko_effect_uplift, plinko_target_uplift, support_power_estimate, pet_power_units, budget_tolerance]
+    output: "mục tiêu [0.75, 1.25] với mặc định; Kẹo Bảy Màu 1.235"
+    referenced_by:
+      - Docs/design/gdd/plinko-board.md
+  - name: channel_parity
+    source: Docs/design/gdd/pet-catalog.md
+    variables: [plinko_uplift_per_unit, realistic_tap_rate, ev_eff, base_coin_value, idle_cps_unit, parity_band]
+    output: "tăng theo base_coin_value(n); 0.959 tại n_ref = 50, trong parity_band khi n ≈ 44-59"
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+
+constants:
+  - name: bucket_multipliers
+    value: [5, 2, 1, 2, 5]
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+  - name: max_active_coins
+    value: 24
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+      - Docs/design/gdd/object-pooling.md
+      - Docs/design/gdd/audio.md
+      - Docs/design/gdd/bootstrap-and-scene-flow.md
+  - name: tap_cooldown
+    value: 0.15
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+      - Docs/design/gdd/audio.md
+      - Docs/design/gdd/bootstrap-and-scene-flow.md
+  - name: bounciness_cap
+    value: 0.85
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+      - Docs/design/gdd/pet-catalog.md
+  - name: jackpot_burst_count
+    value: 5
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+      - Docs/design/gdd/object-pooling.md
+      - Docs/design/gdd/audio.md
+  - name: max_scored_peg_hits
+    value: 20
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+      - Docs/design/gdd/audio.md
+  - name: base_peg_bounciness
+    value: 0.5
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: auto_drop_base_interval
+    value: 2.0
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: auto_drop_min_interval
+    value: 0.4
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: target_median_fall_time
+    value: 2.5
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+      - Docs/design/gdd/audio.md
+  - name: burst_queue_max
+    value: 60
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/object-pooling.md
+  - name: tap_to_spawn_max_ms
+    value: 50
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/bootstrap-and-scene-flow.md
+      - Docs/design/gdd/object-pooling.md
+  - name: floating_text_max_on_screen
+    value: 10
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/object-pooling.md
+  - name: spin_growth
+    value: 1.05
+    source: Docs/design/gdd/economy-core.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: coin_value_exponent
+    value: 0.6
+    source: Docs/design/gdd/economy-core.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+      - Docs/design/gdd/plinko-board.md
+  - name: idle_cps_unit
+    value: 2.0
+    source: Docs/design/gdd/economy-core.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: plinko_flat_per_coin_cap
+    value: 2.0
+    source: Docs/design/gdd/economy-core.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: synergy_tier_cap
+    value: 4.0
+    source: Docs/design/gdd/economy-core.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: plinko_ev_effective_assumed
+    value: 2.96
+    source: Docs/design/gdd/economy-core.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: plinko_jackpot_prob_mean_assumed
+    value: 0.109
+    source: Docs/design/gdd/economy-core.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: plinko_scored_peg_hits_per_coin_assumed
+    value: 14
+    source: Docs/design/gdd/economy-core.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: realistic_tap_rate
+    value: 3.0
+    source: Docs/design/gdd/economy-core.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: rarity_coefficients
+    value: [1, 2.5, 6, 15]
+    source: Docs/design/gdd/pet-catalog.md
+    referenced_by: []
+  - name: max_boot_to_interactive_seconds
+    value: 2.0
+    source: Docs/design/gdd/bootstrap-and-scene-flow.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+      - Docs/design/gdd/object-pooling.md
+  - name: step_timeout_seconds
+    value: 10
+    source: Docs/design/gdd/bootstrap-and-scene-flow.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+      - Docs/design/gdd/object-pooling.md
+      - Docs/design/gdd/audio.md
+  - name: prewarm_max_seconds
+    value: 0.25
+    source: Docs/design/gdd/object-pooling.md
+    referenced_by:
+      - Docs/design/gdd/bootstrap-and-scene-flow.md
+  - name: prewarm_per_frame
+    value: 10
+    source: Docs/design/gdd/object-pooling.md
+    referenced_by:
+      - Docs/design/gdd/bootstrap-and-scene-flow.md
+  - name: perf_sample_frames
+    value: 600
+    source: Docs/design/gdd/object-pooling.md
+    referenced_by:
+      - Docs/design/gdd/plinko-board.md
+  - name: fizzle_max_on_screen
+    value: 4
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/object-pooling.md
+  - name: floating_text_merge_window
+    value: 0.25
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/object-pooling.md
+      - Docs/design/gdd/audio.md
+  - name: busy_feedback_min_interval
+    value: 0.5
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/audio.md
+  - name: peg_rows
+    value: 12
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/audio.md
+  - name: pegs_per_row
+    value: 10
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/audio.md
+  - name: peg_spacing
+    value: 0.55
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/audio.md
+  - name: label_contrast_min
+    value: 4.5
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/bootstrap-and-scene-flow.md
+  - name: cap_ev_mean_max
+    value: 2.3
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: max_raw_payout_per_second_per_base_coin
+    value: 24
+    source: Docs/design/gdd/plinko-board.md
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+  - name: plinko_bounce_uplift_at_cap_assumed
+    value: 0.40
+    source: Docs/design/gdd/economy-core.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+      - Docs/design/gdd/plinko-board.md
+  - name: max_frame_delta
+    value: 0.25
+    source: Docs/design/gdd/economy-core.md
+    referenced_by:
+      - Docs/design/gdd/plinko-board.md
+      - Docs/design/gdd/bootstrap-and-scene-flow.md
+  - name: plinko_raw_rate_ceiling_assumed
+    value: [20, 27.1, 30.7, 42]
+    source: Docs/design/gdd/economy-core.md
+    referenced_by:
+      - Docs/design/gdd/plinko-board.md
+  - name: display_sig_digits
+    value: 3
+    source: Docs/design/gdd/economy-core.md
+    referenced_by:
+      - Docs/design/gdd/pet-catalog.md
+  - name: parity_band
+    value: [0.8, 1.25]
+    source: Docs/design/gdd/pet-catalog.md
+    referenced_by:
+      - Docs/design/gdd/economy-core.md
+  - name: default_tab
+    value: Board
+    source: Docs/design/gdd/bootstrap-and-scene-flow.md
+    referenced_by:
+      - Docs/design/gdd/audio.md
+  - name: perf_reference_device
+    value: "Laptop Intel Core i5 thế hệ 8, 8 GB RAM, Windows; Chrome bản ổn định mới nhất; DevTools CPU throttling 4×; cache và bộ nhớ trang trống; tab hiển thị suốt lần đo (tạm, ADR hiệu năng có thể thay)"
+    source: Docs/design/gdd/bootstrap-and-scene-flow.md
+    referenced_by:
+      - Docs/design/gdd/plinko-board.md
