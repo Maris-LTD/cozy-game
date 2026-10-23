@@ -5,5 +5,6 @@ namespace CozyGachapon.Contracts
         int AcquireInputBlock(string owner);
         void Release(int token);
         bool IsInputBlocked { get; }
+        InputGateStatus Status { get; }
     }
 }

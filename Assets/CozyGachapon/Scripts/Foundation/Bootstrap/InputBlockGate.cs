@@ -3,15 +3,16 @@ using CozyGachapon.Contracts;
 
 namespace CozyGachapon.Foundation
 {
-    public sealed class InputBlockGate : IInputBlockGate
+    public class InputBlockGate : IInputBlockGate
     {
-        private readonly HashSet<int> _activeTokens = new HashSet<int>();
+        private readonly HashSet<int> _activeTokens = new HashSet<int>(32);
         private int _nextTokenId = 1;
 
         public bool IsInputBlocked => _activeTokens.Count > 0;
+        public InputGateStatus Status => _activeTokens.Count > 0 ? InputGateStatus.Blocked : InputGateStatus.Open;
         public int ActiveTokenCount => _activeTokens.Count;
 
-        public int AcquireInputBlock(string owner)
+        public int AcquireInputBlock(string owner = null)
         {
             int token = _nextTokenId++;
             _activeTokens.Add(token);

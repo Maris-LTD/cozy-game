@@ -1,12 +1,13 @@
 # Story 006: Central Input Barrier & Tab Router
 
 > **Epic**: Bootstrap & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1-2 days
-> **Last Updated**: [set by game-dev when implementation begins]
+> **Last Updated**: 2026-10-23
 > **Manifest Version**: 2026-10-21
+> **unity-reviewer review (LP-CODE-REVIEW)**: APPROVED 2026-10-23
 
 ## Context
 
@@ -34,9 +35,9 @@
 
 *From Docs/design/gdd/bootstrap-and-scene-flow.md, scoped to this story:*
 
-- [ ] `AC-25 [EditMode]`: Khi các hệ thống khác nhau lấy token chặn input, trạng thái cổng là `Blocked` chừng nào số lượng token > 0; cổng chỉ chuyển sang `Open` khi toàn bộ các token đã được nhả; việc nhả token lặp lại hoặc nhả token không hợp lệ không được ném ngoại lệ (chỉ ghi log cảnh báo Editor).
-- [ ] `AC-27 [EditMode]`: Khi gọi `RequestTab(targetTab)`: nếu chuyển sang chính tab đang active thì trả về `NoChange`; nếu tab đang bị khóa bởi 1 token mà gọi không kèm token đó thì trả về `Locked`; nếu gọi kèm đúng token khóa thì thực hiện chuyển tab và phát `TabChanged {previous, current}`; nếu gọi đổi tab trong lúc đang khởi động (`Booting`) thì bị từ chối `Locked`.
-- [ ] `AC-37 [Perf]`: Trong suốt quá trình vận hành liên tục 600 khung hình có thao tác mượn/nhả token và chuyển đổi tab giữa `Board`, `Shelf`, `Shop`, số byte GC cấp phát mới của router và cổng chặn phải đạt đúng 0 B GC mỗi khung hình.
+- [x] `AC-25 [EditMode]`: Khi các hệ thống khác nhau lấy token chặn input, trạng thái cổng là `Blocked` chừng nào số lượng token > 0; cổng chỉ chuyển sang `Open` khi toàn bộ các token đã được nhả; việc nhả token lặp lại hoặc nhả token không hợp lệ không được ném ngoại lệ (chỉ ghi log cảnh báo Editor).
+- [x] `AC-27 [EditMode]`: Khi gọi `RequestTab(targetTab)`: nếu chuyển sang chính tab đang active thì trả về `NoChange`; nếu tab đang bị khóa bởi 1 token mà gọi không kèm token đó thì trả về `Locked`; nếu gọi kèm đúng token khóa thì thực hiện chuyển tab và phát `TabChanged {previous, current}`; nếu gọi đổi tab trong lúc đang khởi động (`Booting`) thì bị từ chối `Locked`.
+- [x] `AC-37 [Perf]`: Trong suốt quá trình vận hành liên tục 600 khung hình có thao tác mượn/nhả token và chuyển đổi tab giữa `Board`, `Shelf`, `Shop`, số byte GC cấp phát mới của router và cổng chặn phải đạt đúng 0 B GC mỗi khung hình.
 
 ## Implementation Notes
 
@@ -60,9 +61,26 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Bootstrap/InputBarrierTabRouterTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `Assets/CozyGachapon/Tests/EditMode/Bootstrap/InputBarrierTabRouterTests.cs` (9 passing EditMode tests, total 46/46 tests PASS)
 
 ## Dependencies
 
 - Depends on: Story 004
 - Unlocks: Story 007
+
+## Completion Notes
+
+- **Date**: 2026-10-23
+- **Changes**:
+  - `InputGateStatus.cs`: enum `Open`, `Blocked`.
+  - `IInputBlockGate.cs`: bổ sung property `InputGateStatus Status { get; }`.
+  - `AppTab.cs`: enum `Board = 0`, `Shelf = 1`, `Shop = 2`.
+  - `RequestTabResult.cs`: enum `Changed`, `NoChange`, `Locked`.
+  - `TabChangedEvent.cs`: immutable readonly struct `Previous`, `Current`.
+  - `ITabRouter.cs`: hợp đồng router tab (`ActiveTab`, `IsBooting`, `RequestTab`, `AcquireTabLock`, `LockTab`, `ReleaseTabLock`, `OnTabChanged`).
+  - `InputBlockGate.cs` & `InputBarrier.cs`: quản lý token an toàn, trả về trạng thái `Blocked`/`Open`, nhả token lặp/không hợp lệ không ném ngoại lệ.
+  - `TabRouter.cs`: quản lý 3 tab, cơ chế khóa đơn quyền/đa quyền, chặn đổi tab khi booting, chuyển tab phát `TabChangedEvent`, 0 B GC per frame.
+  - `SceneFlowConfig.cs`: thêm `_defaultTab` kiểu `AppTab`.
+  - `InputBarrierTabRouterTests.cs`: 9 tests EditMode bao phủ trọn vẹn AC-25, AC-27, và kiểm chứng AC-37 (0 B GC qua 600 frames).
+- **Review**: Approved by `unity-reviewer` (LP-CODE-REVIEW).
+- **Harness**: 46/46 tests passing, 0 rule violations.

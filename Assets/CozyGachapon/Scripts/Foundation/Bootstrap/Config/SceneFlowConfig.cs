@@ -1,3 +1,4 @@
+using CozyGachapon.Contracts;
 using UnityEngine;
 
 namespace CozyGachapon.Foundation
@@ -9,10 +10,12 @@ namespace CozyGachapon.Foundation
         [SerializeField] private string _gameSceneName = "Game";
         [SerializeField] private float _referenceWidth = 1080f;
         [SerializeField] private float _referenceHeight = 1920f;
+        [SerializeField] private AppTab _defaultTab = AppTab.Board;
 
         public string BootSceneName => _bootSceneName;
         public string GameSceneName => _gameSceneName;
         public float ReferenceWidth => _referenceWidth;
         public float ReferenceHeight => _referenceHeight;
+        public AppTab DefaultTab => _defaultTab;
     }
 }

@@ -38,7 +38,7 @@ Bootstrap & Scene Flow là hệ hạ tầng điều phối toàn bộ vòng đ�
 | 003 | Startup Curtain Controller & Interactive Milestone | Logic | Complete | ADR-0002 |
 | 004 | Application Lifecycle & Visibility Watchdog | Logic | Complete | ADR-0002 |
 | 005 | Rewarded Ad Lifecycle & AdClosed Integration | Logic | Complete | ADR-0002 |
-| 006 | Central Input Barrier & Tab Router | Logic | Ready | ADR-0002 |
+| 006 | Central Input Barrier & Tab Router | Logic | Complete | ADR-0002 |
 | 007 | World Press Input Routing & Modal Back Handler | Integration | Ready | ADR-0002 |
 | 008 | Viewport Calculator & Aspect Ratio Letterboxing | Logic | Ready | ADR-0002, ADR-0006 |
 | 009 | Startup Curtain View & Retry Panel | UI | Ready | ADR-0002 |
@@ -54,4 +54,4 @@ This epic is complete when:
 
 ## Next Step
 
-Run `game-readiness Docs/production/epics/bootstrap-and-scene-flow/story-006-token-input-block-gate.md` to validate the next story, then `game-dev` to implement it.
+Run `game-readiness Docs/production/epics/bootstrap-and-scene-flow/story-007-world-press-router.md` to validate the next story, then `game-dev` to implement it.
