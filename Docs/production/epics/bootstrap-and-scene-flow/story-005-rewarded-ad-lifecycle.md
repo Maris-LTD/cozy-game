@@ -1,12 +1,13 @@
 # Story 005: Rewarded Ad Lifecycle & AdClosed Integration
 
 > **Epic**: Bootstrap & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1-2 days
-> **Last Updated**: [set by game-dev when implementation begins]
+> **Last Updated**: 2026-10-23
 > **Manifest Version**: 2026-10-21
+> **unity-reviewer review (LP-CODE-REVIEW)**: APPROVED 2026-10-23
 
 ## Context
 
@@ -34,8 +35,8 @@
 
 *From Docs/design/gdd/bootstrap-and-scene-flow.md, scoped to this story:*
 
-- [ ] `AC-42 [EditMode]`: Khi vòng đời đang `Running`, nếu SDK nền tảng gọi `SetAdOpen(true)`, cờ `IsAdOpen` chuyển sang `true`; trong suốt khoảng thời gian này, các sự kiện ẩn/hiện trang web hoặc ứng dụng xuống nền/trở lại đều không phát `Paused` hay `Resumed`; vòng đời vẫn giữ `Running` và `IsSimulationRunning` vẫn là `true` cho tới khi gọi `SetAdOpen(false)`. Nếu lúc đóng ad mà trang web vẫn đang bị ẩn, hệ thống kích hoạt ngay `Paused {reason = Hidden}`.
-- [ ] `AC-43 [EditMode]`: Khi `SetAdOpen(false)` được gọi, hệ thống phát đúng 1 sự kiện `AdClosed {adSeconds}`, trong đó `adSeconds` là khoảng thời gian thực UTC giữa hai lần mở và đóng ad (kẹp ≥ 0, nếu đồng hồ lùi thì bằng 0). Nếu trang đang ẩn tại thời điểm đóng ad, sự kiện `AdClosed` được phát trước sự kiện `Paused` trong cùng khung hình.
+- [x] `AC-42 [EditMode]`: Khi vòng đời đang `Running`, nếu SDK nền tảng gọi `SetAdOpen(true)`, cờ `IsAdOpen` chuyển sang `true`; trong suốt khoảng thời gian này, các sự kiện ẩn/hiện trang web hoặc ứng dụng xuống nền/trở lại đều không phát `Paused` hay `Resumed`; vòng đời vẫn giữ `Running` và `IsSimulationRunning` vẫn là `true` cho tới khi gọi `SetAdOpen(false)`. Nếu lúc đóng ad mà trang web vẫn đang bị ẩn, hệ thống kích hoạt ngay `Paused {reason = Hidden}`.
+- [x] `AC-43 [EditMode]`: Khi `SetAdOpen(false)` được gọi, hệ thống phát đúng 1 sự kiện `AdClosed {adSeconds}`, trong đó `adSeconds` là khoảng thời gian thực UTC giữa hai lần mở và đóng ad (kẹp ≥ 0, nếu đồng hồ lùi thì bằng 0). Nếu trang đang ẩn tại thời điểm đóng ad, sự kiện `AdClosed` được phát trước sự kiện `Paused` trong cùng khung hình.
 
 ## Implementation Notes
 
@@ -59,9 +60,19 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Bootstrap/AdLifecycleIntegrationTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `Assets/CozyGachapon/Tests/EditMode/Bootstrap/AdLifecycleIntegrationTests.cs` (8 passing EditMode tests, total 37/37 tests PASS)
 
 ## Dependencies
 
 - Depends on: Story 004
 - Unlocks: Story 006
+
+## Completion Notes
+
+- **Date**: 2026-10-23
+- **Changes**:
+  - `AdClosedEvent.cs`: readonly struct event mang `AdSeconds` (double).
+  - `AppLifecycleWatchdog.cs`: thêm `SetAdOpen(bool)`, `IsAdOpen`, sự kiện `OnAdClosed`. Quản lý kẹp thời gian thực không âm, trì hoãn pause khi trang ẩn trong lúc đang xem ad, phát đúng thứ tự `AdClosed` trước `Paused` khi ad đóng lúc trang đang ẩn.
+  - `AdLifecycleIntegrationTests.cs`: 8 tests EditMode bao phủ trọn vẹn AC-42 và AC-43.
+- **Review**: Approved by `unity-reviewer` (LP-CODE-REVIEW).
+- **Harness**: 37/37 tests passing, 0 rule violations.
