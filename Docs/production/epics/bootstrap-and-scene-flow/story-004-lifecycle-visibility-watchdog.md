@@ -1,11 +1,11 @@
 # Story 004: Application Lifecycle & Visibility Watchdog
 
 > **Epic**: Bootstrap & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1-2 days
-> **Last Updated**: [set by game-dev when implementation begins]
+> **Last Updated**: 2026-10-23
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,10 +34,10 @@
 
 *From Docs/design/gdd/bootstrap-and-scene-flow.md, scoped to this story:*
 
-- [ ] `AC-17 [EditMode]`: Khi ở trạng thái `Running`, việc cửa sổ mất focus (nhưng vẫn hiển thị trên màn hình) không phát sự kiện gì; khi trang web bị ẩn hoặc ứng dụng xuống nền, phát đúng 1 sự kiện `Paused {reason = Hidden}`; các tín hiệu ẩn tiếp theo bị bỏ qua; khi trang hiển thị lại, phát đúng 1 sự kiện `Resumed {awaySeconds}`.
-- [ ] `AC-18 [EditMode]`: Thời gian vắng mặt `awaySeconds` được tính bằng chênh lệch thời gian UTC thực giữa `Resumed` và `Paused`; giá trị này được kẹp tự động ≥ 0 (nếu đồng hồ hệ thống bị lùi hoặc sai lệch NaN thì trả về 0 s).
-- [ ] `AC-19 [EditMode]`: Nếu trang bị ẩn trong lúc đang chạy chuỗi khởi động (`Booting.Steps`), không phát sự kiện `Paused` trước `BootCompleted`; chỉ khi `BootCompleted` hoàn tất mới chuyển sang `Paused` với trạng thái trả về là `Booting.Curtain`; rèm vẫn giữ `Covering` cho đến khi trang hiển thị lại.
-- [ ] `AC-21 [EditMode]`: Khi nền tảng thông báo đóng ứng dụng, phát đúng 1 sự kiện `Quitting`, sau đó không phát thêm bất kỳ sự kiện `Paused` hay `Resumed` nào khác.
+- [x] `AC-17 [EditMode]`: Khi ở trạng thái `Running`, việc cửa sổ mất focus (nhưng vẫn hiển thị trên màn hình) không phát sự kiện gì; khi trang web bị ẩn hoặc ứng dụng xuống nền, phát đúng 1 sự kiện `Paused {reason = Hidden}`; các tín hiệu ẩn tiếp theo bị bỏ qua; khi trang hiển thị lại, phát đúng 1 sự kiện `Resumed {awaySeconds}`.
+- [x] `AC-18 [EditMode]`: Thời gian vắng mặt `awaySeconds` được tính bằng chênh lệch thời gian UTC thực giữa `Resumed` và `Paused`; giá trị này được kẹp tự động ≥ 0 (nếu đồng hồ hệ thống bị lùi hoặc sai lệch NaN thì trả về 0 s).
+- [x] `AC-19 [EditMode]`: Nếu trang bị ẩn trong lúc đang chạy chuỗi khởi động (`Booting.Steps`), không phát sự kiện `Paused` trước `BootCompleted`; chỉ khi `BootCompleted` hoàn tất mới chuyển sang `Paused` với trạng thái trả về là `Booting.Curtain`; rèm vẫn giữ `Covering` cho đến khi trang hiển thị lại.
+- [x] `AC-21 [EditMode]`: Khi nền tảng thông báo đóng ứng dụng, phát đúng 1 sự kiện `Quitting`, sau đó không phát thêm bất kỳ sự kiện `Paused` hay `Resumed` nào khác.
 
 ## Implementation Notes
 
@@ -61,9 +61,21 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Bootstrap/LifecycleWatchdogTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Created `Assets/CozyGachapon/Tests/EditMode/Bootstrap/LifecycleWatchdogTests.cs` (8 unit tests, passing in `unity-harness all`)
 
 ## Dependencies
 
 - Depends on: Story 003
 - Unlocks: Story 005, Story 006
+
+## Completion Notes
+
+**Completed**: 2026-10-23
+**Criteria**: 4/4 passing (0 deferred)
+**Harness**: unity-harness all (rules: PASS 9 files, compile: PASS, tests: PASS CozyGachapon.Tests.EditMode 29/29)
+**Run result**: N/A - pure C# lifecycle watchdog without visual surface
+**Deviations**: None
+**Test Evidence**: Assets/CozyGachapon/Tests/EditMode/Bootstrap/LifecycleWatchdogTests.cs (29/29 total suite passing)
+**Visual sign-off**: n/a (not Visual/Feel or UI)
+**Code Review**: unity-reviewer: 0 blocker / 0 major / 0 minor open (all resolved); LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none
