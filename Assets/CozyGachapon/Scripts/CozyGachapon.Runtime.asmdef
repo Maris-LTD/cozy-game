@@ -3,7 +3,9 @@
     "rootNamespace": "CozyGachapon",
     "references": [
         "CozyGachapon.Contracts",
-        "CozyGachapon.Foundation"
+        "CozyGachapon.Foundation",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

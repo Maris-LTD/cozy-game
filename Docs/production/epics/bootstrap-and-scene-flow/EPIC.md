@@ -39,7 +39,7 @@ Bootstrap & Scene Flow là hệ hạ tầng điều phối toàn bộ vòng đ�
 | 004 | Application Lifecycle & Visibility Watchdog | Logic | Complete | ADR-0002 |
 | 005 | Rewarded Ad Lifecycle & AdClosed Integration | Logic | Complete | ADR-0002 |
 | 006 | Central Input Barrier & Tab Router | Logic | Complete | ADR-0002 |
-| 007 | World Press Input Routing & Modal Back Handler | Integration | Ready | ADR-0002 |
+| 007 | World Press Input Routing & Modal Back Handler | Integration | Complete | ADR-0002 |
 | 008 | Viewport Calculator & Aspect Ratio Letterboxing | Logic | Ready | ADR-0002, ADR-0006 |
 | 009 | Startup Curtain View & Retry Panel | UI | Ready | ADR-0002 |
 

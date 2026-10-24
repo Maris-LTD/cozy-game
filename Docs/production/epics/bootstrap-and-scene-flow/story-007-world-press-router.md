@@ -1,11 +1,11 @@
 # Story 007: World Press Input Routing & Modal Back Handler
 
 > **Epic**: Bootstrap & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: 1-2 days
-> **Last Updated**: [set by game-dev when implementation begins]
+> **Last Updated**: 2026-10-24
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,9 +34,9 @@
 
 *From Docs/design/gdd/bootstrap-and-scene-flow.md, scoped to this story:*
 
-- [ ] `AC-22 [EditMode]`: Khi đánh giá điều kiện phát `WorldPress` vào bàn Plinko: chỉ chấp nhận cú nhấn đầu tiên trong khung hình, nằm trong khung hiển thị `frame_rect`, không trúng phần tử UI, cổng chặn đang mở (0 token), và `ActiveTab` đang là `Board`; nếu là ngón thứ hai, trúng UI, có token chặn, khác tab, hoặc chạm ngoài khung hiển thị thì đều bị bỏ qua (không phát `WorldPress`).
-- [ ] `AC-29 [EditMode]`: Khi người chơi nhấn nút Back (hoặc phím Escape): nếu có modal đang mở trong ngăn xếp thì gọi trình xử lý của modal để đóng modal; nếu không có modal mà đang ở tab `Shelf` hoặc `Shop` thì chuyển về tab `Board`; nếu đã ở `Board` trên Android thì gửi yêu cầu đưa app xuống nền (không mở popup hỏi thoát); trên WebGL thì không làm gì. Nhấn Back trong lúc đang khởi động (`Booting`) bị bỏ qua.
-- [ ] `AC-33 [EditMode]`: Cú chạm hoặc nhấn phím hợp lệ đầu tiên của người chơi vào phiên (kể cả khi chạm vào rèm che hoặc viền) phát đúng 1 sự kiện `FirstInteraction` để tầng Audio mở khóa Web Audio context trên WebGL; các cú chạm tiếp theo không phát lại sự kiện này.
+- [x] `AC-22 [EditMode]`: Khi đánh giá điều kiện phát `WorldPress` vào bàn Plinko: chỉ chấp nhận cú nhấn đầu tiên trong khung hình, nằm trong khung hiển thị `frame_rect`, không trúng phần tử UI, cổng chặn đang mở (0 token), và `ActiveTab` đang là `Board`; nếu là ngón thứ hai, trúng UI, có token chặn, khác tab, hoặc chạm ngoài khung hiển thị thì đều bị bỏ qua (không phát `WorldPress`).
+- [x] `AC-29 [EditMode]`: Khi người chơi nhấn nút Back (hoặc phím Escape): nếu có modal đang mở trong ngăn xếp thì gọi trình xử lý của modal để đóng modal; nếu không có modal mà đang ở tab `Shelf` hoặc `Shop` thì chuyển về tab `Board`; nếu đã ở `Board` trên Android thì gửi yêu cầu đưa app xuống nền (không mở popup hỏi thoát); trên WebGL thì không làm gì. Nhấn Back trong lúc đang khởi động (`Booting`) bị bỏ qua.
+- [x] `AC-33 [EditMode]`: Cú chạm hoặc nhấn phím hợp lệ đầu tiên của người chơi vào phiên (kể cả khi chạm vào rèm che hoặc viền) phát đúng 1 sự kiện `FirstInteraction` để tầng Audio mở khóa Web Audio context trên WebGL; các cú chạm tiếp theo không phát lại sự kiện này.
 
 ## Implementation Notes
 
@@ -60,9 +60,21 @@
 **Story Type**: Integration
 **Required evidence**: An EditMode/PlayMode test in `Assets/CozyGachapon/Tests/EditMode/Bootstrap/WorldPressRouterTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `Tests/EditMode/Bootstrap/WorldPressRouterTests.cs`, `BackButtonRouterTests.cs`, `FirstInteractionDetectorTests.cs` (83/83 passed 2026-10-24)
 
 ## Dependencies
 
 - Depends on: Story 006
 - Unlocks: Story 008
+
+## Completion Notes
+**Completed**: 2026-10-24
+**Criteria**: 3/3 passing (no deferred items)
+**Harness**: unity-harness all PASS (rules 24 files, compile, CozyGachapon.Tests.EditMode 83/83); smoke not run (nothing wired into a scene)
+**Run result**: N/A - adapters are not wired into any scene in this story (composition root out of scope); nothing on screen changes
+**Deviations**: Contracts use float pairs instead of Vector2 (Contracts has no UnityEngine reference); BootStatusTracker added because BootFailed state did not exist; Unity adapters live in CozyGachapon.Runtime (user decision 2026-10-24, not yet in ADR-0001 / architecture.md asmdef table); TR-boot-003 registry text describes Story 006 scope only; game-readiness was skipped before game-dev
+**Test Evidence**: WorldPressRouterTests, BackButtonRouterTests, FirstInteractionDetectorTests - 83/83 passed in CozyGachapon.Tests.EditMode
+**Visual sign-off**: n/a (Integration)
+**Code Review**: unity-reviewer 1 major (vacuous GC test in InputBarrierTabRouterTests, reverted) + 2 minor (EventSystemUiHitTester init fixed; constructor null checks open); game-code-review APPROVED WITH SUGGESTIONS; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none (Unity adapters in Scripts/Input have no automated test by design)
+**Tech debt**: TD-001, TD-002, TD-003
