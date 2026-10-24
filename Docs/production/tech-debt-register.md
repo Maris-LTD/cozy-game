@@ -1,8 +1,9 @@
 # Tech Debt Register
-Last updated: 2026-10-24 | Total items: 3
+Last updated: 2026-10-24 | Total items: 4
 
 | ID | Category | Description | Files | Effort | Impact | Priority | Status | Added | Target |
 |---|---|---|---|---|---|---|---|---|---|
 | TD-001 | Test | Device check not done: one tap on mobile WebGL may also emit an emulated mouse press in a later frame (double coin drop); Android Back on gesture navigation (Android 13+) may not arrive as Keyboard.escapeKey - from Docs/production/epics/bootstrap-and-scene-flow/story-007-world-press-router.md | Assets/CozyGachapon/Scripts/Input/PointerPressInputAdapter.cs, Assets/CozyGachapon/Scripts/Input/BackKeyInputAdapter.cs | S | Med | - | Open | 2026-10-24 | Backlog |
 | TD-002 | Code Quality | Same-frame multi-touch picks the first press by touch slot index, not Input System event order (GDD B9.5); mouse is always checked after touches - from Docs/production/epics/bootstrap-and-scene-flow/story-007-world-press-router.md | Assets/CozyGachapon/Scripts/Input/PointerPressInputAdapter.cs | S | Low | - | Open | 2026-10-24 | Backlog |
 | TD-003 | Documentation | CozyGachapon.Runtime (composition root + Unity input adapters, refs Unity.InputSystem/UnityEngine.UI) is missing from the ADR-0001 / architecture.md asmdef table; tr-registry TR-boot-003 text covers only the tab router and barrier, not WorldPress, Back or FirstInteraction - from Docs/production/epics/bootstrap-and-scene-flow/story-007-world-press-router.md | Docs/architecture/architecture.md, Docs/architecture/adr-0001-layered-assembly-architecture.md, Docs/architecture/tr-registry.yaml | S | Low | - | Open | 2026-10-24 | Backlog |
+| TD-004 | Test | Composition root must call ViewportCalculator.SetScreenSize(Screen.width, Screen.height) every frame and FlushFrame() once per frame before render (AC-32 wiring), create SceneFlowConfig.asset, and pass ViewportCalculator as IFrameRectProvider to WorldPressRouter; verify in Play mode - from Docs/production/epics/bootstrap-and-scene-flow/story-008-viewport-calculator.md | Assets/CozyGachapon/Scripts/Foundation/Bootstrap/ViewportCalculator.cs | S | Med | - | Open | 2026-10-24 | Backlog |
