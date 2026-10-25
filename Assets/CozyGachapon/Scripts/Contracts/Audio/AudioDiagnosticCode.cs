@@ -4,6 +4,7 @@ namespace CozyGachapon.Contracts
     {
         UnknownCue,
         CueExcluded,
-        InitializeInvalidInput
+        InitializeInvalidInput,
+        InitializeException
     }
 }

@@ -1,7 +1,7 @@
 # Story 010: `audio.service` Boot Step & Failed State
 
 > **Epic**: Audio
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1 day
@@ -34,9 +34,9 @@
 
 *From Docs/design/gdd/audio.md, scoped to this story:*
 
-- [ ] `AC-41 [EditMode]` **GIVEN** sổ đăng ký `IBootStep` giả của Bootstrap, **WHEN** Audio đăng ký, **THEN** có đúng 1 bước của Audio với `Id` = `audio.service`, `Phase` = `ServiceInit`, `RunsAfter` rỗng, `IsCritical` = sai; trước `Run()` mọi `Play` → `Dropped(NotReady)`; sau `Run()` với `C` hợp lệ thì `IsDone` = đúng, `IsFailed` = sai và số nguồn phát = `C.totalVoices`; với `AudioConfig` thiếu thì `IsFailed` = đúng, trạng thái Failed, không exception lọt ra ngoài `Run()`; assembly của Bootstrap không tham chiếu assembly của Audio.
-- [ ] `AC-32 [EditMode]` **GIVEN** thiếu `AudioConfig`, **WHEN** khởi tạo rồi gọi `Play`, `SetUserMuted(true)`, **THEN** trạng thái Failed, `Play` → `Dropped(NotReady)` không exception, `IsUserMuted` = đúng và giá trị được lưu.
-- [ ] `AC-31 [EditMode]` **GIVEN** assembly definition của Audio, **WHEN** đọc danh sách tham chiếu, **THEN** không có assembly nào của Plinko, Gacha, Shelf, Feedback & Juice (Audio không nghe sự kiện gameplay, D1).
+- [x] `AC-41 [EditMode]` **GIVEN** sổ đăng ký `IBootStep` giả của Bootstrap, **WHEN** Audio đăng ký, **THEN** có đúng 1 bước của Audio với `Id` = `audio.service`, `Phase` = `ServiceInit`, `RunsAfter` rỗng, `IsCritical` = sai; trước `Run()` mọi `Play` → `Dropped(NotReady)`; sau `Run()` với `C` hợp lệ thì `IsDone` = đúng, `IsFailed` = sai và số nguồn phát = `C.totalVoices`; với `AudioConfig` thiếu thì `IsFailed` = đúng, trạng thái Failed, không exception lọt ra ngoài `Run()`; assembly của Bootstrap không tham chiếu assembly của Audio.
+- [x] `AC-32 [EditMode]` **GIVEN** thiếu `AudioConfig`, **WHEN** khởi tạo rồi gọi `Play`, `SetUserMuted(true)`, **THEN** trạng thái Failed, `Play` → `Dropped(NotReady)` không exception, `IsUserMuted` = đúng và giá trị được lưu.
+- [x] `AC-31 [EditMode]` **GIVEN** assembly definition của Audio, **WHEN** đọc danh sách tham chiếu, **THEN** không có assembly nào của Plinko, Gacha, Shelf, Feedback & Juice (Audio không nghe sự kiện gameplay, D1).
 
 ## Implementation Notes
 
@@ -77,9 +77,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/AudioBootStepTests.cs`, `AudioBoundaryTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] boot step, failed state and boundary tests under `Assets/CozyGachapon/Tests/EditMode/Audio/` (EditMode 588/588)
 
 ## Dependencies
 
 - Depends on: Story 008
 - Unlocks: Story 011, Story 012
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 3/3 passing (AC-41, AC-32, AC-31 + QA edge cases)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 588/588); smoke n/a (not wired into MainGame until Story 012)
+**Run result**: N/A - boot step exercised with a fake boot registry
+**Deviations**: ADVISORY - `AudioServiceBootStep` / `AudioBootModule` follow the Pooling boot pattern; Admit logic moved into `AudioPlayPipeline` to keep `AudioService` under 250 lines; Failed keeps user mute read/write through `AudioFailedSettings`; `HandleInteractive` on the module is left to Story 011 (music start)
+**Test Evidence**: boot step / failed state / boundary tests in `Assets/CozyGachapon/Tests/EditMode/Audio/`, passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 3 minor: Failed now clears half-built pool/cue/pipeline fields; redundant catch assignments removed; `HandleInteractive` deferred to Story 011; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

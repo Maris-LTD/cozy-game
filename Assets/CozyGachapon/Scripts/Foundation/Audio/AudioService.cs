@@ -10,20 +10,18 @@ namespace CozyGachapon.Audio
         private const int NoCueIndex = -1;
 
         private readonly AudioCounters _counters = new AudioCounters();
-        private AudioConfig _config;
         private IVoiceBackend _backend;
         private IAudioClock _clock;
         private IAudioDiagnosticsSink _sink;
         private CueRuntimeTable _cues;
         private VoicePool _pool;
-        private PlayAdmission _admission;
-        private PitchResolver _pitch;
+        private AudioPlayPipeline _pipeline;
         private BusStateTable _busTable;
         private BusBackgroundController _background;
-        private VoiceGainCalculator _gain;
         private VoiceGainUpdater _gainUpdater;
         private AudioUserSettings _settings;
         private AudioMuteCoordinator _mute;
+        private AudioFailedSettings _failedSettings;
         private int _soundOnIndex = NoCueIndex;
 
         public event Action<bool> MuteChanged;
@@ -48,7 +46,7 @@ namespace CozyGachapon.Audio
             IAudioRandom random,
             IAudioSettingsStore settingsStore)
         {
-            if (IsReady)
+            if (IsReady || RuntimeState.Lifecycle == AudioLifecycle.Failed)
             {
                 return false;
             }
@@ -63,25 +61,26 @@ namespace CozyGachapon.Audio
                 return false;
             }
 
-            _config = config;
             _backend = backend;
             _clock = clock;
             _sink = sink;
             _cues = new CueRuntimeTable(repository, sink);
             _pool = new VoicePool(config.TotalVoices, config.MusicVoices, config.AmbienceVoices);
-            _admission = new PlayAdmission(
-                RuntimeState,
-                _cues,
-                _pool,
-                new InstanceCapResolver(_pool),
-                new VoiceStealer(_pool, _cues));
-            _pitch = new PitchResolver(config, random, new CueClipSelector(_cues.Count));
             _busTable = new BusStateTable(config, RuntimeState);
             _background = new BusBackgroundController(config, RuntimeState);
             AudioSuspendController suspend = new AudioSuspendController(config, RuntimeState);
             UserMuteController userMute = new UserMuteController(config, RuntimeState);
-            _gain = new VoiceGainCalculator(config, RuntimeState, _busTable, _background, suspend, userMute);
-            _gainUpdater = new VoiceGainUpdater(_pool, _cues, backend, _gain);
+            VoiceGainCalculator gain = new VoiceGainCalculator(config, RuntimeState, _busTable, _background, suspend, userMute);
+            _gainUpdater = new VoiceGainUpdater(_pool, _cues, backend, gain);
+            _pipeline = new AudioPlayPipeline(
+                config,
+                backend,
+                _cues,
+                _pool,
+                _counters,
+                new PlayAdmission(RuntimeState, _cues, _pool, new InstanceCapResolver(_pool), new VoiceStealer(_pool, _cues)),
+                new PitchResolver(config, random, new CueClipSelector(_cues.Count)),
+                gain);
             _settings = new AudioUserSettings(config, settingsStore);
             _mute = new AudioMuteCoordinator(
                 suspend, userMute, _pool, backend, _gainUpdater, _settings, new AdMuteHandler(RuntimeState, _pool, backend, _cues));
@@ -89,8 +88,24 @@ namespace CozyGachapon.Audio
             _busTable.SetUserVolume(AudioBus.Sfx, _settings.ReadSlider(AudioBus.Sfx));
             _mute.Restore(_settings.ReadUserMuted());
             _soundOnIndex = _cues.TryResolve(SoundOnCueId, out int soundOnIndex) ? soundOnIndex : NoCueIndex;
+            RuntimeState.SetLifecycle(AudioLifecycle.Active);
             IsReady = true;
             return true;
+        }
+
+        public void EnterFailed(IAudioSettingsStore settingsStore)
+        {
+            if (IsReady)
+            {
+                return;
+            }
+
+            RuntimeState.SetLifecycle(AudioLifecycle.Failed);
+            _cues = null;
+            _pool = null;
+            _pipeline = null;
+            _failedSettings = new AudioFailedSettings(RuntimeState, settingsStore);
+            _failedSettings.Restore();
         }
 
         public bool TryResolveCue(string cueId, out int cueIndex)
@@ -117,7 +132,7 @@ namespace CozyGachapon.Audio
                 return Drop(DropReason.UnknownCue);
             }
 
-            return Admit(cueIndex, playParams);
+            return _pipeline.Admit(cueIndex, _clock.Now, playParams);
         }
 
         public PlayResult Play(int cueIndex, in AudioPlayParams playParams)
@@ -133,7 +148,7 @@ namespace CozyGachapon.Audio
                 return Drop(DropReason.UnknownCue);
             }
 
-            return Admit(cueIndex, playParams);
+            return _pipeline.Admit(cueIndex, _clock.Now, playParams);
         }
 
         public void Tick()
@@ -153,7 +168,7 @@ namespace CozyGachapon.Audio
 
             if (soundOnDue && _soundOnIndex != NoCueIndex)
             {
-                Admit(_soundOnIndex, AudioPlayParams.None);
+                _pipeline.Admit(_soundOnIndex, _clock.Now, AudioPlayParams.None);
             }
         }
 
@@ -186,7 +201,10 @@ namespace CozyGachapon.Audio
 
         public void SetMuteReason(MuteReason reason, bool active)
         {
-            if (IsReady && _mute.Apply(reason, active, _clock.Now))
+            bool userChanged = IsReady
+                ? _mute.Apply(reason, active, _clock.Now)
+                : _failedSettings != null && _failedSettings.Apply(reason, active);
+            if (userChanged)
             {
                 MuteChanged?.Invoke(RuntimeState.IsUserMuted);
             }
@@ -200,44 +218,6 @@ namespace CozyGachapon.Audio
         public void HandleResumed(in ResumedEvent resumedEvent)
         {
             SetMuteReason(MuteReason.Background, false);
-        }
-
-        private PlayResult Admit(int cueIndex, in AudioPlayParams playParams)
-        {
-            double now = _clock.Now;
-            DropReason reason = _admission.Evaluate(cueIndex, now, out int voice, out VoiceAcquisition acquisition);
-            if (reason != DropReason.None)
-            {
-                return Drop(reason);
-            }
-
-            if (acquisition != VoiceAcquisition.Free)
-            {
-                RecordSteal(acquisition, voice, now);
-                _pool.Evict(voice, _backend, _cues);
-            }
-
-            SoundCue cue = _cues.GetCue(cueIndex);
-            float volume = _gain.Compute(cue, now);
-            float pitch = _pitch.Resolve(cueIndex, cue, playParams, _cues.GetDefaultClip(cueIndex), out AudioClip clip);
-            float pan = PanCalculator.Resolve(cue.PanFromPosition, playParams.PanPosition, _config.MaxPan, _backend.SupportsPan);
-            _backend.Start(voice, clip, volume, pitch, pan, cue.Loop);
-            _pool.Assign(voice, cueIndex, now, cue.Loop);
-            _cues.AddInstance(cueIndex);
-            _cues.MarkPlayed(cueIndex, now);
-            _counters.RecordPlayed(_pool.ActiveCount);
-            return PlayResult.Success();
-        }
-
-        private void RecordSteal(VoiceAcquisition acquisition, int voice, double now)
-        {
-            if (acquisition == VoiceAcquisition.SameCueSteal)
-            {
-                _counters.RecordSameCueSteal(now - _pool.GetSlot(voice).StartTime);
-                return;
-            }
-
-            _counters.RecordPrioritySteal();
         }
 
         private PlayResult Drop(DropReason reason)
