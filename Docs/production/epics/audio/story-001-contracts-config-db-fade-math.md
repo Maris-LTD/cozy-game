@@ -1,7 +1,7 @@
 # Story 001: Audio Contracts, Config Assets, dB & Fade Math
 
 > **Epic**: Audio
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 2 days
@@ -34,8 +34,8 @@
 
 *From Docs/design/gdd/audio.md, scoped to this story:*
 
-- [ ] `AC-2 [EditMode]` **GIVEN** `db_to_linear`, **WHEN** đưa vào 0, −6, −12, `C.silenceFloorDb`, `C.silenceFloorDb` − 20, **THEN** nhận 1, 0.5012, 0.2512, 0, 0.
-- [ ] `AC-4 [EditMode]` **GIVEN** `fade_factor` với T = 0 và T = `C.busTransitionSeconds`, **WHEN** lấy mẫu tại t0, t0 + T/4, t0 + T, t0 + 2T, **THEN** T = 0 cho 1 ở mọi mẫu (không chia cho 0); T > 0 cho 0, 0.25, 1, 1; đảo chiều fade ở t0 + T/4 bắt đầu từ 0.25, không nhảy.
+- [x] `AC-2 [EditMode]` **GIVEN** `db_to_linear`, **WHEN** đưa vào 0, −6, −12, `C.silenceFloorDb`, `C.silenceFloorDb` − 20, **THEN** nhận 1, 0.5012, 0.2512, 0, 0.
+- [x] `AC-4 [EditMode]` **GIVEN** `fade_factor` với T = 0 và T = `C.busTransitionSeconds`, **WHEN** lấy mẫu tại t0, t0 + T/4, t0 + T, t0 + 2T, **THEN** T = 0 cho 1 ở mọi mẫu (không chia cho 0); T > 0 cho 0, 0.25, 1, 1; đảo chiều fade ở t0 + T/4 bắt đầu từ 0.25, không nhảy.
 
 ## Implementation Notes
 
@@ -74,9 +74,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/AudioMathTests.cs`, `AudioFadeTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `AudioMathTests.cs`, `AudioFadeTests.cs` (EditMode 313/313)
 
 ## Dependencies
 
 - Depends on: None (Bootstrap epic đã Complete)
 - Unlocks: Story 002, Story 003
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 2/2 passing (AC-2, AC-4 + QA edge cases)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 313/313); smoke n/a (no scene change)
+**Run result**: N/A - contracts, config types and math only
+**Deviations**: ADVISORY - `DropReason` gains a leading `None` so `PlayResult.Success()` does not report `NotReady` (A3 drop order unchanged for the remaining members); `AudioPlayParams` keeps tiny NaN helpers (`HasPitchPosition`, `HasPanPosition`, `None`) in Contracts, same precedent as `PoolLease.IsValid`; API follows the GDD over the ADR-0004 sketch (TD-009); extra tests `AudioBusTableTests.cs`, `SoundCueRepositoryTests.cs`, `PlayResultTests.cs`
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/AudioMathTests.cs`, `AudioFadeTests.cs` (+ `AudioBusTableTests.cs`, `SoundCueRepositoryTests.cs`, `PlayResultTests.cs`, `AudioTestFixture.cs`), passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 2 minor: `PlayResult` reason fixed; Contracts helpers accepted. Side fix: Bootstrap `AC37_ZeroAllocation...` test measured with `GC.GetTotalMemory` (flaky, process-wide); switched to `GcAllocProbe` (Recorder GC.Alloc, current thread) with a warm-up pass, production code verified 0 allocations; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

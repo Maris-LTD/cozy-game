@@ -3,7 +3,7 @@
 > **Layer**: Foundation
 > **GDD**: Docs/design/gdd/audio.md
 > **Code area**: Assets/CozyGachapon/Scripts/Foundation/Audio/
-> **Status**: Ready
+> **Status**: In Progress
 > **Stories**: 12 — see table
 
 ## Overview
@@ -39,7 +39,7 @@ This epic is complete when:
 
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
-| 001 | Audio Contracts, Config Assets, dB & Fade Math | Logic | Ready | ADR-0004, ADR-0001 |
+| 001 | Audio Contracts, Config Assets, dB & Fade Math | Logic | Complete | ADR-0004, ADR-0001 |
 | 002 | Default Cue Table, Placeholder Clips & Config Validator | Logic | Ready | ADR-0004 |
 | 003 | Play Admission & Voice Pool Core | Logic | Ready | ADR-0004 |
 | 004 | Priority Voice Stealing & Instance Caps | Logic | Ready | ADR-0004 |

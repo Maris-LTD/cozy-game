@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using CozyGachapon.Contracts;
 using CozyGachapon.Foundation;
+using CozyGachapon.Tests.Pooling;
 using NUnit.Framework;
 
 namespace CozyGachapon.Tests.Bootstrap
@@ -167,25 +168,32 @@ namespace CozyGachapon.Tests.Bootstrap
             router.RequestTab(AppTab.Shelf);
             router.RequestTab(AppTab.Board);
 
-            long memoryBefore = GC.GetTotalMemory(true);
+            _barrier = barrier;
+            _router = router;
+            RunSixHundredFrames();
 
+            int allocations = GcAllocProbe.CountAllocations(RunSixHundredFrames);
+
+            Assert.AreEqual(0, allocations);
+        }
+
+        private InputBarrier _barrier;
+        private ITabRouter _router;
+
+        private void RunSixHundredFrames()
+        {
             for (int i = 0; i < 600; i++)
             {
-                int token = barrier.AcquireInputBlock("FrameLoop");
-                barrier.Release(token);
+                int token = _barrier.AcquireInputBlock("FrameLoop");
+                _barrier.Release(token);
 
-                router.LockTab(AppTab.Board, out int lockToken);
-                router.ReleaseTabLock(lockToken);
+                _router.LockTab(AppTab.Board, out int lockToken);
+                _router.ReleaseTabLock(lockToken);
 
-                router.RequestTab(AppTab.Shelf);
-                router.RequestTab(AppTab.Shop);
-                router.RequestTab(AppTab.Board);
+                _router.RequestTab(AppTab.Shelf);
+                _router.RequestTab(AppTab.Shop);
+                _router.RequestTab(AppTab.Board);
             }
-
-            long memoryAfter = GC.GetTotalMemory(false);
-            long allocated = memoryAfter - memoryBefore;
-
-            Assert.AreEqual(0, allocated);
         }
     }
 }
