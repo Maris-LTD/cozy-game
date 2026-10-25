@@ -10,6 +10,7 @@ namespace CozyGachapon.Audio
         private readonly bool[] _hasPlayed;
         private readonly double[] _lastPlayed;
         private readonly int[] _instances;
+        private readonly int[] _priority;
         private readonly AudioClip[] _defaultClip;
         private readonly VoicePartition[] _partition;
 
@@ -23,6 +24,7 @@ namespace CozyGachapon.Audio
             _hasPlayed = new bool[count];
             _lastPlayed = new double[count];
             _instances = new int[count];
+            _priority = new int[count];
             _defaultClip = new AudioClip[count];
             _partition = new VoicePartition[count];
 
@@ -37,6 +39,7 @@ namespace CozyGachapon.Audio
                 _usable[i] = IsRuntimeUsable(cue);
                 _defaultClip[i] = FindDefaultClip(cue);
                 _partition[i] = ToPartition(cue.Bus);
+                _priority[i] = cue.Priority;
                 if (!_usable[i])
                 {
                     sink.ReportWarning(AudioDiagnosticCode.CueExcluded, cue.CueId);
@@ -73,6 +76,11 @@ namespace CozyGachapon.Audio
         public VoicePartition GetPartition(int cueIndex)
         {
             return _partition[cueIndex];
+        }
+
+        public int GetPriority(int cueIndex)
+        {
+            return _priority[cueIndex];
         }
 
         public bool HasPlayed(int cueIndex)

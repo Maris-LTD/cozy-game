@@ -13,11 +13,13 @@ namespace CozyGachapon.Tests.Audio
         private readonly bool[] _playing;
         private readonly bool[] _paused;
         private readonly int[] _startCounts;
+        private readonly int[] _stopCounts;
 
         public int VoiceCount { get; private set; }
         public int StartCount { get; private set; }
         public int StopCount { get; private set; }
         public int LastStartedVoice { get; private set; } = -1;
+        public int MaxStartedVoice { get; private set; } = -1;
 
         public int PlayingCount
         {
@@ -47,6 +49,7 @@ namespace CozyGachapon.Tests.Audio
             _playing = new bool[voiceCount];
             _paused = new bool[voiceCount];
             _startCounts = new int[voiceCount];
+            _stopCounts = new int[voiceCount];
         }
 
         public void Start(int voice, AudioClip clip, float volume, float pitch, float pan, bool loop)
@@ -61,12 +64,17 @@ namespace CozyGachapon.Tests.Audio
             _startCounts[voice]++;
             StartCount++;
             LastStartedVoice = voice;
+            if (voice > MaxStartedVoice)
+            {
+                MaxStartedVoice = voice;
+            }
         }
 
         public void Stop(int voice)
         {
             _playing[voice] = false;
             _paused[voice] = false;
+            _stopCounts[voice]++;
             StopCount++;
         }
 
@@ -138,6 +146,11 @@ namespace CozyGachapon.Tests.Audio
         public int GetStartCount(int voice)
         {
             return _startCounts[voice];
+        }
+
+        public int GetStopCount(int voice)
+        {
+            return _stopCounts[voice];
         }
     }
 }

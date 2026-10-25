@@ -31,6 +31,16 @@ namespace CozyGachapon.Tests.Audio
             Assert.IsTrue(Service.Initialize(config, repository, Backend, Clock, Sink));
         }
 
+        protected void InitializeWithDefaultAssets(params SoundCue[] extraCues)
+        {
+            AudioConfig config = DefaultAudioAssets.LoadConfig();
+            Assert.IsNotNull(config);
+            Backend = new FakeVoiceBackend(config.TotalVoices);
+            List<SoundCue> cues = DefaultAudioAssets.LoadCues();
+            cues.AddRange(extraCues);
+            Assert.IsTrue(Service.Initialize(config, new SoundCueRepository(cues), Backend, Clock, Sink));
+        }
+
         protected void InitializeWithCues(params SoundCue[] cues)
         {
             Backend = new FakeVoiceBackend(Config.TotalVoices);
@@ -52,6 +62,14 @@ namespace CozyGachapon.Tests.Audio
             return cue;
         }
 
+        protected SoundCue CreateMusicCue(string cueId)
+        {
+            SoundCue cue = CreateLimitedCue(cueId, AudioBus.Music, 1, 0f, InstanceCapPolicy.StealOldest);
+            cue.SetLimitsForTest(0, 1, 0f);
+            SetLoop(cue, true);
+            return cue;
+        }
+
         protected static void SetKeepWhenBusBackground(SoundCue cue, bool keep)
         {
             SetCueBool(cue, "_keepWhenBusBackground", keep);
@@ -66,6 +84,12 @@ namespace CozyGachapon.Tests.Audio
         {
             Clock.Set(now);
             return Service.Play(cueId, AudioPlayParams.None);
+        }
+
+        protected int PlayVoiceAt(string cueId, double now)
+        {
+            AssertPlayed(PlayAt(cueId, now));
+            return Backend.LastStartedVoice;
         }
 
         protected static void AssertDropped(DropReason expected, PlayResult result)

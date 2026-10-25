@@ -7,17 +7,27 @@ namespace CozyGachapon.Audio
         private readonly AudioRuntimeState _state;
         private readonly CueRuntimeTable _cues;
         private readonly VoicePool _pool;
+        private readonly InstanceCapResolver _capResolver;
+        private readonly VoiceStealer _stealer;
 
-        public PlayAdmission(AudioRuntimeState state, CueRuntimeTable cues, VoicePool pool)
+        public PlayAdmission(
+            AudioRuntimeState state,
+            CueRuntimeTable cues,
+            VoicePool pool,
+            InstanceCapResolver capResolver,
+            VoiceStealer stealer)
         {
             _state = state;
             _cues = cues;
             _pool = pool;
+            _capResolver = capResolver;
+            _stealer = stealer;
         }
 
-        public DropReason Evaluate(int cueIndex, double now, out int voice)
+        public DropReason Evaluate(int cueIndex, double now, out int voice, out VoiceAcquisition acquisition)
         {
             voice = -1;
+            acquisition = VoiceAcquisition.Free;
             SoundCue cue = _cues.GetCue(cueIndex);
             if (_state.IsLocked)
             {
@@ -51,15 +61,47 @@ namespace CozyGachapon.Audio
 
             if (_cues.GetInstances(cueIndex) >= cue.MaxInstances)
             {
-                return cue.InstanceCapPolicy == InstanceCapPolicy.DropNew ? DropReason.InstanceCap : DropReason.NoVoice;
+                return ResolveInstanceCap(cueIndex, cue, out voice, out acquisition);
             }
 
-            if (!_pool.TryAcquireFree(_cues.GetPartition(cueIndex), out voice))
+            return AcquireVoice(cueIndex, out voice, out acquisition);
+        }
+
+        private DropReason ResolveInstanceCap(int cueIndex, SoundCue cue, out int voice, out VoiceAcquisition acquisition)
+        {
+            acquisition = VoiceAcquisition.Free;
+            voice = -1;
+            if (cue.InstanceCapPolicy == InstanceCapPolicy.DropNew)
+            {
+                return DropReason.InstanceCap;
+            }
+
+            if (!_capResolver.TryFindOldestInstance(cueIndex, out voice))
             {
                 return DropReason.NoVoice;
             }
 
+            acquisition = VoiceAcquisition.SameCueSteal;
             return DropReason.None;
+        }
+
+        private DropReason AcquireVoice(int cueIndex, out int voice, out VoiceAcquisition acquisition)
+        {
+            acquisition = VoiceAcquisition.Free;
+            VoicePartition partition = _cues.GetPartition(cueIndex);
+            if (_pool.TryAcquireFree(partition, out voice))
+            {
+                return DropReason.None;
+            }
+
+            if (partition == VoicePartition.Sfx && _stealer.TryFindVictim(_cues.GetPriority(cueIndex), out voice))
+            {
+                acquisition = VoiceAcquisition.PrioritySteal;
+                return DropReason.None;
+            }
+
+            voice = -1;
+            return DropReason.NoVoice;
         }
 
         private bool IsRateLimited(int cueIndex, SoundCue cue, double now)

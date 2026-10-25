@@ -60,6 +60,17 @@ namespace CozyGachapon.Audio
             ActiveCount--;
         }
 
+        public void Evict(int voice, IVoiceBackend backend, CueRuntimeTable cues)
+        {
+            if (!_slots[voice].IsPlaying)
+            {
+                return;
+            }
+
+            backend.Stop(voice);
+            ReleaseInstance(voice, cues);
+        }
+
         public void Tick(IVoiceBackend backend, CueRuntimeTable cues)
         {
             for (int i = 0; i < _slots.Length; i++)
@@ -70,9 +81,14 @@ namespace CozyGachapon.Audio
                     continue;
                 }
 
-                cues.RemoveInstance(slot.CueIndex);
-                Release(i);
+                ReleaseInstance(i, cues);
             }
+        }
+
+        private void ReleaseInstance(int voice, CueRuntimeTable cues)
+        {
+            cues.RemoveInstance(_slots[voice].CueIndex);
+            Release(voice);
         }
 
         private static VoicePartition GetPartitionForSlot(int slotIndex, int musicVoices, int ambienceVoices)

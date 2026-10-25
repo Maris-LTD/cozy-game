@@ -9,6 +9,7 @@ namespace CozyGachapon.Audio
 
         public int Requests { get; private set; }
         public int Played { get; private set; }
+        public int SameCueSteals { get; private set; }
 
         public AudioCounters()
         {
@@ -19,6 +20,11 @@ namespace CozyGachapon.Audio
         {
             Requests++;
             Played++;
+        }
+
+        public void RecordSameCueSteal()
+        {
+            SameCueSteals++;
         }
 
         public void RecordDropped(DropReason reason)
@@ -54,7 +60,8 @@ namespace CozyGachapon.Audio
                 GetDropped(DropReason.BackgroundFiltered),
                 GetDropped(DropReason.RateLimited),
                 GetDropped(DropReason.InstanceCap),
-                GetDropped(DropReason.NoVoice));
+                GetDropped(DropReason.NoVoice),
+                SameCueSteals);
         }
     }
 }

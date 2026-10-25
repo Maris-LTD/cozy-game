@@ -1,7 +1,7 @@
 # Story 004: Priority Voice Stealing & Instance Caps
 
 > **Epic**: Audio
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 2 days
@@ -34,9 +34,9 @@
 
 *From Docs/design/gdd/audio.md, scoped to this story:*
 
-- [ ] `AC-9 [EditMode]` **GIVEN** `Q[PegHitScored].maxInstances` (6) bản đang phát, **WHEN** đến yêu cầu thứ 7 hợp lệ về `minInterval`, **THEN** bản bắt đầu sớm nhất dừng, bản mới phát trên voice đó, số bản = 6, bộ đếm "cướp cùng cue" tăng 1; **AND GIVEN** `Q[CoinSpawnAuto].maxInstances` bản đang phát, **WHEN** có yêu cầu mới, **THEN** `Dropped(InstanceCap)` và bản cũ không bị dừng.
-- [ ] `AC-11 [EditMode]` **GIVEN** Audio đã khởi tạo, **WHEN** đếm nguồn phát, chạy kịch bản bão hòa `T.stormTestSeconds` giây, rồi đếm lại, **THEN** số nguồn = `C.totalVoices` ở cả hai lần (không tạo thêm, không hủy), và có đúng `C.musicVoices` voice chỉ nhận cue bus Music.
-- [ ] `AC-12 [EditMode]` **GIVEN** đồng hồ tiêm, backend giả giữ mọi voice ở Playing (clip chưa hết), Audio Active, bus Plinko Normal, và trạng thái A = ví dụ `steal_victim`: 15 voice SFX bận gồm 6 `PegHitScored`, 2 `PegHitUnscored` (bắt đầu 2.10 s và 2.20 s), 1 `CoinSpawn`, 3 `BucketX2`, 3 voice khác ưu tiên ≥ 50, cùng voice nhạc đang phát; **WHEN** lần lượt yêu cầu `Plinko.PegHitUnscored` tại t = 2.25 s, `Plinko.JackpotHit` tại t = 2.30 s, rồi `Plinko.PegHitUnscored` tại t = 2.35 s (≥ 2.20 + `Q[PegHitUnscored].minInterval` (0.10)), **THEN** lần lượt: `Dropped(RateLimited)` (2.25 − 2.20 < `Q[PegHitUnscored].minInterval`, A3.8 xét trước A3.10; mốc vẫn 2.20); Played với nạn nhân là voice `PegHitUnscored` bắt đầu 2.10 s; `Dropped(NoVoice)` (số bản 1 < `maxInstances`, không voice nào ưu tiên < 10).
+- [x] `AC-9 [EditMode]` **GIVEN** `Q[PegHitScored].maxInstances` (6) bản đang phát, **WHEN** đến yêu cầu thứ 7 hợp lệ về `minInterval`, **THEN** bản bắt đầu sớm nhất dừng, bản mới phát trên voice đó, số bản = 6, bộ đếm "cướp cùng cue" tăng 1; **AND GIVEN** `Q[CoinSpawnAuto].maxInstances` bản đang phát, **WHEN** có yêu cầu mới, **THEN** `Dropped(InstanceCap)` và bản cũ không bị dừng.
+- [x] `AC-11 [EditMode]` **GIVEN** Audio đã khởi tạo, **WHEN** đếm nguồn phát, chạy kịch bản bão hòa `T.stormTestSeconds` giây, rồi đếm lại, **THEN** số nguồn = `C.totalVoices` ở cả hai lần (không tạo thêm, không hủy), và có đúng `C.musicVoices` voice chỉ nhận cue bus Music.
+- [x] `AC-12 [EditMode]` **GIVEN** đồng hồ tiêm, backend giả giữ mọi voice ở Playing (clip chưa hết), Audio Active, bus Plinko Normal, và trạng thái A = ví dụ `steal_victim`: 15 voice SFX bận gồm 6 `PegHitScored`, 2 `PegHitUnscored` (bắt đầu 2.10 s và 2.20 s), 1 `CoinSpawn`, 3 `BucketX2`, 3 voice khác ưu tiên ≥ 50, cùng voice nhạc đang phát; **WHEN** lần lượt yêu cầu `Plinko.PegHitUnscored` tại t = 2.25 s, `Plinko.JackpotHit` tại t = 2.30 s, rồi `Plinko.PegHitUnscored` tại t = 2.35 s (≥ 2.20 + `Q[PegHitUnscored].minInterval` (0.10)), **THEN** lần lượt: `Dropped(RateLimited)` (2.25 − 2.20 < `Q[PegHitUnscored].minInterval`, A3.8 xét trước A3.10; mốc vẫn 2.20); Played với nạn nhân là voice `PegHitUnscored` bắt đầu 2.10 s; `Dropped(NoVoice)` (số bản 1 < `maxInstances`, không voice nào ưu tiên < 10).
   **AND GIVEN** trạng thái B: 15 voice SFX bận bởi cue ưu tiên ≥ 80 **không** gồm `BucketX2` — 3 `BucketX5` (80), 3 `BucketX1` (80), 3 `JackpotBurstSpawn` (85), 2 `JackpotHit` (100), 4 cue Gacha ưu tiên 90 (`Gacha.Crank`, `Gacha.EggPop`, `Gacha.RarityReveal.common`, `Gacha.RarityReveal.rare`, mỗi cue 1 bản) — số bản `BucketX2` = 0 < `Q[BucketX2].maxInstances` và đã qua `Q[BucketX2].minInterval` kể từ lần phát gần nhất, **WHEN** yêu cầu `Plinko.BucketX2`, **THEN** `Dropped(NoVoice)` (không cướp ngang hàng với `BucketX5`/`BucketX1` ưu tiên 80) và không voice nào bị dừng.
   **AND GIVEN** lại trạng thái A (3 bản `BucketX2` đang phát = `Q[BucketX2].maxInstances`, `StealOldest`), **WHEN** yêu cầu `Plinko.BucketX2` sau `Q[BucketX2].minInterval`, **THEN** Played bằng cách tự cướp bản `BucketX2` cũ nhất (A3.9), bộ đếm "cướp cùng cue" tăng 1. Ở mọi vế, voice nhạc không bao giờ là nạn nhân.
 
@@ -80,9 +80,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/VoiceStealingTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `VoiceStealingTests.cs`, `InstanceCapTests.cs`, `VoicePartitionTests.cs` (EditMode 429/429)
 
 ## Dependencies
 
 - Depends on: Story 003
 - Unlocks: Story 005, Story 009
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 3/3 passing (AC-9, AC-11, AC-12 incl. state A, state B and self-steal)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 429/429); smoke n/a (no scene change)
+**Run result**: N/A - service logic with a fake voice backend
+**Deviations**: ADVISORY - stealing split into `InstanceCapResolver` (A3.9) and `VoiceStealer` (A5); same-cue steal counter added to `AudioStats`; `AudioStormDriver` keeps the AC-13 shape (1 unscored in 10 peg hits, jackpot every 2 s) as test-helper constants matching the GDD; steal paths covered by the zero-alloc test
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/VoiceStealingTests.cs`, `InstanceCapTests.cs`, `VoicePartitionTests.cs` (+ `AudioStormDriver.cs`, `StealScenarioBuilder.cs`), passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 2 minor: dead counter read removed from the measured body; storm constants kept (match GDD AC-13); LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

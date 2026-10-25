@@ -42,7 +42,7 @@ This epic is complete when:
 | 001 | Audio Contracts, Config Assets, dB & Fade Math | Logic | Complete | ADR-0004, ADR-0001 |
 | 002 | Default Cue Table, Placeholder Clips & Config Validator | Logic | Complete | ADR-0004 |
 | 003 | Play Admission & Voice Pool Core | Logic | Complete | ADR-0004 |
-| 004 | Priority Voice Stealing & Instance Caps | Logic | Ready | ADR-0004 |
+| 004 | Priority Voice Stealing & Instance Caps | Logic | Complete | ADR-0004 |
 | 005 | Storm Scenario & Diagnostics Counters | Logic | Ready | ADR-0004 |
 | 006 | Pentatonic Pitch, Clip Selection & Pan | Logic | Ready | ADR-0004 |
 | 007 | Bus Gain, Background Bus & User Volume | Logic | Ready | ADR-0004 |

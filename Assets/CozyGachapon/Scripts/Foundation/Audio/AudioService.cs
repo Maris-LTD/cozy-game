@@ -20,6 +20,7 @@ namespace CozyGachapon.Audio
 
         public bool IsReady { get; private set; }
         public AudioRuntimeState RuntimeState { get; private set; }
+        public int VoiceCount => _pool == null ? 0 : _pool.Count;
         public AudioStats Stats => _counters.ToStats(_pool == null ? 0 : _pool.ActiveCount);
 
         public AudioService()
@@ -55,7 +56,12 @@ namespace CozyGachapon.Audio
             _sink = sink;
             _cues = new CueRuntimeTable(repository, sink);
             _pool = new VoicePool(config.TotalVoices, config.MusicVoices, config.AmbienceVoices);
-            _admission = new PlayAdmission(RuntimeState, _cues, _pool);
+            _admission = new PlayAdmission(
+                RuntimeState,
+                _cues,
+                _pool,
+                new InstanceCapResolver(_pool),
+                new VoiceStealer(_pool, _cues));
             IsReady = true;
             return true;
         }
@@ -114,10 +120,20 @@ namespace CozyGachapon.Audio
         private PlayResult Admit(int cueIndex)
         {
             double now = _clock.Now;
-            DropReason reason = _admission.Evaluate(cueIndex, now, out int voice);
+            DropReason reason = _admission.Evaluate(cueIndex, now, out int voice, out VoiceAcquisition acquisition);
             if (reason != DropReason.None)
             {
                 return Drop(reason);
+            }
+
+            if (acquisition != VoiceAcquisition.Free)
+            {
+                _pool.Evict(voice, _backend, _cues);
+            }
+
+            if (acquisition == VoiceAcquisition.SameCueSteal)
+            {
+                _counters.RecordSameCueSteal();
             }
 
             SoundCue cue = _cues.GetCue(cueIndex);
