@@ -19,8 +19,6 @@ namespace CozyGachapon.Tests.Audio
         public const string CoinSpawnId = "Plinko.CoinSpawn";
         public const string JackpotHitId = "Plinko.JackpotHit";
 
-        private const int UnscoredEveryNthPegHit = 10;
-        private const double JackpotIntervalSeconds = 2d;
         private const double FinishEpsilon = 1e-9;
 
         private static readonly int CueKindCount = System.Enum.GetValues(typeof(StormCue)).Length;
@@ -28,32 +26,34 @@ namespace CozyGachapon.Tests.Audio
         private readonly AudioService _service;
         private readonly FakeAudioClock _clock;
         private readonly FakeVoiceBackend _backend;
-        private readonly AudioBalanceTargets _targets;
-        private readonly double _coinPeriodSeconds;
+        private readonly AudioStormShape _shape;
         private readonly int[] _cueIndices;
         private readonly int[] _requests;
         private readonly int[] _played;
+        private readonly int[] _sameCueSteals;
+        private readonly double[] _minSameCueStealAge;
         private readonly double[] _voiceStart;
         private readonly bool[] _voiceActive;
 
         public int Steps { get; private set; }
         public int MaxPlayingVoices { get; private set; }
+        public int PlayingVoiceOverflowSteps { get; private set; }
 
         public AudioStormDriver(
             AudioService service,
             FakeAudioClock clock,
             FakeVoiceBackend backend,
-            AudioBalanceTargets targets,
-            double coinPeriodSeconds)
+            AudioStormShape shape)
         {
             _service = service;
             _clock = clock;
             _backend = backend;
-            _targets = targets;
-            _coinPeriodSeconds = coinPeriodSeconds;
+            _shape = shape;
             _cueIndices = new int[CueKindCount];
             _requests = new int[CueKindCount];
             _played = new int[CueKindCount];
+            _sameCueSteals = new int[CueKindCount];
+            _minSameCueStealAge = new double[CueKindCount];
             _voiceStart = new double[backend.VoiceCount];
             _voiceActive = new bool[backend.VoiceCount];
             Resolve(StormCue.PegHitScored, PegHitScoredId);
@@ -77,17 +77,27 @@ namespace CozyGachapon.Tests.Audio
             return _requests[(int)cue] - _played[(int)cue];
         }
 
+        public int GetSameCueSteals(StormCue cue)
+        {
+            return _sameCueSteals[(int)cue];
+        }
+
+        public double GetMinSameCueStealAge(StormCue cue)
+        {
+            return _sameCueSteals[(int)cue] == 0 ? 0d : _minSameCueStealAge[(int)cue];
+        }
+
         public void Run(double startTime)
         {
-            Run(startTime, _targets.StormTestSeconds);
+            Run(startTime, _shape.Seconds);
         }
 
         public void Run(double startTime, double seconds)
         {
-            double pegPeriod = 1d / _targets.StormPegHitRate;
-            int steps = (int)(seconds * _targets.StormPegHitRate);
+            double pegPeriod = 1d / _shape.PegHitRate;
+            int steps = (int)(seconds * _shape.PegHitRate);
             double nextCoin = startTime;
-            double nextJackpot = startTime + JackpotIntervalSeconds;
+            double nextJackpot = startTime + _shape.JackpotIntervalSeconds;
             for (int i = 0; i < steps; i++)
             {
                 double now = startTime + i * pegPeriod;
@@ -98,24 +108,28 @@ namespace CozyGachapon.Tests.Audio
                 if (now >= nextCoin)
                 {
                     Request(StormCue.CoinSpawn, now);
-                    nextCoin += _coinPeriodSeconds;
+                    nextCoin += _shape.CoinPeriodSeconds;
                 }
 
                 if (now >= nextJackpot)
                 {
                     Request(StormCue.JackpotHit, now);
-                    nextJackpot += JackpotIntervalSeconds;
+                    nextJackpot += _shape.JackpotIntervalSeconds;
                 }
 
                 Steps++;
                 int playing = _backend.PlayingCount;
                 MaxPlayingVoices = playing > MaxPlayingVoices ? playing : MaxPlayingVoices;
+                if (playing > _backend.VoiceCount)
+                {
+                    PlayingVoiceOverflowSteps++;
+                }
             }
         }
 
-        private static bool IsUnscoredStep(int step)
+        private bool IsUnscoredStep(int step)
         {
-            return (step + 1) % UnscoredEveryNthPegHit == 0;
+            return System.Math.Floor((step + 1) * _shape.UnscoredRatio) > System.Math.Floor(step * _shape.UnscoredRatio);
         }
 
         private void Resolve(StormCue cue, string cueId)
@@ -128,6 +142,7 @@ namespace CozyGachapon.Tests.Audio
         {
             int kind = (int)cue;
             _requests[kind]++;
+            int stealsBefore = _service.Stats.SameCueSteals;
             PlayResult result = _service.Play(_cueIndices[kind], AudioPlayParams.None);
             if (!result.Played)
             {
@@ -136,8 +151,23 @@ namespace CozyGachapon.Tests.Audio
 
             _played[kind]++;
             int voice = _backend.LastStartedVoice;
+            if (_service.Stats.SameCueSteals > stealsBefore)
+            {
+                RecordSameCueSteal(kind, now - _voiceStart[voice]);
+            }
+
             _voiceStart[voice] = now;
             _voiceActive[voice] = true;
+        }
+
+        private void RecordSameCueSteal(int kind, double victimAge)
+        {
+            if (_sameCueSteals[kind] == 0 || victimAge < _minSameCueStealAge[kind])
+            {
+                _minSameCueStealAge[kind] = victimAge;
+            }
+
+            _sameCueSteals[kind]++;
         }
 
         private void FinishElapsedVoices(double now)

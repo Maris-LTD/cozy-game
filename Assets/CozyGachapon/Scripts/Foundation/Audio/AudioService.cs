@@ -128,12 +128,8 @@ namespace CozyGachapon.Audio
 
             if (acquisition != VoiceAcquisition.Free)
             {
+                RecordSteal(acquisition, voice, now);
                 _pool.Evict(voice, _backend, _cues);
-            }
-
-            if (acquisition == VoiceAcquisition.SameCueSteal)
-            {
-                _counters.RecordSameCueSteal();
             }
 
             SoundCue cue = _cues.GetCue(cueIndex);
@@ -142,8 +138,19 @@ namespace CozyGachapon.Audio
             _pool.Assign(voice, cueIndex, now, cue.Loop);
             _cues.AddInstance(cueIndex);
             _cues.MarkPlayed(cueIndex, now);
-            _counters.RecordPlayed();
+            _counters.RecordPlayed(_pool.ActiveCount);
             return PlayResult.Success();
+        }
+
+        private void RecordSteal(VoiceAcquisition acquisition, int voice, double now)
+        {
+            if (acquisition == VoiceAcquisition.SameCueSteal)
+            {
+                _counters.RecordSameCueSteal(now - _pool.GetSlot(voice).StartTime);
+                return;
+            }
+
+            _counters.RecordPrioritySteal();
         }
 
         private PlayResult Drop(DropReason reason)

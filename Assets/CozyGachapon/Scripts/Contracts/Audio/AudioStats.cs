@@ -16,6 +16,9 @@ namespace CozyGachapon.Contracts
         public int DroppedInstanceCap { get; }
         public int DroppedNoVoice { get; }
         public int SameCueSteals { get; }
+        public int PrioritySteals { get; }
+        public int PeakVoices { get; }
+        public double MinSameCueStealAgeSeconds { get; }
 
         public int DroppedTotal =>
             DroppedNotReady
@@ -43,7 +46,10 @@ namespace CozyGachapon.Contracts
             int droppedRateLimited,
             int droppedInstanceCap,
             int droppedNoVoice,
-            int sameCueSteals)
+            int sameCueSteals,
+            int prioritySteals,
+            int peakVoices,
+            double minSameCueStealAgeSeconds)
         {
             Requests = requests;
             Played = played;
@@ -59,6 +65,9 @@ namespace CozyGachapon.Contracts
             DroppedInstanceCap = droppedInstanceCap;
             DroppedNoVoice = droppedNoVoice;
             SameCueSteals = sameCueSteals;
+            PrioritySteals = prioritySteals;
+            PeakVoices = peakVoices;
+            MinSameCueStealAgeSeconds = minSameCueStealAgeSeconds;
         }
 
         public int GetDropped(DropReason reason)

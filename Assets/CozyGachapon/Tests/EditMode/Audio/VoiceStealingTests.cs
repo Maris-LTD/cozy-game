@@ -33,6 +33,7 @@ namespace CozyGachapon.Tests.Audio
             Assert.AreEqual(1, Backend.GetStopCount(victimVoice));
             Assert.AreEqual(1, Backend.StopCount);
             Assert.AreEqual(0, Service.Stats.SameCueSteals);
+            Assert.AreEqual(1, Service.Stats.PrioritySteals);
 
             AssertDropped(DropReason.NoVoice, PlayAt(PegHitUnscoredId, 2.35));
             Assert.AreEqual(1, Backend.StopCount);
@@ -50,6 +51,7 @@ namespace CozyGachapon.Tests.Audio
             Assert.AreEqual(0, Backend.StopCount);
             Assert.AreEqual(16, Backend.PlayingCount);
             Assert.AreEqual(0, Service.Stats.SameCueSteals);
+            Assert.AreEqual(0, Service.Stats.PrioritySteals);
             AssertMusicUntouched();
         }
 
@@ -65,6 +67,7 @@ namespace CozyGachapon.Tests.Audio
             Assert.AreEqual(1, Backend.GetStopCount(oldestVoice));
             Assert.AreEqual(1, Backend.StopCount);
             Assert.AreEqual(1, Service.Stats.SameCueSteals);
+            Assert.AreEqual(0, Service.Stats.PrioritySteals);
             Assert.AreEqual(16, Backend.PlayingCount);
             AssertMusicUntouched();
         }

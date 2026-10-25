@@ -13,6 +13,8 @@ namespace CozyGachapon.Audio
         [SerializeField] private float _spawnClipMarginSeconds = 0.03f;
         [SerializeField] private float _stormPeakGainMax = 2f;
         [SerializeField] private float _stormTestSeconds = 10f;
+        [SerializeField] private float _stormUnscoredPegHitRatio = 0.1f;
+        [SerializeField] private float _stormJackpotIntervalSeconds = 2f;
         [SerializeField] private int _requestToStartMaxFrames = 0;
         [SerializeField] private float _audioFrameBudgetMs = 1f;
         [SerializeField] private int _sfxDownloadBudgetKb = 600;
@@ -36,6 +38,8 @@ namespace CozyGachapon.Audio
         public float SpawnClipMarginSeconds => _spawnClipMarginSeconds;
         public float StormPeakGainMax => _stormPeakGainMax;
         public float StormTestSeconds => _stormTestSeconds;
+        public float StormUnscoredPegHitRatio => _stormUnscoredPegHitRatio;
+        public float StormJackpotIntervalSeconds => _stormJackpotIntervalSeconds;
         public int RequestToStartMaxFrames => _requestToStartMaxFrames;
         public float AudioFrameBudgetMs => _audioFrameBudgetMs;
         public int SfxDownloadBudgetKb => _sfxDownloadBudgetKb;

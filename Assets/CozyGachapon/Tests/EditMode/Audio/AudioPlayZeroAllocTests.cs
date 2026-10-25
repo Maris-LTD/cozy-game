@@ -55,6 +55,9 @@ namespace CozyGachapon.Tests.Audio
 
             Assert.AreEqual(0, allocations);
             Assert.Greater(Service.Stats.SameCueSteals, 0);
+            Assert.Greater(Service.Stats.PrioritySteals, 0);
+            Assert.Greater(Service.Stats.PeakVoices, 0);
+            Assert.Greater(Service.Stats.MinSameCueStealAgeSeconds, 0d);
             Assert.Greater(Service.Stats.DroppedNoVoice, 0);
             Assert.Greater(Backend.StopCount, 0);
         }

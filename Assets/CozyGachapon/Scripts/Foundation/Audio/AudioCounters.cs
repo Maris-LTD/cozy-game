@@ -10,21 +10,37 @@ namespace CozyGachapon.Audio
         public int Requests { get; private set; }
         public int Played { get; private set; }
         public int SameCueSteals { get; private set; }
+        public int PrioritySteals { get; private set; }
+        public int PeakVoices { get; private set; }
+        public double MinSameCueStealAgeSeconds { get; private set; } = double.MaxValue;
 
         public AudioCounters()
         {
             _droppedByReason = new int[Enum.GetValues(typeof(DropReason)).Length];
         }
 
-        public void RecordPlayed()
+        public void RecordPlayed(int activeVoices)
         {
             Requests++;
             Played++;
+            if (activeVoices > PeakVoices)
+            {
+                PeakVoices = activeVoices;
+            }
         }
 
-        public void RecordSameCueSteal()
+        public void RecordSameCueSteal(double victimAgeSeconds)
         {
             SameCueSteals++;
+            if (victimAgeSeconds < MinSameCueStealAgeSeconds)
+            {
+                MinSameCueStealAgeSeconds = victimAgeSeconds;
+            }
+        }
+
+        public void RecordPrioritySteal()
+        {
+            PrioritySteals++;
         }
 
         public void RecordDropped(DropReason reason)
@@ -61,7 +77,10 @@ namespace CozyGachapon.Audio
                 GetDropped(DropReason.RateLimited),
                 GetDropped(DropReason.InstanceCap),
                 GetDropped(DropReason.NoVoice),
-                SameCueSteals);
+                SameCueSteals,
+                PrioritySteals,
+                PeakVoices,
+                SameCueSteals == 0 ? 0d : MinSameCueStealAgeSeconds);
         }
     }
 }

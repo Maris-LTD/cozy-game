@@ -1,5 +1,6 @@
 using CozyGachapon.Audio;
 using CozyGachapon.Contracts;
+using CozyGachapon.Tests.Pooling;
 using NUnit.Framework;
 
 namespace CozyGachapon.Tests.Audio
@@ -9,6 +10,12 @@ namespace CozyGachapon.Tests.Audio
         private const string CueId = "Test.Plinko";
         private const string MissingId = "Test.Missing";
         private const float Interval = 0.1f;
+        private const string LowId = "Test.Low";
+        private const string HighId = "Test.High";
+        private const int LowPriority = 10;
+        private const int HighPriority = 90;
+        private const int StatsReadIterations = 1000;
+        private const double AgeTolerance = 1e-6;
 
         [Test]
         public void EveryResult_IncrementsExactlyOneCounter()
@@ -90,6 +97,100 @@ namespace CozyGachapon.Tests.Audio
 
             Assert.AreEqual(0, Service.Stats.ActiveVoices);
             Assert.AreEqual(Backend.PlayingCount, Service.Stats.ActiveVoices);
+        }
+
+        [Test]
+        public void PeakVoices_KeepsMaximum_AfterVoicesFinish()
+        {
+            const int Instances = 3;
+            InitializeWithCues(CreateLimitedCue(CueId, AudioBus.Plinko, Instances, 0f, InstanceCapPolicy.DropNew));
+            int[] voices = new int[Instances];
+            for (int i = 0; i < Instances; i++)
+            {
+                voices[i] = PlayVoiceAt(CueId, 1d + i);
+            }
+
+            Assert.AreEqual(Instances, Service.Stats.PeakVoices);
+            for (int i = 0; i < Instances; i++)
+            {
+                Backend.FinishVoice(voices[i]);
+            }
+
+            Service.Tick();
+
+            Assert.AreEqual(0, Service.Stats.ActiveVoices);
+            Assert.AreEqual(Instances, Service.Stats.PeakVoices);
+        }
+
+        [Test]
+        public void MinSameCueStealAge_RecordsSmallestVictimAge()
+        {
+            const double LongAge = 0.5d;
+            const double ShortAge = 0.2d;
+            InitializeWithCues(CreateLimitedCue(CueId, AudioBus.Plinko, 1, 0f, InstanceCapPolicy.StealOldest));
+            AssertPlayed(PlayAt(CueId, 1d));
+            Assert.AreEqual(0d, Service.Stats.MinSameCueStealAgeSeconds);
+
+            AssertPlayed(PlayAt(CueId, 1d + LongAge));
+            Assert.AreEqual(LongAge, Service.Stats.MinSameCueStealAgeSeconds, AgeTolerance);
+
+            AssertPlayed(PlayAt(CueId, 1d + LongAge + ShortAge));
+
+            Assert.AreEqual(2, Service.Stats.SameCueSteals);
+            Assert.AreEqual(ShortAge, Service.Stats.MinSameCueStealAgeSeconds, AgeTolerance);
+            Assert.AreEqual(0, Service.Stats.PrioritySteals);
+        }
+
+        [Test]
+        public void PrioritySteals_CountsPriorityStealOnly()
+        {
+            int sfxVoices = Config.TotalVoices - Config.MusicVoices - Config.AmbienceVoices;
+            SoundCue low = CreateLimitedCue(LowId, AudioBus.Plinko, sfxVoices, 0f, InstanceCapPolicy.DropNew);
+            low.SetLimitsForTest(LowPriority, sfxVoices, 0f);
+            SoundCue high = CreateLimitedCue(HighId, AudioBus.Plinko, 1, 0f, InstanceCapPolicy.DropNew);
+            high.SetLimitsForTest(HighPriority, 1, 0f);
+            InitializeWithCues(low, high);
+            for (int i = 0; i < sfxVoices; i++)
+            {
+                AssertPlayed(PlayAt(LowId, 1d + i));
+            }
+
+            Assert.AreEqual(0, Service.Stats.PrioritySteals);
+            AssertPlayed(PlayAt(HighId, 1d + sfxVoices));
+
+            Assert.AreEqual(1, Service.Stats.PrioritySteals);
+            Assert.AreEqual(0, Service.Stats.SameCueSteals);
+            Assert.AreEqual(sfxVoices, Service.Stats.PeakVoices);
+        }
+
+        [Test]
+        public void Stats_ReadRepeatedly_IsStableAndDoesNotAllocate()
+        {
+            InitializeWithCues(CreateLimitedCue(CueId, AudioBus.Plinko, 1, 0f, InstanceCapPolicy.StealOldest));
+            AssertPlayed(PlayAt(CueId, 1d));
+            AssertPlayed(PlayAt(CueId, 2d));
+            AssertDropped(DropReason.UnknownCue, PlayAt(MissingId, 2d));
+            AudioStats first = Service.Stats;
+            AudioStats second = Service.Stats;
+            AudioService service = Service;
+
+            int allocations = GcAllocProbe.CountAllocations(() =>
+            {
+                for (int i = 0; i < StatsReadIterations; i++)
+                {
+                    AudioStats stats = service.Stats;
+                    stats.GetDropped(DropReason.RateLimited);
+                }
+            });
+
+            Assert.AreEqual(0, allocations);
+            Assert.AreEqual(first.Requests, second.Requests);
+            Assert.AreEqual(first.Played, second.Played);
+            Assert.AreEqual(first.DroppedUnknownCue, second.DroppedUnknownCue);
+            Assert.AreEqual(first.SameCueSteals, second.SameCueSteals);
+            Assert.AreEqual(first.PeakVoices, second.PeakVoices);
+            Assert.AreEqual(first.MinSameCueStealAgeSeconds, second.MinSameCueStealAgeSeconds);
+            Assert.AreEqual(first.Requests, service.Stats.Requests);
         }
 
         private void AssertStatsConsistent(int expectedRequests)

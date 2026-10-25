@@ -97,8 +97,7 @@ namespace CozyGachapon.Tests.Audio
                 Service,
                 Clock,
                 Backend,
-                DefaultAudioAssets.LoadTargets(),
-                DefaultAudioAssets.TapCooldownSeconds);
+                AudioStormShape.FromTargets(DefaultAudioAssets.LoadTargets(), DefaultAudioAssets.TapCooldownSeconds));
             driver.Run(StormStart);
             return driver;
         }

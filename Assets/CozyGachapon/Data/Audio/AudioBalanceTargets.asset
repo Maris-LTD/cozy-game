@@ -19,6 +19,8 @@ MonoBehaviour:
   _spawnClipMarginSeconds: 0.03
   _stormPeakGainMax: 2
   _stormTestSeconds: 10
+  _stormUnscoredPegHitRatio: 0.1
+  _stormJackpotIntervalSeconds: 2
   _requestToStartMaxFrames: 0
   _audioFrameBudgetMs: 1
   _sfxDownloadBudgetKb: 600

@@ -1,7 +1,7 @@
 # Story 005: Storm Scenario & Diagnostics Counters
 
 > **Epic**: Audio
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1 day
@@ -34,8 +34,8 @@
 
 *From Docs/design/gdd/audio.md, scoped to this story:*
 
-- [ ] `AC-13 [EditMode]` **GIVEN** đồng hồ tiêm và `T.stormPegHitRate` (134) yêu cầu `PegHitScored`/s xen 10% `PegHitUnscored`, 6.67 `CoinSpawn`/s và 1 `JackpotHit` mỗi 2 s, **WHEN** chạy `T.stormTestSeconds` (10 s), **THEN** số `PegHitScored` được phát ≤ `T.stormTestSeconds` / `Q.minInterval` + 1 (251); voice đang phát ≤ `C.totalVoices` ở mọi bước; 100% `JackpotHit` được phát; mọi lần cướp cùng cue `PegHitScored` có tuổi nạn nhân ≥ `T.minStealAgeSeconds`.
-- [ ] `AC-30 [EditMode]` **GIVEN** kịch bản AC-13, **WHEN** tổng hợp chẩn đoán, **THEN** số yêu cầu = Played + Σ Dropped theo lý do, mỗi yêu cầu được đếm đúng một lần, và đỉnh voice ≤ `C.totalVoices`.
+- [x] `AC-13 [EditMode]` **GIVEN** đồng hồ tiêm và `T.stormPegHitRate` (134) yêu cầu `PegHitScored`/s xen 10% `PegHitUnscored`, 6.67 `CoinSpawn`/s và 1 `JackpotHit` mỗi 2 s, **WHEN** chạy `T.stormTestSeconds` (10 s), **THEN** số `PegHitScored` được phát ≤ `T.stormTestSeconds` / `Q.minInterval` + 1 (251); voice đang phát ≤ `C.totalVoices` ở mọi bước; 100% `JackpotHit` được phát; mọi lần cướp cùng cue `PegHitScored` có tuổi nạn nhân ≥ `T.minStealAgeSeconds`.
+- [x] `AC-30 [EditMode]` **GIVEN** kịch bản AC-13, **WHEN** tổng hợp chẩn đoán, **THEN** số yêu cầu = Played + Σ Dropped theo lý do, mỗi yêu cầu được đếm đúng một lần, và đỉnh voice ≤ `C.totalVoices`.
 
 ## Implementation Notes
 
@@ -71,9 +71,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/AudioStormTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `AudioStormTests.cs` (EditMode 444/444)
 
 ## Dependencies
 
 - Depends on: Story 004
 - Unlocks: None
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 2/2 passing (AC-13, AC-30 + QA edge cases)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 444/444); smoke n/a (no scene change)
+**Run result**: N/A - storm scenario on the fake voice backend and injected clock
+**Deviations**: ADVISORY - A14 counters `PrioritySteals`, `PeakVoices`, `MinSameCueStealAgeSeconds` added to `AudioStats`; storm shape moved to `AudioBalanceTargets` (`stormUnscoredPegHitRatio` 0.1, `stormJackpotIntervalSeconds` 2) and passed to `AudioStormDriver` through `AudioStormShape`, so the test holds no scenario literals
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/AudioStormTests.cs` (+ `AudioStormDriver.cs`, `AudioStormShape.cs`), passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review after 1 fix round, 0 remaining findings; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none
