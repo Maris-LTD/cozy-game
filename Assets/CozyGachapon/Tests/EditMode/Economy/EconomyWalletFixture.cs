@@ -13,6 +13,7 @@ namespace CozyGachapon.Tests.Economy
         protected CountingEconomyDiagnosticsSink Sink { get; private set; }
         protected EconomyEventRecorder Recorder { get; private set; }
         protected WalletService Wallet { get; private set; }
+        protected PlayerActionIssuer Issuer { get; private set; }
         protected double RelTolerance { get; private set; }
 
         [SetUp]
@@ -25,15 +26,28 @@ namespace CozyGachapon.Tests.Economy
             Sink = new CountingEconomyDiagnosticsSink();
             Recorder = new EconomyEventRecorder(RecorderCapacity);
             Wallet = new WalletService(Config, Sink);
+            Issuer = new PlayerActionIssuer();
             Assert.IsTrue(Wallet.RegisterCurrency(EconomyIds.Coin));
             Wallet.WalletChanged += Recorder.OnWalletChanged;
+            Wallet.SpendRejected += Recorder.OnSpendRejected;
         }
 
         [TearDown]
         public void TearDownWallet()
         {
             Wallet.WalletChanged -= Recorder.OnWalletChanged;
+            Wallet.SpendRejected -= Recorder.OnSpendRejected;
             Object.DestroyImmediate(Config);
+        }
+
+        protected void Seed(double amount)
+        {
+            Assert.IsTrue(Wallet.Add(EconomyIds.Coin, amount, WalletChangeReason.AdReward));
+        }
+
+        protected PlayerActionContext IssueSpin()
+        {
+            return Issuer.Issue(PlayerActionKind.GachaSpin);
         }
 
         protected void AssertBalance(double expected, string currencyId)

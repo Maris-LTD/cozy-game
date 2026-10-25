@@ -47,7 +47,7 @@ This epic is complete when:
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
 | 001 | Core Assembly, Economy Contracts & Wallet Add | Logic | Complete | ADR-0005, ADR-0001 |
-| 002 | Spend, CanAfford & Player Action Context | Logic | Ready | ADR-0005 |
+| 002 | Spend, CanAfford & Player Action Context | Logic | Complete | ADR-0005 |
 | 003 | Spin Price Curve, nice_ceil & Derived Price | Logic | Ready | ADR-0005 |
 | 004 | Economy Core Initialization & State Snapshot | Logic | Ready | ADR-0005, ADR-0001 |
 | 005 | Spin Payment, Base Coin Value Source & Shop Reset | Logic | Ready | ADR-0005 |

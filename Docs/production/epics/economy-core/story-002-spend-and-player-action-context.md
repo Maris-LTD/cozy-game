@@ -1,7 +1,7 @@
 # Story 002: Spend, CanAfford & Player Action Context
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 1 day
@@ -34,8 +34,8 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-5 [EditMode]` **GIVEN** Xu = 100 và có ngữ cảnh hành động, **WHEN** `TrySpend(coin, 100)`, **THEN** `true`, Xu = 0, một `WalletChanged` với delta −100; **GIVEN** Xu = 99.7, **WHEN** `TrySpend(coin, 100)`, **THEN** `false`, Xu = 99.7, đúng một `SpendRejected`; trong cả hai ca `CanAfford(coin, 100)` trước lệnh trả cùng kết quả với `TrySpend`.
-- [ ] `AC-6 [EditMode]` **GIVEN** Xu = 500, **WHEN** gọi `TrySpend(coin, 100)` hoặc `ResetForNewShop` **không** có ngữ cảnh hành động, hoặc `TrySpend` với amount ∈ {−1, 0, NaN}, **THEN** trả `false` / không làm gì, Xu vẫn 500.
+- [x] `AC-5 [EditMode]` **GIVEN** Xu = 100 và có ngữ cảnh hành động, **WHEN** `TrySpend(coin, 100)`, **THEN** `true`, Xu = 0, một `WalletChanged` với delta −100; **GIVEN** Xu = 99.7, **WHEN** `TrySpend(coin, 100)`, **THEN** `false`, Xu = 99.7, đúng một `SpendRejected`; trong cả hai ca `CanAfford(coin, 100)` trước lệnh trả cùng kết quả với `TrySpend`.
+- [x] `AC-6 [EditMode]` **GIVEN** Xu = 500, **WHEN** gọi `TrySpend(coin, 100)` hoặc `ResetForNewShop` **không** có ngữ cảnh hành động, hoặc `TrySpend` với amount ∈ {−1, 0, NaN}, **THEN** trả `false` / không làm gì, Xu vẫn 500.
 
 ## Implementation Notes
 
@@ -72,9 +72,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/WalletSpendTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `WalletSpendTests.cs`, `WalletSpendRejectionTests.cs`, `PlayerActionContextTests.cs`, `WalletSpendZeroAllocTests.cs` (EditMode 724/724)
 
 ## Dependencies
 
 - Depends on: Story 001
 - Unlocks: Story 004, Story 005, Story 017
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 2/2 passing (AC-5; AC-6 TrySpend half, ResetForNewShop half runs in Story 005)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 724/724); smoke n/a (no scene change)
+**Run result**: N/A - wallet logic
+**Deviations**: ADVISORY - `PlayerActionContext` has an internal constructor (Contracts grants InternalsVisibleTo to Core) so only `PlayerActionIssuer` can issue a valid context; `PlayerActionGate` is the shared check; missing context returns false without `SpendRejected` (only insufficient funds raises it, R3.3)
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/WalletSpendTests.cs`, `WalletSpendRejectionTests.cs`, `PlayerActionContextTests.cs`, `WalletSpendZeroAllocTests.cs`, passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 0 findings; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none in scope
