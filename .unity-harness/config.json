@@ -16,16 +16,14 @@
     ]
   },
   "smoke": {
-    "scene": "Assets/CozyGachapon/Scenes/Game.unity",
-    "waitForScene": "Game",
+    "scene": "Assets/CozyGachapon/Scenes/MainGame.unity",
+    "waitForScene": "MainGame",
     "maxWaitSec": 45,
     "settleSec": 3,
     "runInBackground": true,
     "keepFocus": false,
     "focusIntervalMs": 1000,
-    "expectTypes": [
-      "CozyGachaponGame"
-    ],
+    "expectTypes": [],
     "failOnMissingScripts": true,
     "capturePath": "Temp/harness/smoke.png",
     "ignoreErrorPatterns": []

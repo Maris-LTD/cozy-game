@@ -7,7 +7,7 @@ namespace CozyGachapon.Foundation
     public class SceneFlowConfig : ScriptableObject
     {
         [SerializeField] private string _bootSceneName = "Boot";
-        [SerializeField] private string _gameSceneName = "Game";
+        [SerializeField] private string _gameSceneName = "MainGame";
         [SerializeField] private float _referenceWidth = 1080f;
         [SerializeField] private float _referenceHeight = 1920f;
         [SerializeField] private AppTab _defaultTab = AppTab.Board;
