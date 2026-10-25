@@ -23,6 +23,19 @@ namespace CozyGachapon.Economy
             return _ledger.TryRegister(currencyId);
         }
 
+        internal bool IsRegistered(string currencyId)
+        {
+            return _ledger.TryGet(currencyId, out _);
+        }
+
+        internal void SetLoadedBalance(string currencyId, double amount)
+        {
+            if (_ledger.TryGet(currencyId, out _))
+            {
+                _ledger.Set(currencyId, amount);
+            }
+        }
+
         public bool Add(string currencyId, double amount, WalletChangeReason reason)
         {
             if (!IsValidAmount(amount)

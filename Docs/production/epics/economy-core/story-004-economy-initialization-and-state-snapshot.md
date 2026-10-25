@@ -1,7 +1,7 @@
 # Story 004: Economy Core Initialization & State Snapshot
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 2 days
@@ -34,8 +34,8 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-1 [EditMode]` **GIVEN** `C` mặc định và game mới, **WHEN** khởi tạo, **THEN** chỉ các tiền tệ trong `C.currencies` có `releaseTier` ≤ bản build được đăng ký (MVP: đúng `currency.coin`), Xu = `C.startingCoins` (0), `spinsThisShop` = 0, `baseCoinValue` = 1, giá quay = `C.spinBasePrice` (100).
-- [ ] `AC-8 [EditMode]` **GIVEN** Xu = 0.1, Tem = 7, một id lạ `currency.future` = 3, `spinsThisShop` = 37 (VS), **WHEN** lưu rồi nạp lại, **THEN** mọi giá trị bằng nhau tuyệt đối (kể cả 1e300 trong lần chạy thứ hai), `currency.future` vẫn còn trong dữ liệu lưu lần sau; dữ liệu nạp có Xu = −5 / NaN / 1e306 được kẹp thành 0 / 0 / `C.walletSafeCap`.
+- [x] `AC-1 [EditMode]` **GIVEN** `C` mặc định và game mới, **WHEN** khởi tạo, **THEN** chỉ các tiền tệ trong `C.currencies` có `releaseTier` ≤ bản build được đăng ký (MVP: đúng `currency.coin`), Xu = `C.startingCoins` (0), `spinsThisShop` = 0, `baseCoinValue` = 1, giá quay = `C.spinBasePrice` (100).
+- [x] `AC-8 [EditMode]` **GIVEN** Xu = 0.1, Tem = 7, một id lạ `currency.future` = 3, `spinsThisShop` = 37 (VS), **WHEN** lưu rồi nạp lại, **THEN** mọi giá trị bằng nhau tuyệt đối (kể cả 1e300 trong lần chạy thứ hai), `currency.future` vẫn còn trong dữ liệu lưu lần sau; dữ liệu nạp có Xu = −5 / NaN / 1e306 được kẹp thành 0 / 0 / `C.walletSafeCap`.
 
 ## Implementation Notes
 
@@ -74,9 +74,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/EconomyInitializationTests.cs`, `EconomyStateSnapshotTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] initialization, state snapshot and base coin value tests under `Assets/CozyGachapon/Tests/EditMode/Economy/` (EditMode 854/854)
 
 ## Dependencies
 
 - Depends on: Story 001, Story 002, Story 003
 - Unlocks: Story 005, Story 007, Story 009, Story 011, Story 013, Story 016
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 2/2 passing (AC-1, AC-8 + QA edge cases)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 854/854); smoke n/a (no scene change)
+**Run result**: N/A - economy state logic, persistence backend belongs to Save/Load
+**Deviations**: ADVISORY - `EconomyCore.Initialize(config, ReleaseTier, EconomyStateData)` registers currencies with releaseTier <= build tier (composition root will pass `ReleaseTier.Mvp`, EPIC assumption); `EconomyStateData` / `CurrencyBalanceEntry` arrays (no Dictionary), unknown currency ids preserved; bad loaded values clamped and reported through the sink (`LoadedBalanceClamped`); `BaseCoinValueCalculator` added for the starting value (AC-33 by n in Story 005)
+**Test Evidence**: initialization / snapshot / base coin value tests in `Assets/CozyGachapon/Tests/EditMode/Economy/`, passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 1 minor fixed (EconomyStateData copies the balances array and exposes a read-only view); LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none
