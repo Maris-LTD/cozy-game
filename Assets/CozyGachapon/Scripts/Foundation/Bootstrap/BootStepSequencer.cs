@@ -6,6 +6,8 @@ namespace CozyGachapon.Foundation
 {
     public sealed class BootStepSequencer
     {
+        public const string MissingConfigStepId = "boot.config";
+
         private readonly List<IBootStep> _registeredSteps = new List<IBootStep>();
         private readonly HashSet<string> _registeredIds = new HashSet<string>(StringComparer.Ordinal);
         private readonly List<IBootStep> _executionPlan = new List<IBootStep>();
@@ -76,7 +78,7 @@ namespace CozyGachapon.Foundation
             if (_bootConfig == null || _sceneFlowConfig == null)
             {
                 _hasFailed = true;
-                OnBootFailed?.Invoke(new BootFailedEvent(string.Empty, BootPhase.ServiceInit, "Missing mandatory configuration"));
+                OnBootFailed?.Invoke(new BootFailedEvent(MissingConfigStepId, BootPhase.ServiceInit, "Missing mandatory configuration"));
                 return false;
             }
 

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace CozyGachapon
 {
-    public sealed class StartupCurtainView : MonoBehaviour
+    public sealed class StartupCurtainView : MonoBehaviour, ICurtainPresenter
     {
         [SerializeField] private Canvas _canvas;
         [SerializeField] private GraphicRaycaster _raycaster;
@@ -60,9 +60,9 @@ namespace CozyGachapon
             }
         }
 
-        public void ShowBootFailure(string stepId)
+        public void ShowBootFailure(BootFailedEvent failure)
         {
-            _stepIdLabel.text = stepId;
+            _stepIdLabel.text = failure.StepId;
         }
 
         public void ShowFallbackError(string stepId)

@@ -536,30 +536,18 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1684300998}
-  - component: {fileID: 1684300997}
+  - component: {fileID: 1684301003}
+  - component: {fileID: 1684301002}
+  - component: {fileID: 1684301001}
+  - component: {fileID: 1684301000}
+  - component: {fileID: 1684300999}
   m_Layer: 0
-  m_Name: BootstrapCurtainDriver
+  m_Name: Bootstrap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1684300997
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1684300996}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8433a050549ca6149b84bb2d533d80b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CozyGachapon.Runtime::CozyGachapon.BootstrapCurtainDriver
-  _bootConfig: {fileID: 11400000, guid: 4463103885c1dd34abecb2b44a37a186, type: 2}
-  _sceneFlowConfig: {fileID: 11400000, guid: c727c8cb7c355f942831119583cb91e2, type: 2}
-  _view: {fileID: 737431681}
-  _previewMode: 0
 --- !u!4 &1684300998
 Transform:
   m_ObjectHideFlags: 0
@@ -575,6 +563,75 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1684300999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1684300996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbab15b5f2e55bc4eaa376f05c9d035c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CozyGachapon.Runtime::CozyGachapon.EventSystemUiHitTester
+  _eventSystem: {fileID: 830148656}
+--- !u!114 &1684301000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1684300996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc3661a8d5b3ec845b736ec8f8dec95c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CozyGachapon.Runtime::CozyGachapon.BackKeyInputAdapter
+--- !u!114 &1684301001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1684300996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a072a924a41a6047b8433ed0818fe6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CozyGachapon.Runtime::CozyGachapon.PointerPressInputAdapter
+--- !u!114 &1684301002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1684300996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58f6046bde6fb494f8049a4cf9bf2e98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CozyGachapon.Runtime::CozyGachapon.AppLifecycleAdapter
+--- !u!114 &1684301003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1684300996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59b2407f6e9661947b3589de97e8a9fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CozyGachapon.Runtime::CozyGachapon.BootstrapController
+  _bootConfig: {fileID: 11400000, guid: 4463103885c1dd34abecb2b44a37a186, type: 2}
+  _sceneFlowConfig: {fileID: 11400000, guid: c727c8cb7c355f942831119583cb91e2, type: 2}
+  _view: {fileID: 737431681}
+  _lifecycleAdapter: {fileID: 1684301002}
+  _pointerAdapter: {fileID: 1684301001}
+  _backKeyAdapter: {fileID: 1684301000}
+  _uiHitTester: {fileID: 1684300999}
+  _failFirstBootForTest: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

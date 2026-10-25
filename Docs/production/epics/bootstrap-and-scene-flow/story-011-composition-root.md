@@ -1,11 +1,11 @@
 # Story 011: Bootstrap Composition Root
 
 > **Epic**: Bootstrap & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: 2 days
-> **Last Updated**: [set by game-dev when implementation begins]
+> **Last Updated**: 2026-10-25
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -86,9 +86,21 @@
 **Story Type**: Integration
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Bootstrap/BootstrapGraphTests.cs` passing; playtest note + screenshots `Docs/production/qa/evidence/story-011-composition-root/`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] BootstrapGraph tests (EditMode 141/141); `Docs/production/qa/evidence/story-011-composition-root/` (01, 02, 03 png + playtest.md)
 
 ## Dependencies
 
 - Depends on: Story 001–010
 - Unlocks: Object Pooling, Audio, Economy Core, Pet Catalog epics (đăng ký `IBootStep` vào root)
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 4/4 passing (AC-35, AC-WIRE by EditMode `BootstrapGraphTests` / `BootstrapGraphEventTests`; AC-10 observed in Play mode; AC-RUN smoke + capture)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 141/141); smoke PASS (MainGame, expectTypes [CozyGachapon.BootstrapController], 0 console errors, 0 missing scripts)
+**Run result**: OBSERVED - `Docs/production/qa/evidence/story-011-composition-root/01-bootfailed-failonce-1080x1920.png`, `02-after-retry-running-1080x1920.png`, `03-running-smoke.png`, `playtest.md`
+**Deviations**: ADVISORY - `BootstrapGraph` lives in `CozyGachapon.Foundation` with the curtain view behind `ICurtainPresenter` (Contracts); AC-10 reload counted by observation, not by a load counter; AC-35 "0 ad requests" is enforced as "no platform call other than HitsUi / RequestMoveToBackground" because Bootstrap has no ad dependency yet
+**Test Evidence**: `BootstrapGraphTests.cs`, `BootstrapGraphEventTests.cs` (+ `BootstrapGraphFakes.cs`, `BootstrapGraphTestBase.cs`), passing; screenshots + playtest note above
+**Visual sign-off**: n/a (Integration)
+**Code Review**: unity-dev review + 1 fix round; 2 minor findings fixed after the run (single `BootStepSequencer.MissingConfigStepId` const; AC-35 stub now fails on any unexpected platform call); LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none
+**Closes**: TD-004, TD-005 (BootFailedEvent reaches the view through the presenter; empty stepId on missing config is now `boot.config`; viewport wired to WorldPressRouter). Letterbox world-tap blocking relies on the curtain's gate token in WorldPressRouter (wired here).

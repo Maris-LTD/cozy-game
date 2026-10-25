@@ -177,6 +177,7 @@ namespace CozyGachapon.Tests.Bootstrap
             Assert.IsFalse(sequencer.Start());
             Assert.IsTrue(sequencer.HasFailed);
             Assert.IsNotNull(failedEvent);
+            Assert.AreEqual("boot.config", failedEvent.Value.StepId);
             Assert.AreEqual(0, step.RunCallCount);
         }
     }

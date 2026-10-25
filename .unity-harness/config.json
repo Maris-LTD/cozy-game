@@ -23,7 +23,9 @@
     "runInBackground": true,
     "keepFocus": false,
     "focusIntervalMs": 1000,
-    "expectTypes": [],
+    "expectTypes": [
+      "CozyGachapon.BootstrapController"
+    ],
     "failOnMissingScripts": true,
     "capturePath": "Temp/harness/smoke.png",
     "ignoreErrorPatterns": []
