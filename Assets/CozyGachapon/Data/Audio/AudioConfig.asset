@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 942a03eff105407489055cef2c49f4cd, type: 3}
+  m_Name: AudioConfig
+  m_EditorClassIdentifier: CozyGachapon.Foundation::CozyGachapon.Audio.AudioConfig
+  _totalVoices: 16
+  _musicVoices: 1
+  _ambienceVoices: 0
+  _minFreeVoicesForRewards: 3
+  _stormPriorityCeiling: 60
+  _silenceFloorDb: -80
+  _masterDefaultDb: 0
+  _sfxDefaultDb: 0
+  _gameplayDefaultDb: 0
+  _plinkoDefaultDb: 0
+  _gachaDefaultDb: 0
+  _uiDefaultDb: 0
+  _ambienceDefaultDb: -18
+  _musicOffsetFromSfxDb: -12
+  _plinkoBackgroundOffsetDb: -12
+  _busTransitionSeconds: 0.2
+  _userMuteFadeSeconds: 0.15
+  _resumeFadeInSeconds: 0.3
+  _musicFadeInSeconds: 2
+  _maxPan: 0.3
+  _fallbackPitchPosition: 0.5
+  _scaleRootMidi: 60
+  _scaleIntervals: 0000000002000000040000000700000009000000
+  _scaleNoteCount: 10
+  _maxSampleShiftSemitones: 4
+  _userSliderMinDb: -40
+  _defaultUserSlider: 1
+  _defaultUserMuted: 0

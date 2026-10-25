@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af83347996b817d4daf09119cdb058cf, type: 3}
+  m_Name: Plinko.CoinSpawnAuto
+  m_EditorClassIdentifier: CozyGachapon.Foundation::CozyGachapon.Audio.SoundCue
+  _cueId: Plinko.CoinSpawnAuto
+  _bus: 5
+  _clips:
+  - {fileID: 8300000, guid: 2c01158c3d5caa04c8c1412e94591935, type: 3}
+  _volumeDb: -20
+  _priority: 50
+  _maxInstances: 1
+  _minInterval: 0.1
+  _instanceCapPolicy: 1
+  _pitchMode: 1
+  _pitchJitterRatio: 0.03
+  _keepWhenBusBackground: 0
+  _avoidRepeat: 0
+  _panFromPosition: 0
+  _loop: 0
+  _pitchedSamples: []

@@ -50,6 +50,23 @@ namespace CozyGachapon.Audio
             _clips = clips;
         }
 
+        public void SetLimitsForTest(int priority, int maxInstances, float minInterval)
+        {
+            _priority = priority;
+            _maxInstances = maxInstances;
+            _minInterval = minInterval;
+        }
+
+        public void SetInstanceCapPolicyForTest(InstanceCapPolicy instanceCapPolicy)
+        {
+            _instanceCapPolicy = instanceCapPolicy;
+        }
+
+        public void SetVolumeDbForTest(float volumeDb)
+        {
+            _volumeDb = volumeDb;
+        }
+
         public void SetPitchForTest(PitchMode pitchMode, float pitchJitterRatio, PitchedSample[] pitchedSamples)
         {
             _pitchMode = pitchMode;

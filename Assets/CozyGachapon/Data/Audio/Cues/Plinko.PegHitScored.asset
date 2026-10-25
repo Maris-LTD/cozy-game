@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af83347996b817d4daf09119cdb058cf, type: 3}
+  m_Name: Plinko.PegHitScored
+  m_EditorClassIdentifier: CozyGachapon.Foundation::CozyGachapon.Audio.SoundCue
+  _cueId: Plinko.PegHitScored
+  _bus: 5
+  _clips: []
+  _volumeDb: -14
+  _priority: 60
+  _maxInstances: 6
+  _minInterval: 0.04
+  _instanceCapPolicy: 0
+  _pitchMode: 2
+  _pitchJitterRatio: 0.03
+  _keepWhenBusBackground: 0
+  _avoidRepeat: 0
+  _panFromPosition: 0
+  _loop: 0
+  _pitchedSamples:
+  - _clip: {fileID: 8300000, guid: 4b27ff56a00798c4296fdee73274127f, type: 3}
+    _nativeSemitone: 4
+  - _clip: {fileID: 8300000, guid: e69ddc7774e57c241a8df12b035895ce, type: 3}
+    _nativeSemitone: 12
+  - _clip: {fileID: 8300000, guid: 9ae44175390500a4cae995de03843f17, type: 3}
+    _nativeSemitone: 19

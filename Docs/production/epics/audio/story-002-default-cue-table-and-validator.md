@@ -1,7 +1,7 @@
 # Story 002: Default Cue Table, Placeholder Clips & Config Validator
 
 > **Epic**: Audio
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 2 days
@@ -34,9 +34,9 @@
 
 *From Docs/design/gdd/audio.md, scoped to this story:*
 
-- [ ] `AC-1 [EditMode]` **GIVEN** `C` mặc định, **WHEN** tra đường bus của mọi cue trong kho và mức dB hiệu dụng của từng bus, **THEN** mỗi cue có đúng một đường kết thúc ở Master, và dB(Music) − dB(Sfx) = `C.musicOffsetFromSfxDb` (−12).
-- [ ] `AC-5 [EditMode]` **GIVEN** kho cue mặc định, **WHEN** chạy validator, **THEN** 0 lỗi, `storm_instances` (12) ≤ `C.totalVoices` − `C.musicVoices` − `C.ambienceVoices` − `C.minFreeVoicesForRewards` (12), `storm_peak_gain` (1.76) ≤ `T.stormPeakGainMax`, mọi cue `StealOldest` có `priority` ≤ `C.stormPriorityCeiling` thỏa `maxInstances` × `minInterval` ≥ `T.minStealAgeSeconds` (`PegHitScored` 0.24, `PegHitUnscored` 0.20 ≥ 0.20), `Plinko.CoinSpawn` và `Plinko.CoinSpawnAuto` là `DropNew` với max(`clip.length`) / (1 − `Q.pitchJitterRatio`) ≤ `T.manualSpawnClipMaxSeconds` (0.12) và `T.manualSpawnClipMaxSeconds` ≤ registry `tap_cooldown` − `T.spawnClipMarginSeconds` (0.15 − 0.03 = 0.12), và mọi cue `pitchMode = Scale` (`PegHitScored`, `JackpotBurstSpawn`) có `pitchedSamples` không rỗng với |shift| ≤ `C.maxSampleShiftSemitones` cho mọi n = 0…`C.scaleNoteCount` − 1.
-- [ ] `AC-6 [EditMode]` **GIVEN** lần lượt từng cấu hình sai: cue 0 clip; `maxInstances` = 0; `minInterval` < 0; `priority` = 101; hai cue trùng `cueId`; `pitchedSamples` chỉ có mẫu trung (12); `Q[JackpotBurstSpawn].pitchedSamples` rỗng; tăng `Q[PegHitUnscored].maxInstances` thêm 1; `Q[PegHitScored].volumeDb` = 0; `Q[PegHitUnscored].minInterval` = 0.08; clip của `Plinko.CoinSpawn` dài `T.manualSpawnClipMaxSeconds` + 0.05 s; clip của `Plinko.CoinSpawnAuto` dài đúng `T.manualSpawnClipMaxSeconds` (0.12 s — hợp lệ nếu chỉ so `length`) với `Q[CoinSpawnAuto].pitchJitterRatio` (0.03), tức kêu thực 0.12 / 0.97 = 0.124 s; `T.manualSpawnClipMaxSeconds` > registry `tap_cooldown` − `T.spawnClipMarginSeconds` (ví dụ = `tap_cooldown`); `T.spawnClipMarginSeconds` ngoài safe range 0.017–0.05, **WHEN** chạy validator, **THEN** mỗi cấu hình sinh đúng lỗi tương ứng (lỗi đổi pitch nêu cue và nốt vi phạm; cue `Scale` thiếu mẫu nêu tên cue; lỗi ngân sách nêu `storm_instances` 13 > 12; lỗi biên độ nêu giá trị > `T.stormPeakGainMax`; lỗi steal_age nêu `PegHitUnscored` 0.16 < `T.minStealAgeSeconds`; lỗi clip spawn nêu tên cue, tên clip, `length` và thời gian kêu thực `length` / (1 − `pitchJitterRatio`) — ca `CoinSpawnAuto` 0.12 s phải bị bắt với 0.124 > 0.12; lỗi knob nêu `manualSpawnClipMaxSeconds` > `tap_cooldown` − `spawnClipMarginSeconds`; lỗi safe range nêu `spawnClipMarginSeconds`).
+- [x] `AC-1 [EditMode]` **GIVEN** `C` mặc định, **WHEN** tra đường bus của mọi cue trong kho và mức dB hiệu dụng của từng bus, **THEN** mỗi cue có đúng một đường kết thúc ở Master, và dB(Music) − dB(Sfx) = `C.musicOffsetFromSfxDb` (−12).
+- [x] `AC-5 [EditMode]` **GIVEN** kho cue mặc định, **WHEN** chạy validator, **THEN** 0 lỗi, `storm_instances` (12) ≤ `C.totalVoices` − `C.musicVoices` − `C.ambienceVoices` − `C.minFreeVoicesForRewards` (12), `storm_peak_gain` (1.76) ≤ `T.stormPeakGainMax`, mọi cue `StealOldest` có `priority` ≤ `C.stormPriorityCeiling` thỏa `maxInstances` × `minInterval` ≥ `T.minStealAgeSeconds` (`PegHitScored` 0.24, `PegHitUnscored` 0.20 ≥ 0.20), `Plinko.CoinSpawn` và `Plinko.CoinSpawnAuto` là `DropNew` với max(`clip.length`) / (1 − `Q.pitchJitterRatio`) ≤ `T.manualSpawnClipMaxSeconds` (0.12) và `T.manualSpawnClipMaxSeconds` ≤ registry `tap_cooldown` − `T.spawnClipMarginSeconds` (0.15 − 0.03 = 0.12), và mọi cue `pitchMode = Scale` (`PegHitScored`, `JackpotBurstSpawn`) có `pitchedSamples` không rỗng với |shift| ≤ `C.maxSampleShiftSemitones` cho mọi n = 0…`C.scaleNoteCount` − 1.
+- [x] `AC-6 [EditMode]` **GIVEN** lần lượt từng cấu hình sai: cue 0 clip; `maxInstances` = 0; `minInterval` < 0; `priority` = 101; hai cue trùng `cueId`; `pitchedSamples` chỉ có mẫu trung (12); `Q[JackpotBurstSpawn].pitchedSamples` rỗng; tăng `Q[PegHitUnscored].maxInstances` thêm 1; `Q[PegHitScored].volumeDb` = 0; `Q[PegHitUnscored].minInterval` = 0.08; clip của `Plinko.CoinSpawn` dài `T.manualSpawnClipMaxSeconds` + 0.05 s; clip của `Plinko.CoinSpawnAuto` dài đúng `T.manualSpawnClipMaxSeconds` (0.12 s — hợp lệ nếu chỉ so `length`) với `Q[CoinSpawnAuto].pitchJitterRatio` (0.03), tức kêu thực 0.12 / 0.97 = 0.124 s; `T.manualSpawnClipMaxSeconds` > registry `tap_cooldown` − `T.spawnClipMarginSeconds` (ví dụ = `tap_cooldown`); `T.spawnClipMarginSeconds` ngoài safe range 0.017–0.05, **WHEN** chạy validator, **THEN** mỗi cấu hình sinh đúng lỗi tương ứng (lỗi đổi pitch nêu cue và nốt vi phạm; cue `Scale` thiếu mẫu nêu tên cue; lỗi ngân sách nêu `storm_instances` 13 > 12; lỗi biên độ nêu giá trị > `T.stormPeakGainMax`; lỗi steal_age nêu `PegHitUnscored` 0.16 < `T.minStealAgeSeconds`; lỗi clip spawn nêu tên cue, tên clip, `length` và thời gian kêu thực `length` / (1 − `pitchJitterRatio`) — ca `CoinSpawnAuto` 0.12 s phải bị bắt với 0.124 > 0.12; lỗi knob nêu `manualSpawnClipMaxSeconds` > `tap_cooldown` − `spawnClipMarginSeconds`; lỗi safe range nêu `spawnClipMarginSeconds`).
 
 ## Implementation Notes
 
@@ -79,9 +79,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/DefaultCueTableTests.cs`, `AudioConfigValidatorTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `DefaultCueTableTests.cs`, `AudioConfigValidatorTests.cs`, `AudioCueDataValidatorTests.cs`, `AudioBudgetValidatorTests.cs`, `AudioSpawnClipValidatorTests.cs` (EditMode 374/374)
 
 ## Dependencies
 
 - Depends on: Story 001
 - Unlocks: Story 003, Story 007
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 3/3 passing (AC-1, AC-5, AC-6 incl. one test per misconfiguration)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 374/374); smoke n/a (no scene change)
+**Run result**: N/A - data assets and validator, nothing plays yet
+**Deviations**: ADVISORY - 18 MVP `SoundCue` assets under `Assets/CozyGachapon/Data/Audio/Cues/`, 21 generated placeholder WAVs + `LICENSE.txt` under `Clips/` (to be replaced by CC0/commercial clips, AC-35/39/40 deferred); validator split into `AudioCueDataValidator`, `AudioBudgetValidator`, `AudioSpawnClipValidator` behind `AudioConfigValidator`; boundary checks use `AudioBalanceTargets.BoundaryTolerance` (1e-4, GDD AC float tolerance) so values exactly on a limit stay valid; `tapCooldownSeconds` is a validator parameter until `PlinkoConfig` exists
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/DefaultCueTableTests.cs`, `AudioConfigValidatorTests.cs`, `AudioCueDataValidatorTests.cs`, `AudioBudgetValidatorTests.cs`, `AudioSpawnClipValidatorTests.cs` (+ `DefaultAudioAssets.cs`, `AudioMisconfigFixture.cs`), passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 1 minor (float boundary comparisons without tolerance) fixed with a tolerance knob and a rounding test; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

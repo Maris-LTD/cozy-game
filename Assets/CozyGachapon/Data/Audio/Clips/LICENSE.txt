@@ -1,0 +1,7 @@
+Audio placeholder clips
+
+placeholder generated, no third-party source
+
+Generated procedurally in the Unity Editor: mono 16-bit 44100 Hz sine tones with short fades. Replace with real clips before release.
+
+Files: tok.wav, marimba_low/mid/high.wav, chime_low/mid/high.wav, jackpot_hit.wav, rarity_common.wav, rarity_rare.wav, crank.wav, egg_pop.wav, bucket_x5.wav, bucket_x2.wav, bucket_x1.wav, ui_confirm.wav, ui_sound_on.wav, ui_tap.wav, coin_fizzle.wav, board_busy.wav, peg_unscored.wav
