@@ -1,7 +1,7 @@
 # Story 006: Pentatonic Pitch, Clip Selection & Pan
 
 > **Epic**: Audio
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 2 days
@@ -34,10 +34,10 @@
 
 *From Docs/design/gdd/audio.md, scoped to this story:*
 
-- [ ] `AC-14 [EditMode]` **GIVEN** `note_index` với `C` mặc định, **WHEN** pitchPosition = 0, 1, 0.727, −0.5, 1.7, NaN, **THEN** n = 0, 9, 7, 0, 9, floor(`C.fallbackPitchPosition` × 9 + 0.5) (5); semitone(n) của n = 0…9 đúng dãy {0, 2, 4, 7, 9, 12, 14, 16, 19, 21}.
-- [ ] `AC-15 [EditMode]` **GIVEN** `Plinko.PegHitScored` và RNG giả trả 0, **WHEN** phát với n = 0…9, **THEN** mẫu được chọn và pitch khớp bảng `sample_pitch` (pitch = 2^(shift/12)), |shift| ≤ `C.maxSampleShiftSemitones`; **AND WHEN** phát 10 000 lần với RNG thật, **THEN** mọi pitch ∈ [2^(−`C.maxSampleShiftSemitones`/12) × (1 − `Q.pitchJitterRatio`), 2^(`C.maxSampleShiftSemitones`/12) × (1 + `Q.pitchJitterRatio`)] và > 0. Lặp cả hai vế với `Plinko.JackpotBurstSpawn` (mẫu chime 4/12/19, `Q.pitchJitterRatio` của chính cue): cùng bảng chọn mẫu và cùng giới hạn; với `burstIndex` 0…`jackpot_burst_count` − 1 (5 xu) thì n = 0, 2, 5, 7, 9.
-- [ ] `AC-16 [EditMode]` **GIVEN** cue `None`, cue `Random` có 3 clip và `avoidRepeat`, **WHEN** phát 1000 lần mỗi cue, **THEN** cue `None` luôn pitch = 1; cue `Random` có pitch ∈ [1 − `Q.pitchJitterRatio`, 1 + `Q.pitchJitterRatio`] và không có hai lần liên tiếp cùng clip.
-- [ ] `AC-17 [EditMode]` **GIVEN** cue có `panFromPosition`, **WHEN** panPosition = −1, 0, 1, 5, NaN, **THEN** pan = −`C.maxPan`, 0, `C.maxPan`, `C.maxPan`, 0; cue không có cờ luôn pan = 0; mọi voice có spatialBlend = 0.
+- [x] `AC-14 [EditMode]` **GIVEN** `note_index` với `C` mặc định, **WHEN** pitchPosition = 0, 1, 0.727, −0.5, 1.7, NaN, **THEN** n = 0, 9, 7, 0, 9, floor(`C.fallbackPitchPosition` × 9 + 0.5) (5); semitone(n) của n = 0…9 đúng dãy {0, 2, 4, 7, 9, 12, 14, 16, 19, 21}.
+- [x] `AC-15 [EditMode]` **GIVEN** `Plinko.PegHitScored` và RNG giả trả 0, **WHEN** phát với n = 0…9, **THEN** mẫu được chọn và pitch khớp bảng `sample_pitch` (pitch = 2^(shift/12)), |shift| ≤ `C.maxSampleShiftSemitones`; **AND WHEN** phát 10 000 lần với RNG thật, **THEN** mọi pitch ∈ [2^(−`C.maxSampleShiftSemitones`/12) × (1 − `Q.pitchJitterRatio`), 2^(`C.maxSampleShiftSemitones`/12) × (1 + `Q.pitchJitterRatio`)] và > 0. Lặp cả hai vế với `Plinko.JackpotBurstSpawn` (mẫu chime 4/12/19, `Q.pitchJitterRatio` của chính cue): cùng bảng chọn mẫu và cùng giới hạn; với `burstIndex` 0…`jackpot_burst_count` − 1 (5 xu) thì n = 0, 2, 5, 7, 9.
+- [x] `AC-16 [EditMode]` **GIVEN** cue `None`, cue `Random` có 3 clip và `avoidRepeat`, **WHEN** phát 1000 lần mỗi cue, **THEN** cue `None` luôn pitch = 1; cue `Random` có pitch ∈ [1 − `Q.pitchJitterRatio`, 1 + `Q.pitchJitterRatio`] và không có hai lần liên tiếp cùng clip.
+- [x] `AC-17 [EditMode]` **GIVEN** cue có `panFromPosition`, **WHEN** panPosition = −1, 0, 1, 5, NaN, **THEN** pan = −`C.maxPan`, 0, `C.maxPan`, `C.maxPan`, 0; cue không có cờ luôn pan = 0; mọi voice có spatialBlend = 0.
 
 ## Implementation Notes
 
@@ -85,9 +85,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/PitchAndNoteTests.cs`, `ClipSelectionTests.cs`, `PanTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] note index, sample pitch, clip selection and pan tests under `Assets/CozyGachapon/Tests/EditMode/Audio/` (EditMode 471/471)
 
 ## Dependencies
 
 - Depends on: Story 003
 - Unlocks: Story 012
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 4/4 passing (AC-14, AC-15, AC-16, AC-17 + QA edge cases)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 471/471); smoke n/a (no scene change)
+**Run result**: N/A - pitch/clip/pan applied to the fake voice backend
+**Deviations**: ADVISORY - pan = `maxPan` x clamp(`panPosition`, -1, 1) to satisfy AC-17 (panPosition 5 -> maxPan); the Implementation Notes formula clamp(maxPan x panPosition, -1, 1) would give 1; new `IAudioRandom` (seeded real + fixed fake), `PitchResolver`, `CueClipSelector`, `PanCalculator`, reusing Story 002's `NoteIndexCalculator`/`SamplePitchSelector`
+**Test Evidence**: note index / sample pitch / clip selection / pan tests in `Assets/CozyGachapon/Tests/EditMode/Audio/` (+ `FixedAudioRandom.cs`), passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 1 minor fixed (avoidRepeat first play could never pick the last clip) with test `AvoidRepeat_FirstPlay_CanPickTheLastClip`; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

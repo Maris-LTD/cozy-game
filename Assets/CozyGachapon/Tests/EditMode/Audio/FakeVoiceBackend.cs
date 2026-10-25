@@ -16,6 +16,7 @@ namespace CozyGachapon.Tests.Audio
         private readonly int[] _stopCounts;
 
         public int VoiceCount { get; private set; }
+        public bool SupportsPan { get; private set; } = true;
         public int StartCount { get; private set; }
         public int StopCount { get; private set; }
         public int LastStartedVoice { get; private set; } = -1;
@@ -50,6 +51,11 @@ namespace CozyGachapon.Tests.Audio
             _paused = new bool[voiceCount];
             _startCounts = new int[voiceCount];
             _stopCounts = new int[voiceCount];
+        }
+
+        public void SetSupportsPan(bool supportsPan)
+        {
+            SupportsPan = supportsPan;
         }
 
         public void Start(int voice, AudioClip clip, float volume, float pitch, float pan, bool loop)

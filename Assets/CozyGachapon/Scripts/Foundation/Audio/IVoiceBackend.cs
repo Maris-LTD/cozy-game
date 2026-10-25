@@ -5,6 +5,7 @@ namespace CozyGachapon.Audio
     public interface IVoiceBackend
     {
         int VoiceCount { get; }
+        bool SupportsPan { get; }
 
         void Start(int voice, AudioClip clip, float volume, float pitch, float pan, bool loop);
         void Stop(int voice);

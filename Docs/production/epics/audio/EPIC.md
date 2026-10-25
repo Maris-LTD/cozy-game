@@ -44,7 +44,7 @@ This epic is complete when:
 | 003 | Play Admission & Voice Pool Core | Logic | Complete | ADR-0004 |
 | 004 | Priority Voice Stealing & Instance Caps | Logic | Complete | ADR-0004 |
 | 005 | Storm Scenario & Diagnostics Counters | Logic | Complete | ADR-0004 |
-| 006 | Pentatonic Pitch, Clip Selection & Pan | Logic | Ready | ADR-0004 |
+| 006 | Pentatonic Pitch, Clip Selection & Pan | Logic | Complete | ADR-0004 |
 | 007 | Bus Gain, Background Bus & User Volume | Logic | Ready | ADR-0004 |
 | 008 | Background Suspend, User Mute & Settings Persistence | Logic | Ready | ADR-0004, ADR-0002 |
 | 009 | Ad Mute Reason & Reason Stacking | Logic | Ready | ADR-0004 |

@@ -2,6 +2,7 @@ using CozyGachapon.Audio;
 using CozyGachapon.Contracts;
 using CozyGachapon.Tests.Pooling;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace CozyGachapon.Tests.Audio
 {
@@ -12,6 +13,10 @@ namespace CozyGachapon.Tests.Audio
         private const string LowId = "Test.Low";
         private const string OtherLowId = "Test.OtherLow";
         private const string HighId = "Test.High";
+        private const string RandomClipsId = "Test.RandomClips";
+        private const string PannedId = "Test.Panned";
+        private const int RandomClipCount = 3;
+        private const float PositionStep = 0.1f;
         private const int Iterations = 200;
         private const double Step = 1d;
 
@@ -63,6 +68,27 @@ namespace CozyGachapon.Tests.Audio
         }
 
         [Test]
+        public void Play_ScaleRandomAndPanPaths_DoesNotAllocate()
+        {
+            InitializeWithDefaultAssets(CreateRandomClipsCue(), CreatePannedCue());
+            int pegIndex = ResolveCue(PegHitScoredId);
+            int burstIndex = ResolveCue("Plinko.JackpotBurstSpawn");
+            int randomIndex = ResolveCue(RandomClipsId);
+            int pannedIndex = ResolveCue(PannedId);
+
+            RunPitchAndPanRequests(pegIndex, burstIndex, randomIndex, pannedIndex);
+            int allocations = GcAllocProbe.CountAllocations(
+                () => RunPitchAndPanRequests(pegIndex, burstIndex, randomIndex, pannedIndex));
+            Backend.SetSupportsPan(false);
+            int withoutPan = GcAllocProbe.CountAllocations(
+                () => RunPitchAndPanRequests(pegIndex, burstIndex, randomIndex, pannedIndex));
+
+            Assert.AreEqual(0, allocations);
+            Assert.AreEqual(0, withoutPan);
+            Assert.Greater(Service.Stats.Played, 0);
+        }
+
+        [Test]
         public void Play_BeforeInitialize_DoesNotAllocate()
         {
             AudioPlayParams playParams = AudioPlayParams.None;
@@ -81,6 +107,49 @@ namespace CozyGachapon.Tests.Audio
 
             Assert.AreEqual(0, allocations);
             Assert.AreEqual(Iterations * 4 + 2, Service.Stats.DroppedNotReady);
+        }
+
+        private SoundCue CreateRandomClipsCue()
+        {
+            SoundCue cue = CreateLimitedCue(RandomClipsId, AudioBus.Plinko, 1, 0f, InstanceCapPolicy.DropNew);
+            AudioClip[] clips = new AudioClip[RandomClipCount];
+            for (int i = 0; i < RandomClipCount; i++)
+            {
+                clips[i] = CreateClip();
+            }
+
+            cue.SetClipsForTest(clips);
+            cue.SetPitchForTest(PitchMode.Random, 0.03f, new PitchedSample[0]);
+            SetAvoidRepeat(cue, true);
+            return cue;
+        }
+
+        private SoundCue CreatePannedCue()
+        {
+            SoundCue cue = CreateLimitedCue(PannedId, AudioBus.Plinko, 1, 0f, InstanceCapPolicy.DropNew);
+            SetPanFromPosition(cue, true);
+            return cue;
+        }
+
+        private void RunPitchAndPanRequests(int pegIndex, int burstIndex, int randomIndex, int pannedIndex)
+        {
+            for (int i = 0; i < Iterations; i++)
+            {
+                Clock.Advance(Step);
+                float position = (i % 11) * PositionStep;
+                Service.Play(pegIndex, new AudioPlayParams(position, float.NaN));
+                Service.Play(pegIndex, AudioPlayParams.None);
+                Service.Play(burstIndex, new AudioPlayParams(position, float.NaN));
+                Service.Play(randomIndex, AudioPlayParams.None);
+                Service.Play(pannedIndex, new AudioPlayParams(float.NaN, position * 2f - 1f));
+                Service.Play(pannedIndex, new AudioPlayParams(float.NaN, float.NaN));
+                for (int voice = 0; voice < Backend.VoiceCount; voice++)
+                {
+                    Backend.FinishVoice(voice);
+                }
+
+                Service.Tick();
+            }
         }
 
         private SoundCue CreateStealCue(string cueId, int priority, int maxInstances, InstanceCapPolicy policy)

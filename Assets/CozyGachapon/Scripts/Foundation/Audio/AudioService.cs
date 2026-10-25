@@ -5,8 +5,6 @@ namespace CozyGachapon.Audio
 {
     public sealed class AudioService : IAudioService
     {
-        private const float NeutralPitch = 1f;
-        private const float CenterPan = 0f;
         private const float MaxLinearVolume = 1f;
 
         private readonly AudioCounters _counters = new AudioCounters();
@@ -17,6 +15,7 @@ namespace CozyGachapon.Audio
         private CueRuntimeTable _cues;
         private VoicePool _pool;
         private PlayAdmission _admission;
+        private PitchResolver _pitch;
 
         public bool IsReady { get; private set; }
         public AudioRuntimeState RuntimeState { get; private set; }
@@ -33,14 +32,15 @@ namespace CozyGachapon.Audio
             SoundCueRepository repository,
             IVoiceBackend backend,
             IAudioClock clock,
-            IAudioDiagnosticsSink sink)
+            IAudioDiagnosticsSink sink,
+            IAudioRandom random)
         {
             if (IsReady)
             {
                 return false;
             }
 
-            if (!HasValidInputs(config, repository, backend, clock, sink))
+            if (!HasValidInputs(config, repository, backend, clock, sink, random))
             {
                 if (sink != null)
                 {
@@ -62,6 +62,7 @@ namespace CozyGachapon.Audio
                 _pool,
                 new InstanceCapResolver(_pool),
                 new VoiceStealer(_pool, _cues));
+            _pitch = new PitchResolver(config, random, new CueClipSelector(_cues.Count));
             IsReady = true;
             return true;
         }
@@ -90,7 +91,7 @@ namespace CozyGachapon.Audio
                 return Drop(DropReason.UnknownCue);
             }
 
-            return Admit(cueIndex);
+            return Admit(cueIndex, playParams);
         }
 
         public PlayResult Play(int cueIndex, in AudioPlayParams playParams)
@@ -106,7 +107,7 @@ namespace CozyGachapon.Audio
                 return Drop(DropReason.UnknownCue);
             }
 
-            return Admit(cueIndex);
+            return Admit(cueIndex, playParams);
         }
 
         public void Tick()
@@ -117,7 +118,7 @@ namespace CozyGachapon.Audio
             }
         }
 
-        private PlayResult Admit(int cueIndex)
+        private PlayResult Admit(int cueIndex, in AudioPlayParams playParams)
         {
             double now = _clock.Now;
             DropReason reason = _admission.Evaluate(cueIndex, now, out int voice, out VoiceAcquisition acquisition);
@@ -134,7 +135,9 @@ namespace CozyGachapon.Audio
 
             SoundCue cue = _cues.GetCue(cueIndex);
             float volume = Mathf.Min(MaxLinearVolume, AudioMath.DbToLinear(cue.VolumeDb, _config.SilenceFloorDb));
-            _backend.Start(voice, _cues.GetDefaultClip(cueIndex), volume, NeutralPitch, CenterPan, cue.Loop);
+            float pitch = _pitch.Resolve(cueIndex, cue, playParams, _cues.GetDefaultClip(cueIndex), out AudioClip clip);
+            float pan = PanCalculator.Resolve(cue.PanFromPosition, playParams.PanPosition, _config.MaxPan, _backend.SupportsPan);
+            _backend.Start(voice, clip, volume, pitch, pan, cue.Loop);
             _pool.Assign(voice, cueIndex, now, cue.Loop);
             _cues.AddInstance(cueIndex);
             _cues.MarkPlayed(cueIndex, now);
@@ -164,9 +167,10 @@ namespace CozyGachapon.Audio
             SoundCueRepository repository,
             IVoiceBackend backend,
             IAudioClock clock,
-            IAudioDiagnosticsSink sink)
+            IAudioDiagnosticsSink sink,
+            IAudioRandom random)
         {
-            if (config == null || repository == null || backend == null || clock == null || sink == null)
+            if (config == null || repository == null || backend == null || clock == null || sink == null || random == null)
             {
                 return false;
             }

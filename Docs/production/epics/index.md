@@ -7,4 +7,4 @@ Engine: Unity 6000.3.16f1
 |------|-------|--------|-----|---------|--------|
 | Bootstrap & Scene Flow | Foundation | bootstrap-and-scene-flow | Docs/design/gdd/bootstrap-and-scene-flow.md | 11 stories (11 Complete) | Complete |
 | Object Pooling | Foundation | object-pooling | Docs/design/gdd/object-pooling.md | 6 stories (6 Complete) | Complete |
-| Audio | Foundation | audio | Docs/design/gdd/audio.md | 12 stories (5 Complete) | In Progress |
+| Audio | Foundation | audio | Docs/design/gdd/audio.md | 12 stories (6 Complete) | In Progress |

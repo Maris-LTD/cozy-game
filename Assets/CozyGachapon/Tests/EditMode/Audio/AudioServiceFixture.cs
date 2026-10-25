@@ -8,10 +8,14 @@ namespace CozyGachapon.Tests.Audio
 {
     public abstract class AudioServiceFixture : AudioTestFixture
     {
+        private const int DefaultRandomSeed = 20261025;
+        private const double PlayStepSeconds = 1d;
+
         protected AudioService Service { get; private set; }
         protected FakeVoiceBackend Backend { get; private set; }
         protected FakeAudioClock Clock { get; private set; }
         protected CountingAudioDiagnosticsSink Sink { get; private set; }
+        protected IAudioRandom Random { get; private set; }
 
         [SetUp]
         public void SetUpAudioService()
@@ -20,6 +24,12 @@ namespace CozyGachapon.Tests.Audio
             Clock = new FakeAudioClock();
             Sink = new CountingAudioDiagnosticsSink();
             Backend = null;
+            Random = new SystemAudioRandom(DefaultRandomSeed);
+        }
+
+        protected void UseRandom(IAudioRandom random)
+        {
+            Random = random;
         }
 
         protected void InitializeWithDefaultAssets()
@@ -28,7 +38,7 @@ namespace CozyGachapon.Tests.Audio
             Assert.IsNotNull(config);
             Backend = new FakeVoiceBackend(config.TotalVoices);
             SoundCueRepository repository = new SoundCueRepository(DefaultAudioAssets.LoadCues());
-            Assert.IsTrue(Service.Initialize(config, repository, Backend, Clock, Sink));
+            Assert.IsTrue(Service.Initialize(config, repository, Backend, Clock, Sink, Random));
         }
 
         protected void InitializeWithDefaultAssets(params SoundCue[] extraCues)
@@ -38,14 +48,14 @@ namespace CozyGachapon.Tests.Audio
             Backend = new FakeVoiceBackend(config.TotalVoices);
             List<SoundCue> cues = DefaultAudioAssets.LoadCues();
             cues.AddRange(extraCues);
-            Assert.IsTrue(Service.Initialize(config, new SoundCueRepository(cues), Backend, Clock, Sink));
+            Assert.IsTrue(Service.Initialize(config, new SoundCueRepository(cues), Backend, Clock, Sink, Random));
         }
 
         protected void InitializeWithCues(params SoundCue[] cues)
         {
             Backend = new FakeVoiceBackend(Config.TotalVoices);
             SoundCueRepository repository = new SoundCueRepository(new List<SoundCue>(cues));
-            Assert.IsTrue(Service.Initialize(Config, repository, Backend, Clock, Sink));
+            Assert.IsTrue(Service.Initialize(Config, repository, Backend, Clock, Sink, Random));
         }
 
         protected SoundCue CreateLimitedCue(
@@ -78,6 +88,32 @@ namespace CozyGachapon.Tests.Audio
         protected static void SetLoop(SoundCue cue, bool loop)
         {
             SetCueBool(cue, "_loop", loop);
+        }
+
+        protected static void SetAvoidRepeat(SoundCue cue, bool avoidRepeat)
+        {
+            SetCueBool(cue, "_avoidRepeat", avoidRepeat);
+        }
+
+        protected static void SetPanFromPosition(SoundCue cue, bool panFromPosition)
+        {
+            SetCueBool(cue, "_panFromPosition", panFromPosition);
+        }
+
+        protected int ResolveCue(string cueId)
+        {
+            Assert.IsTrue(Service.TryResolveCue(cueId, out int cueIndex), cueId);
+            return cueIndex;
+        }
+
+        protected int PlayVoice(int cueIndex, in AudioPlayParams playParams)
+        {
+            Clock.Advance(PlayStepSeconds);
+            AssertPlayed(Service.Play(cueIndex, playParams));
+            int voice = Backend.LastStartedVoice;
+            Backend.FinishVoice(voice);
+            Service.Tick();
+            return voice;
         }
 
         protected PlayResult PlayAt(string cueId, double now)

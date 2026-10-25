@@ -58,14 +58,15 @@ namespace CozyGachapon.Tests.Audio
             FakeVoiceBackend backend = new FakeVoiceBackend(Config.TotalVoices);
             SoundCueRepository repository = new SoundCueRepository(new List<SoundCue>());
 
-            Assert.IsFalse(Service.Initialize(null, repository, backend, Clock, Sink));
-            Assert.IsFalse(Service.Initialize(Config, null, backend, Clock, Sink));
-            Assert.IsFalse(Service.Initialize(Config, repository, null, Clock, Sink));
-            Assert.IsFalse(Service.Initialize(Config, repository, backend, null, Sink));
-            Assert.IsFalse(Service.Initialize(Config, repository, backend, Clock, null));
+            Assert.IsFalse(Service.Initialize(null, repository, backend, Clock, Sink, Random));
+            Assert.IsFalse(Service.Initialize(Config, null, backend, Clock, Sink, Random));
+            Assert.IsFalse(Service.Initialize(Config, repository, null, Clock, Sink, Random));
+            Assert.IsFalse(Service.Initialize(Config, repository, backend, null, Sink, Random));
+            Assert.IsFalse(Service.Initialize(Config, repository, backend, Clock, null, Random));
+            Assert.IsFalse(Service.Initialize(Config, repository, backend, Clock, Sink, null));
 
             Assert.IsFalse(Service.IsReady);
-            Assert.AreEqual(4, Sink.CountErrors(AudioDiagnosticCode.InitializeInvalidInput));
+            Assert.AreEqual(5, Sink.CountErrors(AudioDiagnosticCode.InitializeInvalidInput));
             AssertDropped(DropReason.NotReady, Service.Play(ValidId, AudioPlayParams.None));
         }
 
@@ -75,7 +76,7 @@ namespace CozyGachapon.Tests.Audio
             FakeVoiceBackend backend = new FakeVoiceBackend(Config.TotalVoices - 1);
             SoundCueRepository repository = new SoundCueRepository(new List<SoundCue>());
 
-            Assert.IsFalse(Service.Initialize(Config, repository, backend, Clock, Sink));
+            Assert.IsFalse(Service.Initialize(Config, repository, backend, Clock, Sink, Random));
             Assert.IsFalse(Service.IsReady);
             Assert.AreEqual(1, Sink.CountErrors(AudioDiagnosticCode.InitializeInvalidInput));
         }
@@ -89,7 +90,7 @@ namespace CozyGachapon.Tests.Audio
             FakeVoiceBackend backend = new FakeVoiceBackend(Config.TotalVoices);
             SoundCueRepository repository = new SoundCueRepository(new List<SoundCue>());
 
-            Assert.IsFalse(Service.Initialize(Config, repository, backend, Clock, Sink));
+            Assert.IsFalse(Service.Initialize(Config, repository, backend, Clock, Sink, Random));
             Assert.IsFalse(Service.IsReady);
         }
 
@@ -100,7 +101,7 @@ namespace CozyGachapon.Tests.Audio
             FakeVoiceBackend other = new FakeVoiceBackend(Config.TotalVoices);
             SoundCueRepository empty = new SoundCueRepository(new List<SoundCue>());
 
-            Assert.IsFalse(Service.Initialize(Config, empty, other, Clock, Sink));
+            Assert.IsFalse(Service.Initialize(Config, empty, other, Clock, Sink, Random));
             Assert.IsTrue(Service.IsReady);
             AssertPlayed(PlayAt(ValidId, 1d));
             Assert.AreEqual(0, other.StartCount);
