@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using CozyGachapon.Contracts;
 using CozyGachapon.Economy;
 using NUnit.Framework;
@@ -12,9 +11,12 @@ namespace CozyGachapon.Tests.Economy
         private const double StartingBalance = 10d;
         private const double SmallCap = 1000d;
 
-        private static string FloorDisplay(double balance)
+        private NumberFormatter _formatter;
+
+        [SetUp]
+        public void SetUpFormatter()
         {
-            return Math.Floor(balance).ToString(CultureInfo.InvariantCulture);
+            _formatter = new NumberFormatter(Config);
         }
 
         [Test]
@@ -24,7 +26,7 @@ namespace CozyGachapon.Tests.Economy
             Assert.IsTrue(Wallet.Add(EconomyIds.Coin, 2.5d, WalletChangeReason.AdReward));
 
             AssertBalance(5d, EconomyIds.Coin);
-            Assert.AreEqual("5", FloorDisplay(Wallet.GetBalance(EconomyIds.Coin)));
+            Assert.AreEqual("5", _formatter.FormatAmount(Wallet.GetBalance(EconomyIds.Coin)));
             Assert.AreEqual(2, Recorder.Count);
             for (int i = 0; i < Recorder.Count; i++)
             {
@@ -47,7 +49,7 @@ namespace CozyGachapon.Tests.Economy
             }
 
             AssertBalance(1.2d, EconomyIds.Coin);
-            Assert.AreEqual("1", FloorDisplay(Wallet.GetBalance(EconomyIds.Coin)));
+            Assert.AreEqual("1", _formatter.FormatAmount(Wallet.GetBalance(EconomyIds.Coin)));
             Assert.AreEqual(3, Recorder.Count);
             for (int i = 0; i < Recorder.Count; i++)
             {

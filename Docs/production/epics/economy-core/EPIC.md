@@ -51,7 +51,7 @@ This epic is complete when:
 | 003 | Spin Price Curve, nice_ceil & Derived Price | Logic | Complete | ADR-0005 |
 | 004 | Economy Core Initialization & State Snapshot | Logic | Ready | ADR-0005, ADR-0001 |
 | 005 | Spin Payment, Base Coin Value Source & Shop Reset | Logic | Ready | ADR-0005 |
-| 006 | Number Formatter (K, M, B, T, aa…) | Logic | Ready | ADR-0005 |
+| 006 | Number Formatter (K, M, B, T, aa…) | Logic | Complete | ADR-0005 |
 | 007 | Income Modifier Tiers & Caps | Logic | Ready | ADR-0005 |
 | 008 | Tier Ownership & Modifier Registration Rules | Logic | Ready | ADR-0005 |
 | 009 | Idle CPS Computation, Dirty Flag & Offline Snapshot | Logic | Ready | ADR-0005 |

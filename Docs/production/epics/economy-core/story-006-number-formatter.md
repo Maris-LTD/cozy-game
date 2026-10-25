@@ -1,7 +1,7 @@
 # Story 006: Number Formatter (K, M, B, T, aa…)
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 1 day
@@ -34,8 +34,8 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-37 [EditMode]` **GIVEN** `C.displaySigDigits` = 3, **WHEN** định dạng số dư 0, 999.9, 1,000, 1,234.5, 12,345, 999,999.6, 1e6, 1e9, 1e12, 1e15, 1e18, 1e300, NaN, **THEN** = "0", "999", "1.00K", "1.23K", "12.3K", "999K", "1.00M", "1.00B", "1.00T", "1.00aa", "1.00ab", "1.00dr", "0".
-- [ ] `AC-38 [EditMode]` **GIVEN** `C.rateDecimals` = 1, **WHEN** định dạng tốc độ 6.58, 0, 1,234.5, **THEN** = "6.5/s", "0.0/s", "1.23K/s".
+- [x] `AC-37 [EditMode]` **GIVEN** `C.displaySigDigits` = 3, **WHEN** định dạng số dư 0, 999.9, 1,000, 1,234.5, 12,345, 999,999.6, 1e6, 1e9, 1e12, 1e15, 1e18, 1e300, NaN, **THEN** = "0", "999", "1.00K", "1.23K", "12.3K", "999K", "1.00M", "1.00B", "1.00T", "1.00aa", "1.00ab", "1.00dr", "0".
+- [x] `AC-38 [EditMode]` **GIVEN** `C.rateDecimals` = 1, **WHEN** định dạng tốc độ 6.58, 0, 1,234.5, **THEN** = "6.5/s", "0.0/s", "1.23K/s".
 
 ## Implementation Notes
 
@@ -71,9 +71,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/NumberFormatterTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `NumberFormatterTests.cs`, `NumberFormatterZeroAllocTests.cs` (EditMode 816/816)
 
 ## Dependencies
 
 - Depends on: Story 001
 - Unlocks: Story 018
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 2/2 passing (AC-37, AC-38 + QA edge cases)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 816/816); smoke n/a (no scene change)
+**Run result**: N/A - formatter logic, HUD binding comes with the HUD epic
+**Deviations**: ADVISORY - `INumberFormatter` (Contracts) with `FormatAmount`/`FormatRate` (cached strings) and `TryFormatAmount`/`TryFormatRate` into `Span<char>` without allocation; split into `ThousandPowerTable`, `NumberSuffixTable`, `SignificantDigitsWriter`, `DisplayStringCache`; k chosen from an exact power-of-1000 table; digits truncate with a 1e-12 relative epsilon to absorb floating-point error (values within 1e-12 of the next digit round up, pinned by boundary tests); Story 001's FloorDisplay helper replaced by the formatter
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/NumberFormatterTests.cs`, `NumberFormatterZeroAllocTests.cs`, passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 1 minor (truncation epsilon) kept and pinned with boundary tests; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

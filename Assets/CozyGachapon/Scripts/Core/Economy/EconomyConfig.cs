@@ -68,6 +68,11 @@ namespace CozyGachapon.Economy
             _displaySigDigits = displaySigDigits;
         }
 
+        public void SetRateDecimalsForTest(int rateDecimals)
+        {
+            _rateDecimals = rateDecimals;
+        }
+
         public void SetSpinGrowthForTest(double spinGrowth)
         {
             _spinGrowth = spinGrowth;
