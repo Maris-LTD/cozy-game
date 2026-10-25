@@ -22,6 +22,7 @@ namespace CozyGachapon.Audio
         private AudioUserSettings _settings;
         private AudioMuteCoordinator _mute;
         private AudioFailedSettings _failedSettings;
+        private MusicStarter _music;
         private int _soundOnIndex = NoCueIndex;
 
         public event Action<bool> MuteChanged;
@@ -70,7 +71,8 @@ namespace CozyGachapon.Audio
             _background = new BusBackgroundController(config, RuntimeState);
             AudioSuspendController suspend = new AudioSuspendController(config, RuntimeState);
             UserMuteController userMute = new UserMuteController(config, RuntimeState);
-            VoiceGainCalculator gain = new VoiceGainCalculator(config, RuntimeState, _busTable, _background, suspend, userMute);
+            MusicFadeIn musicFade = new MusicFadeIn(config);
+            VoiceGainCalculator gain = new VoiceGainCalculator(config, RuntimeState, _busTable, _background, suspend, userMute, musicFade);
             _gainUpdater = new VoiceGainUpdater(_pool, _cues, backend, gain);
             _pipeline = new AudioPlayPipeline(
                 config,
@@ -81,6 +83,7 @@ namespace CozyGachapon.Audio
                 new PlayAdmission(RuntimeState, _cues, _pool, new InstanceCapResolver(_pool), new VoiceStealer(_pool, _cues)),
                 new PitchResolver(config, random, new CueClipSelector(_cues.Count)),
                 gain);
+            _music = new MusicStarter(RuntimeState, _cues, _pipeline, musicFade);
             _settings = new AudioUserSettings(config, settingsStore);
             _mute = new AudioMuteCoordinator(
                 suspend, userMute, _pool, backend, _gainUpdater, _settings, new AdMuteHandler(RuntimeState, _pool, backend, _cues));
@@ -161,7 +164,8 @@ namespace CozyGachapon.Audio
             _pool.Tick(_backend, _cues);
             double now = _clock.Now;
             bool backgroundRefresh = _background.ConsumeRefresh(now);
-            if (_mute.Tick(now, out bool soundOnDue) || backgroundRefresh)
+            bool musicRefresh = _music.Tick(now);
+            if (_mute.Tick(now, out bool soundOnDue) || backgroundRefresh || musicRefresh)
             {
                 _gainUpdater.RefreshPlaying(now);
             }
@@ -201,6 +205,12 @@ namespace CozyGachapon.Audio
 
         public void SetMuteReason(MuteReason reason, bool active)
         {
+            if (!IsReady && RuntimeState.Lifecycle == AudioLifecycle.Uninitialized)
+            {
+                RuntimeState.SetSuspendReason(reason, active);
+                return;
+            }
+
             bool userChanged = IsReady
                 ? _mute.Apply(reason, active, _clock.Now)
                 : _failedSettings != null && _failedSettings.Apply(reason, active);

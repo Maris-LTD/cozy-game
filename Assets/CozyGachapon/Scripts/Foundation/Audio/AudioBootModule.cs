@@ -7,6 +7,7 @@ namespace CozyGachapon.Audio
     {
         public AudioService Service { get; }
         public AudioServiceBootStep ServiceStep { get; }
+        public AudioUnlockController Unlock { get; }
 
         public AudioBootModule(
             AudioConfig config,
@@ -15,10 +16,13 @@ namespace CozyGachapon.Audio
             IAudioClock clock,
             IAudioDiagnosticsSink sink,
             IAudioRandom random,
-            IAudioSettingsStore settingsStore)
+            IAudioSettingsStore settingsStore,
+            AudioPlatformPolicy platformPolicy)
         {
             Service = new AudioService();
-            ServiceStep = new AudioServiceBootStep(Service, config, repository, backend, clock, sink, random, settingsStore);
+            Unlock = new AudioUnlockController(Service.RuntimeState, platformPolicy);
+            ServiceStep = new AudioServiceBootStep(
+                Service, config, repository, backend, clock, sink, random, settingsStore, Unlock);
         }
 
         public bool RegisterSteps(Func<IBootStep, bool> register)
@@ -38,7 +42,12 @@ namespace CozyGachapon.Audio
 
         public void HandleFirstInteraction(in FirstInteractionEvent interactionEvent)
         {
-            Service.RuntimeState.MarkFirstInteraction();
+            Unlock.HandleFirstInteraction();
+        }
+
+        public void HandleInteractive(in InteractiveEvent interactiveEvent)
+        {
+            Service.RuntimeState.MarkInteractive();
         }
     }
 }

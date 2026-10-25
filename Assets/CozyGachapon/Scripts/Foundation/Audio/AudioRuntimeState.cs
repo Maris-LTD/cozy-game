@@ -13,6 +13,7 @@ namespace CozyGachapon.Audio
         public bool IsLocked { get; private set; }
         public AudioLifecycle Lifecycle { get; private set; }
         public bool HasFirstInteraction { get; private set; }
+        public bool HasInteractive { get; private set; }
         public MuteReason MuteReasons => _reasons.Reasons;
         public MuteReason SuspendReasons => _reasons.SuspendReasons;
         public bool IsUserMuted => _reasons.IsUserMuted;
@@ -38,6 +39,11 @@ namespace CozyGachapon.Audio
         public void MarkFirstInteraction()
         {
             HasFirstInteraction = true;
+        }
+
+        public void MarkInteractive()
+        {
+            HasInteractive = true;
         }
 
         public bool SetSuspendReason(MuteReason reason, bool active)

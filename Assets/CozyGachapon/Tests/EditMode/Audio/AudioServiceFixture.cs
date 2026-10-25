@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using CozyGachapon.Audio;
 using CozyGachapon.Contracts;
 using NUnit.Framework;
-using UnityEditor;
 
 namespace CozyGachapon.Tests.Audio
 {
@@ -92,11 +91,6 @@ namespace CozyGachapon.Tests.Audio
             SetCueBool(cue, "_keepWhenBusBackground", keep);
         }
 
-        protected static void SetLoop(SoundCue cue, bool loop)
-        {
-            SetCueBool(cue, "_loop", loop);
-        }
-
         protected static void SetAvoidRepeat(SoundCue cue, bool avoidRepeat)
         {
             SetCueBool(cue, "_avoidRepeat", avoidRepeat);
@@ -145,15 +139,6 @@ namespace CozyGachapon.Tests.Audio
         {
             Assert.IsTrue(result.Played, result.Reason.ToString());
             Assert.AreEqual(DropReason.None, result.Reason);
-        }
-
-        private static void SetCueBool(SoundCue cue, string propertyName, bool value)
-        {
-            SerializedObject serialized = new SerializedObject(cue);
-            SerializedProperty property = serialized.FindProperty(propertyName);
-            Assert.IsNotNull(property, propertyName);
-            property.boolValue = value;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
     }
 }

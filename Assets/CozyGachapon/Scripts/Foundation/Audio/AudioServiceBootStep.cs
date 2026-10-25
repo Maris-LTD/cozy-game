@@ -16,6 +16,7 @@ namespace CozyGachapon.Audio
         private readonly IAudioDiagnosticsSink _sink;
         private readonly IAudioRandom _random;
         private readonly IAudioSettingsStore _settingsStore;
+        private readonly AudioUnlockController _unlock;
 
         public string Id => StepId;
         public BootPhase Phase => BootPhase.ServiceInit;
@@ -32,8 +33,10 @@ namespace CozyGachapon.Audio
             IAudioClock clock,
             IAudioDiagnosticsSink sink,
             IAudioRandom random,
-            IAudioSettingsStore settingsStore)
+            IAudioSettingsStore settingsStore,
+            AudioUnlockController unlock)
         {
+            _unlock = unlock;
             _service = service;
             _config = config;
             _repository = repository;
@@ -55,6 +58,7 @@ namespace CozyGachapon.Audio
             {
                 if (_service.Initialize(_config, _repository, _backend, _clock, _sink, _random, _settingsStore) || _service.IsReady)
                 {
+                    _unlock.ApplyOnInitialized();
                     IsDone = true;
                     return;
                 }

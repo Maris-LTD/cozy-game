@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using CozyGachapon.Audio;
 using CozyGachapon.Contracts;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace CozyGachapon.Tests.Audio
@@ -50,6 +51,20 @@ namespace CozyGachapon.Tests.Audio
             cue.SetIdentityForTest(cueId, AudioBus.Sfx);
             cue.SetClipsForTest(clips);
             return cue;
+        }
+
+        protected static void SetLoop(SoundCue cue, bool loop)
+        {
+            SetCueBool(cue, "_loop", loop);
+        }
+
+        protected static void SetCueBool(SoundCue cue, string propertyName, bool value)
+        {
+            SerializedObject serialized = new SerializedObject(cue);
+            SerializedProperty property = serialized.FindProperty(propertyName);
+            Assert.IsNotNull(property, propertyName);
+            property.boolValue = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         protected SoundCue CreateScaleCue(string cueId, bool withPitchedSample)

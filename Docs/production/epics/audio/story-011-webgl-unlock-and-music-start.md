@@ -1,7 +1,7 @@
 # Story 011: WebGL Audio Unlock & Music Start
 
 > **Epic**: Audio
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1.5 days
@@ -34,9 +34,9 @@
 
 *From Docs/design/gdd/audio.md, scoped to this story:*
 
-- [ ] `AC-24 [EditMode]` **GIVEN** `requiresUnlock` = đúng, **WHEN** gửi `Play` trước rồi sau `FirstInteraction`, **THEN** trước → `Dropped(Locked)`, sau → Played; nếu `Background` bật trước `FirstInteraction` thì sau đó trạng thái là Suspended; với `requiresUnlock` = sai, Audio vào Active ngay khi khởi tạo.
-- [ ] `AC-42 [EditMode]` **GIVEN** `requiresUnlock` = đúng và Audio đã đăng ký bước nhưng chưa `Run()`, **WHEN** Bootstrap giả phát `FirstInteraction` rồi gọi `Run()`, **THEN** ngay sau khi `IsDone` trạng thái là Active (không phải Locked), `Play(Plinko.CoinSpawn)` → Played, và không có cue nào được phát bù cho khoảng trước khởi tạo.
-- [ ] `AC-26 [EditMode]` **GIVEN** cấu hình MVP không có clip nhạc, **WHEN** khởi tạo và chạy kịch bản bão hòa, **THEN** không lỗi, voice nhạc rảnh và không bị cấp cho SFX; **AND GIVEN** cấu hình VS có `Music.ShopLoop`, **WHEN** mở khóa trước rồi Bootstrap giả phát `Interactive` (và ở ca khác: `Interactive` trước rồi mới mở khóa), **THEN** nhạc chưa phát cho tới khi cả hai điều kiện đúng, rồi phát với loop = đúng, âm lượng tăng theo `fade_factor` trong `C.musicFadeInSeconds`, và không bị cướp trong suốt kịch bản bão hòa.
+- [x] `AC-24 [EditMode]` **GIVEN** `requiresUnlock` = đúng, **WHEN** gửi `Play` trước rồi sau `FirstInteraction`, **THEN** trước → `Dropped(Locked)`, sau → Played; nếu `Background` bật trước `FirstInteraction` thì sau đó trạng thái là Suspended; với `requiresUnlock` = sai, Audio vào Active ngay khi khởi tạo.
+- [x] `AC-42 [EditMode]` **GIVEN** `requiresUnlock` = đúng và Audio đã đăng ký bước nhưng chưa `Run()`, **WHEN** Bootstrap giả phát `FirstInteraction` rồi gọi `Run()`, **THEN** ngay sau khi `IsDone` trạng thái là Active (không phải Locked), `Play(Plinko.CoinSpawn)` → Played, và không có cue nào được phát bù cho khoảng trước khởi tạo.
+- [x] `AC-26 [EditMode]` **GIVEN** cấu hình MVP không có clip nhạc, **WHEN** khởi tạo và chạy kịch bản bão hòa, **THEN** không lỗi, voice nhạc rảnh và không bị cấp cho SFX; **AND GIVEN** cấu hình VS có `Music.ShopLoop`, **WHEN** mở khóa trước rồi Bootstrap giả phát `Interactive` (và ở ca khác: `Interactive` trước rồi mới mở khóa), **THEN** nhạc chưa phát cho tới khi cả hai điều kiện đúng, rồi phát với loop = đúng, âm lượng tăng theo `fade_factor` trong `C.musicFadeInSeconds`, và không bị cướp trong suốt kịch bản bão hòa.
 
 ## Implementation Notes
 
@@ -78,9 +78,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/AudioUnlockTests.cs`, `MusicStartTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `AudioUnlockTests.cs`, `MusicStartTests.cs` (EditMode 609/609)
 
 ## Dependencies
 
 - Depends on: Story 009, Story 010
 - Unlocks: Story 012
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 3/3 passing (AC-24, AC-42, AC-26 + QA edge cases)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 609/609); smoke n/a (wired in Story 012)
+**Run result**: N/A - unlock and music start on the fake voice backend
+**Deviations**: ADVISORY - `AudioUnlockController` + `AudioPlatformPolicy` (requiresUnlock injected) kept separate from `MusicStarter` + `MusicFadeIn`; music cue id `Music.ShopLoop` (VS) resolved at init, absent in MVP so the music voice stays free; `AudioBootModule.HandleInteractive` added; `AudioUnlockController.IsUnlocked` is read only by tests (minor, kept)
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/AudioUnlockTests.cs`, `MusicStartTests.cs`, passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 2 minor: music fade is cancelled when the start is dropped (no refresh churn); test-only `IsUnlocked` kept; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

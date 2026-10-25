@@ -112,7 +112,7 @@ namespace CozyGachapon.Tests.Audio
         public void AC32_Failed_NullStore_StillTracksUserMuted()
         {
             AudioBootModule module = new AudioBootModule(
-                null, CreateDefaultRepository(), new FakeVoiceBackend(1), Clock, Sink, new SystemAudioRandom(1), null);
+                null, CreateDefaultRepository(), new FakeVoiceBackend(1), Clock, Sink, new SystemAudioRandom(1), null, new AudioPlatformPolicy(false));
             module.ServiceStep.Run();
 
             module.Service.SetUserMuted(true);
