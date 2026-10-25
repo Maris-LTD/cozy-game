@@ -137,7 +137,7 @@ namespace CozyGachapon.Pooling
                 Counters.DoubleRelease,
                 Counters.StaleRelease,
                 Counters.ForeignRelease,
-                0);
+                Counters.Lost);
         }
     }
 }

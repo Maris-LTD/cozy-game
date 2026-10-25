@@ -134,6 +134,27 @@ namespace CozyGachapon.Tests.Pooling
             return service;
         }
 
+        protected ObjectPoolService CreateReadyMixedService(IPoolHooks hooks, int fixedCapacity, int recycleCapacity)
+        {
+            List<PoolDefinition> definitions = new List<PoolDefinition>();
+            definitions.Add(new PoolDefinition(PoolId(0), CreateVisualPrefab(PoolId(0), 2), PoolExhaustionPolicy.Fixed, 0));
+            definitions.Add(new PoolDefinition(PoolId(1), CreateVisualPrefab(PoolId(1), 2), PoolExhaustionPolicy.RecycleOldest, 0));
+            Config.SetPoolsForTest(definitions);
+            Config.SetLimitsForTest(1000, 10000);
+            Config.SetPrewarmForTest(8, 0.25f);
+            ObjectPoolService service = CreateService();
+            Assert.IsTrue(service.Register(PoolId(0), fixedCapacity, false, hooks).Accepted);
+            Assert.IsTrue(service.Register(PoolId(1), recycleCapacity, false, hooks).Accepted);
+            service.BeginPrewarm(CreateRoot());
+            for (int i = 0; i < 1000 && service.Phase != PoolServicePhase.Ready; i++)
+            {
+                service.StepPrewarm();
+            }
+
+            Assert.AreEqual(PoolServicePhase.Ready, service.Phase);
+            return service;
+        }
+
         protected static void AssertVisible(GameObject instance)
         {
             Assert.IsTrue(instance.activeInHierarchy);

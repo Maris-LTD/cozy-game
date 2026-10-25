@@ -1,7 +1,7 @@
 # Story 005: Diagnostics, Zero-GC & Robustness
 
 > **Epic**: Object Pooling
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1-2 days
@@ -34,10 +34,10 @@
 
 *From Docs/design/gdd/object-pooling.md, scoped to this story:*
 
-- [ ] `AC-21 [EditMode]` **GIVEN** pool đã từng đạt `peakInUse` = `capacity`, **WHEN** trả hết rồi chạy thêm `T.gcTestCycles` chu kỳ Get/Release, **THEN** `created` = `capacity` suốt quá trình (không thu nhỏ, không tạo mới, không hủy).
-- [ ] `AC-22 [EditMode]` **GIVEN** một đối tượng Free bị Destroy từ bên ngoài, **WHEN** Get đủ `capacity` lần, **THEN** đối tượng bị hủy không bao giờ được trả ra, `lost` = 1, một lỗi Editor, Get thứ `capacity` áp chính sách cạn của pool, `created` không đổi.
-- [ ] `AC-23 [EditMode]` **GIVEN** đồng hồ test đứng yên (giả lập Paused) hoặc chạy nhanh 1 giờ, **WHEN** thực hiện cùng chuỗi Get/Release/tái chế, **THEN** kết quả (đối tượng trả ra, victim, bộ đếm) giống hệt nhau — Pooling không phụ thuộc thời gian.
-- [ ] `AC-24 [EditMode]` **GIVEN** dịch vụ Ready, một pool Fixed và một pool RecycleOldest, cảnh báo cạn đầu tiên của pool Fixed đã được ghi, **WHEN** chạy `T.gcTestCycles` chu kỳ gồm Get, Release, Get qua tái chế, Get rỗng khi Fixed cạn và đọc mọi bộ đếm, đo bằng `GC.GetAllocatedBytesForCurrentThread()` trước và sau, **THEN** chênh lệch = 0 B. (Các đường lỗi luôn ghi log Editor — trả kép, trả lạ — nằm ngoài phép đo vì log Editor tự cấp phát; trong build chúng chỉ tăng bộ đếm.)
+- [x] `AC-21 [EditMode]` **GIVEN** pool đã từng đạt `peakInUse` = `capacity`, **WHEN** trả hết rồi chạy thêm `T.gcTestCycles` chu kỳ Get/Release, **THEN** `created` = `capacity` suốt quá trình (không thu nhỏ, không tạo mới, không hủy).
+- [x] `AC-22 [EditMode]` **GIVEN** một đối tượng Free bị Destroy từ bên ngoài, **WHEN** Get đủ `capacity` lần, **THEN** đối tượng bị hủy không bao giờ được trả ra, `lost` = 1, một lỗi Editor, Get thứ `capacity` áp chính sách cạn của pool, `created` không đổi.
+- [x] `AC-23 [EditMode]` **GIVEN** đồng hồ test đứng yên (giả lập Paused) hoặc chạy nhanh 1 giờ, **WHEN** thực hiện cùng chuỗi Get/Release/tái chế, **THEN** kết quả (đối tượng trả ra, victim, bộ đếm) giống hệt nhau — Pooling không phụ thuộc thời gian.
+- [x] `AC-24 [EditMode]` **GIVEN** dịch vụ Ready, một pool Fixed và một pool RecycleOldest, cảnh báo cạn đầu tiên của pool Fixed đã được ghi, **WHEN** chạy `T.gcTestCycles` chu kỳ gồm Get, Release, Get qua tái chế, Get rỗng khi Fixed cạn và đọc mọi bộ đếm, đo bằng `GC.GetAllocatedBytesForCurrentThread()` trước và sau, **THEN** chênh lệch = 0 B. (Các đường lỗi luôn ghi log Editor — trả kép, trả lạ — nằm ngoài phép đo vì log Editor tự cấp phát; trong build chúng chỉ tăng bộ đếm.)
 
 ## Implementation Notes
 
@@ -87,9 +87,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Pooling/PoolRobustnessTests.cs`, `PoolZeroAllocTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `PoolRobustnessTests.cs`, `PoolTimeIndependenceTests.cs`, `PoolZeroAllocTests.cs` (EditMode 246/246)
 
 ## Dependencies
 
 - Depends on: Story 004
 - Unlocks: Story 006
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 4/4 passing (AC-21..AC-24 covered by EditMode tests)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 246/246); smoke PASS in workflow run (0 console errors)
+**Run result**: N/A - pure pooling logic, no pool registered in MainGame yet
+**Deviations**: ADVISORY - AC-24 measured with `UnityEngine.Profiling.Recorder("GC.Alloc")` sample count (`GcAllocProbe`) instead of `GC.GetAllocatedBytesForCurrentThread` (returns 0 in Unity Mono); controls `AC24_Control_DeliberateAllocationInsideMeasuredBlock_ReportsAllocations` and `AC24_Control_AllocatingHookOnPoolPath_ReportsAllocations` report > 0 and pass, zero-alloc runs with and without hooks report 0; AC-23 evidence is the reflection and source-scan tests (no time types in `CozyGachapon.Pooling`), the frozen/fast-forward trace test is a determinism check since the service takes no clock; `PoolingTestTargets` lives in the test assembly (not shipped)
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Pooling/PoolRobustnessTests.cs`, `PoolTimeIndependenceTests.cs`, `PoolZeroAllocTests.cs` (+ `GcAllocProbe.cs`, `AllocatingPoolHooks.cs`, `CountingPoolHooks.cs`, `PoolingTestTargets.cs`), passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 3 minor: zero-alloc case with non-allocating hooks added; probe validity confirmed by passing controls; trace-test naming noted above; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

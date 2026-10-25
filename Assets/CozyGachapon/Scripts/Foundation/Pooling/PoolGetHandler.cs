@@ -7,11 +7,13 @@ namespace CozyGachapon.Pooling
     {
         private readonly PoolRegistry _registry;
         private readonly IPoolDiagnosticsSink _sink;
+        private readonly PoolLostObjectGuard _lostGuard;
 
-        public PoolGetHandler(PoolRegistry registry, IPoolDiagnosticsSink sink)
+        public PoolGetHandler(PoolRegistry registry, IPoolDiagnosticsSink sink, PoolLostObjectGuard lostGuard)
         {
             _registry = registry;
             _sink = sink;
+            _lostGuard = lostGuard;
         }
 
         public PoolLease Get(PoolServicePhase phase, string poolId)
@@ -28,7 +30,7 @@ namespace CozyGachapon.Pooling
                 return default;
             }
 
-            if (record.TryPopFree(out int slot))
+            if (_lostGuard.TryPopLiveFree(record, out int slot))
             {
                 return Deliver(record, slot, false);
             }

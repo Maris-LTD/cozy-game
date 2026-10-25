@@ -9,6 +9,7 @@ namespace CozyGachapon.Pooling
         public int ForeignRelease { get; private set; }
         public int Exhausted { get; private set; }
         public int Recycled { get; private set; }
+        public int Lost { get; private set; }
         public bool HasWarnedExhausted { get; private set; }
 
         public void OnAcquired()
@@ -55,6 +56,11 @@ namespace CozyGachapon.Pooling
         public void AddRecycled()
         {
             Recycled++;
+        }
+
+        public void AddLost()
+        {
+            Lost++;
         }
     }
 }

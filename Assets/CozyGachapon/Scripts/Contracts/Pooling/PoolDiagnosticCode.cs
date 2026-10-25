@@ -21,6 +21,7 @@ namespace CozyGachapon.Contracts
         ReleaseForeign = 16,
         ReleaseDouble = 17,
         ReleaseStale = 18,
-        PoolExhausted = 19
+        PoolExhausted = 19,
+        PoolObjectLost = 20
     }
 }

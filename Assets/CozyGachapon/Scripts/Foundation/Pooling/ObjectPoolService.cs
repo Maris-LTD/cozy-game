@@ -25,7 +25,7 @@ namespace CozyGachapon.Pooling
         {
             _config = config;
             _sink = sink;
-            _getHandler = new PoolGetHandler(_registry, sink);
+            _getHandler = new PoolGetHandler(_registry, sink, new PoolLostObjectGuard(sink));
             _releaseHandler = new PoolReleaseHandler(_registry, sink);
             _fixedExhaustion = new FixedExhaustionPolicy(sink);
             _recycleExhaustion = new RecycleOldestPolicy(sink);
