@@ -17,3 +17,4 @@ MonoBehaviour:
   _curtainMinDisplaySeconds: 0.4
   _curtainRevealDuration: 0.35
   _maxBootToInteractiveSeconds: 2
+  _targetFps: 60

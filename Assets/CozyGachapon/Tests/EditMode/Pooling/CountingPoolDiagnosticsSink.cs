@@ -8,6 +8,8 @@ namespace CozyGachapon.Tests.Pooling
         public int WarningCount { get; private set; }
         public PoolDiagnosticCode LastErrorCode { get; private set; }
         public string LastErrorPoolId { get; private set; }
+        public PoolDiagnosticCode LastWarningCode { get; private set; }
+        public string LastWarningPoolId { get; private set; }
 
         public void ReportError(PoolDiagnosticCode code, string poolId)
         {
@@ -19,6 +21,8 @@ namespace CozyGachapon.Tests.Pooling
         public void ReportWarning(PoolDiagnosticCode code, string poolId)
         {
             WarningCount++;
+            LastWarningCode = code;
+            LastWarningPoolId = poolId;
         }
     }
 }

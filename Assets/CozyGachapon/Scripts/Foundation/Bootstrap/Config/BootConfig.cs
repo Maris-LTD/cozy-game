@@ -10,12 +10,14 @@ namespace CozyGachapon.Foundation
         [SerializeField] private float _curtainMinDisplaySeconds = 0.4f;
         [SerializeField] private float _curtainRevealDuration = 0.35f;
         [SerializeField] private float _maxBootToInteractiveSeconds = 2.0f;
+        [SerializeField] private int _targetFps = 60;
 
         public float StepTimeoutSeconds => _stepTimeoutSeconds;
         public float ErrorPanelFadeSeconds => _errorPanelFadeSeconds;
         public float CurtainMinDisplaySeconds => _curtainMinDisplaySeconds;
         public float CurtainRevealDuration => _curtainRevealDuration;
         public float MaxBootToInteractiveSeconds => _maxBootToInteractiveSeconds;
+        public int TargetFps => _targetFps;
 
         public void SetStepTimeoutForTest(float timeoutSeconds)
         {

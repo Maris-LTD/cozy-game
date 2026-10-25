@@ -527,6 +527,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1217023471
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1217023472}
+  m_Layer: 0
+  m_Name: Pools
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1217023472
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1217023471}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1684300996
 GameObject:
   m_ObjectHideFlags: 0
@@ -631,6 +662,8 @@ MonoBehaviour:
   _pointerAdapter: {fileID: 1684301001}
   _backKeyAdapter: {fileID: 1684301000}
   _uiHitTester: {fileID: 1684300999}
+  _poolingConfig: {fileID: 11400000, guid: f80678a9395467d43a90effa2757604c, type: 2}
+  _poolContainer: {fileID: 1217023472}
   _failFirstBootForTest: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
@@ -641,3 +674,4 @@ SceneRoots:
   - {fileID: 830148657}
   - {fileID: 737431680}
   - {fileID: 1684300998}
+  - {fileID: 1217023472}

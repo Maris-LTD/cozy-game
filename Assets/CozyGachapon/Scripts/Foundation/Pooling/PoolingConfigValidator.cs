@@ -8,6 +8,11 @@ namespace CozyGachapon.Pooling
     {
         public static void Validate(PoolingConfig config, List<PoolConfigIssue> results)
         {
+            if (config.PrewarmPerFrame < 1)
+            {
+                results.Add(new PoolConfigIssue(PoolDiagnosticCode.PrewarmPerFrameInvalid, null, true));
+            }
+
             IReadOnlyList<PoolDefinition> pools = config.Pools;
             for (int i = 0; i < pools.Count; i++)
             {
@@ -21,6 +26,14 @@ namespace CozyGachapon.Pooling
                 {
                     results.Add(new PoolConfigIssue(PoolDiagnosticCode.PrefabHasAudioSource, definition.Id, false));
                 }
+            }
+        }
+
+        public static void ValidatePrewarmBudget(PoolingConfig config, int totalCapacity, int targetFps, List<PoolConfigIssue> results)
+        {
+            if (PrewarmBudget.ExceedsBudget(totalCapacity, config.PrewarmPerFrame, targetFps, config.PrewarmMaxSeconds))
+            {
+                results.Add(new PoolConfigIssue(PoolDiagnosticCode.PrewarmBudgetExceeded, null, false));
             }
         }
     }

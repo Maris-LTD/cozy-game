@@ -40,7 +40,7 @@ This epic is complete when:
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
 | 001 | Pool Registration & Capacity | Logic | Complete | ADR-0003 |
-| 002 | Prewarm & Boot Steps | Logic | Ready | ADR-0003, ADR-0002 |
+| 002 | Prewarm & Boot Steps | Logic | Complete | ADR-0003, ADR-0002 |
 | 003 | Lease Get / Release Guards | Logic | Ready | ADR-0003 |
 | 004 | Exhaustion Policies (Fixed / RecycleOldest) | Logic | Ready | ADR-0003 |
 | 005 | Diagnostics, Zero-GC & Robustness | Logic | Ready | ADR-0003 |

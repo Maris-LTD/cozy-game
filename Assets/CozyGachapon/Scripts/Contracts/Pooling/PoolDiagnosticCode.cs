@@ -10,6 +10,10 @@ namespace CozyGachapon.Contracts
         RegistrationCapacityExceedsPerPoolLimit = 5,
         RegistrationTotalCapacityExceeded = 6,
         RegistrationRecycleForbidden = 7,
-        PrefabHasAudioSource = 8
+        PrefabHasAudioSource = 8,
+        PrewarmPerFrameInvalid = 9,
+        PrewarmBudgetExceeded = 10,
+        PrewarmMissingContainer = 11,
+        PrewarmFailed = 12
     }
 }

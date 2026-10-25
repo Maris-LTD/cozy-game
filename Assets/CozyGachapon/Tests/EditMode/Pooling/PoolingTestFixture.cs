@@ -24,7 +24,7 @@ namespace CozyGachapon.Tests.Pooling
         [TearDown]
         public void TearDownFixture()
         {
-            for (int i = 0; i < _createdObjects.Count; i++)
+            for (int i = _createdObjects.Count - 1; i >= 0; i--)
             {
                 if (_createdObjects[i] != null)
                 {
@@ -35,10 +35,36 @@ namespace CozyGachapon.Tests.Pooling
             _createdObjects.Clear();
         }
 
+        protected T Track<T>(T instance) where T : Object
+        {
+            _createdObjects.Add(instance);
+            return instance;
+        }
+
         protected GameObject CreatePrefab(string name)
         {
             GameObject prefab = new GameObject(name);
             _createdObjects.Add(prefab);
+            return prefab;
+        }
+
+        protected Transform CreateRoot()
+        {
+            return Track(new GameObject("Pools")).transform;
+        }
+
+        protected GameObject CreateVisualPrefab(string name, int childRenderers)
+        {
+            GameObject prefab = CreatePrefab(name);
+            prefab.AddComponent<SpriteRenderer>();
+            prefab.AddComponent<Rigidbody2D>();
+            for (int i = 0; i < childRenderers; i++)
+            {
+                GameObject child = new GameObject("child" + i);
+                child.transform.SetParent(prefab.transform, false);
+                child.AddComponent<SpriteRenderer>();
+            }
+
             return prefab;
         }
 
@@ -50,6 +76,42 @@ namespace CozyGachapon.Tests.Pooling
         protected ObjectPoolService CreateService()
         {
             return new ObjectPoolService(Config, Sink);
+        }
+
+        protected static string PoolId(int index)
+        {
+            return "pool" + index;
+        }
+
+        protected ObjectPoolService CreateRegisteredService(params int[] capacities)
+        {
+            List<PoolDefinition> definitions = new List<PoolDefinition>();
+            for (int i = 0; i < capacities.Length; i++)
+            {
+                definitions.Add(new PoolDefinition(PoolId(i), CreateVisualPrefab(PoolId(i), 2), PoolExhaustionPolicy.Fixed, 0));
+            }
+
+            Config.SetPoolsForTest(definitions);
+            Config.SetLimitsForTest(1000, 10000);
+            ObjectPoolService service = CreateService();
+            for (int i = 0; i < capacities.Length; i++)
+            {
+                Assert.IsTrue(service.Register(PoolId(i), capacities[i], false).Accepted);
+            }
+
+            return service;
+        }
+
+        protected static int TotalCreated(ObjectPoolService service, int poolCount)
+        {
+            int total = 0;
+            for (int i = 0; i < poolCount; i++)
+            {
+                service.TryGetStats(PoolId(i), out PoolStats stats);
+                total += stats.Created;
+            }
+
+            return total;
         }
     }
 }

@@ -40,6 +40,12 @@ namespace CozyGachapon.Pooling
             _pools = new List<PoolDefinition>(pools);
         }
 
+        public void SetPrewarmForTest(int perFrame, float maxSeconds)
+        {
+            _prewarmPerFrame = perFrame;
+            _prewarmMaxSeconds = maxSeconds;
+        }
+
         public void SetLimitsForTest(int maxCapacityPerPool, int maxTotalPooledObjects)
         {
             _maxCapacityPerPool = maxCapacityPerPool;

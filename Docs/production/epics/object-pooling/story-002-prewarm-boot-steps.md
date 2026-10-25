@@ -1,7 +1,7 @@
 # Story 002: Prewarm & Boot Steps
 
 > **Epic**: Object Pooling
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1-2 days
@@ -34,11 +34,11 @@
 
 *From Docs/design/gdd/object-pooling.md, scoped to this story:*
 
-- [ ] `AC-6 [EditMode]` **GIVEN** các pool đã đăng ký với tổng dung lượng `N` và `P.prewarmPerFrame` = `k`, **WHEN** chạy từng bước prewarm (mỗi bước = một khung), **THEN** mỗi bước tạo ≤ `k` đối tượng, số bước = ceil(`N` / `k`), và sau bước cuối dịch vụ Ready với `created` = `capacity` ở mọi pool; kiểm với (`N`, `k`) = (40, 10) → 4 bước, (41, 10) → 5 bước, (40, 40) → 1 bước, (40, 4) → 10 bước.
-- [ ] `AC-7 [EditMode]` **GIVEN** `P.prewarmPerFrame` = 0, **WHEN** chạy validator và prewarm, **THEN** validator báo lỗi, prewarm vẫn kết thúc sau `N` bước (dùng 1) và không ném exception.
-- [ ] `AC-8 [EditMode]` **GIVEN** cấu hình có ceil(`N` / `P.prewarmPerFrame`) / `targetFps` > `P.prewarmMaxSeconds` (ví dụ `N` = 128, `k` = 4 → 0.53 s > 0.25 s), **WHEN** chạy validator, **THEN** có cảnh báo; với cấu hình MVP thật của project (`N` = `registered_capacity_total` = 36 + `F`, `k` = `P.prewarmPerFrame`; ví dụ `F` = 4 → (40, 10) → 0.067 s) thì không có cảnh báo.
-- [ ] `AC-9 [EditMode]` **GIVEN** prewarm xong, **WHEN** đọc mọi đối tượng ở trạng thái Free, **THEN** không đối tượng nào có renderer đang hiển thị hay Rigidbody2D đang mô phỏng.
-- [ ] `AC-30 [EditMode]` **GIVEN** registry bước khởi động giả của Bootstrap và dịch vụ Pooling vừa được nạp, **WHEN** đọc các bước Pooling đã đăng ký rồi chạy khởi động với các bước `GameplayInit` giả mỗi bước đăng ký 1 pool, **THEN** Pooling đăng ký đúng hai bước — `pooling.service` (pha `ServiceInit`, `IsCritical` = true) và `pooling.prewarm` (pha `Prewarm`, `IsCritical` = true); mọi đăng ký pool được chấp nhận trước `Run()` của `pooling.prewarm`; `pooling.prewarm` báo `IsDone` = false cho tới khi dịch vụ Ready và = true ngay khi Ready; Pooling không gọi API nào của Bootstrap ngoài hợp đồng `IBootStep` (khớp Bootstrap AC-7).
+- [x] `AC-6 [EditMode]` **GIVEN** các pool đã đăng ký với tổng dung lượng `N` và `P.prewarmPerFrame` = `k`, **WHEN** chạy từng bước prewarm (mỗi bước = một khung), **THEN** mỗi bước tạo ≤ `k` đối tượng, số bước = ceil(`N` / `k`), và sau bước cuối dịch vụ Ready với `created` = `capacity` ở mọi pool; kiểm với (`N`, `k`) = (40, 10) → 4 bước, (41, 10) → 5 bước, (40, 40) → 1 bước, (40, 4) → 10 bước.
+- [x] `AC-7 [EditMode]` **GIVEN** `P.prewarmPerFrame` = 0, **WHEN** chạy validator và prewarm, **THEN** validator báo lỗi, prewarm vẫn kết thúc sau `N` bước (dùng 1) và không ném exception.
+- [x] `AC-8 [EditMode]` **GIVEN** cấu hình có ceil(`N` / `P.prewarmPerFrame`) / `targetFps` > `P.prewarmMaxSeconds` (ví dụ `N` = 128, `k` = 4 → 0.53 s > 0.25 s), **WHEN** chạy validator, **THEN** có cảnh báo; với cấu hình MVP thật của project (`N` = `registered_capacity_total` = 36 + `F`, `k` = `P.prewarmPerFrame`; ví dụ `F` = 4 → (40, 10) → 0.067 s) thì không có cảnh báo.
+- [x] `AC-9 [EditMode]` **GIVEN** prewarm xong, **WHEN** đọc mọi đối tượng ở trạng thái Free, **THEN** không đối tượng nào có renderer đang hiển thị hay Rigidbody2D đang mô phỏng.
+- [x] `AC-30 [EditMode]` **GIVEN** registry bước khởi động giả của Bootstrap và dịch vụ Pooling vừa được nạp, **WHEN** đọc các bước Pooling đã đăng ký rồi chạy khởi động với các bước `GameplayInit` giả mỗi bước đăng ký 1 pool, **THEN** Pooling đăng ký đúng hai bước — `pooling.service` (pha `ServiceInit`, `IsCritical` = true) và `pooling.prewarm` (pha `Prewarm`, `IsCritical` = true); mọi đăng ký pool được chấp nhận trước `Run()` của `pooling.prewarm`; `pooling.prewarm` báo `IsDone` = false cho tới khi dịch vụ Ready và = true ngay khi Ready; Pooling không gọi API nào của Bootstrap ngoài hợp đồng `IBootStep` (khớp Bootstrap AC-7).
 
 ## Implementation Notes
 
@@ -94,9 +94,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Pooling/PoolPrewarmTests.cs`, `PoolBootStepTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `PoolPrewarmTests.cs`, `PoolPrewarmValidatorTests.cs`, `PoolFreeStateTests.cs`, `PoolingBootStepTests.cs` (EditMode 208/208)
 
 ## Dependencies
 
 - Depends on: Story 001
 - Unlocks: Story 003
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 5/5 passing (AC-6, AC-7, AC-8, AC-9, AC-30 covered by EditMode tests)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 208/208); smoke PASS (MainGame, 0 console errors)
+**Run result**: OBSERVED - smoke boots MainGame through `pooling.service` / `pooling.prewarm` with 0 console errors; no pools registered yet in MVP scene, so prewarm completes in one tick
+**Deviations**: ADVISORY - required test file named `PoolingBootStepTests.cs` instead of `PoolBootStepTests.cs`; validator tests split into `PoolPrewarmValidatorTests.cs`; target FPS for the prewarm budget read from `BootConfig.TargetFps` (60); scene gains a `Pools` container referenced by `BootstrapController`
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Pooling/PoolPrewarmTests.cs`, `PoolPrewarmValidatorTests.cs`, `PoolFreeStateTests.cs`, `PoolingBootStepTests.cs` (+ `PoolingBootFakes.cs`), passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: inline review after verify; fixed hardcoded `StudioTargets.TargetFps` constant (moved to BootConfig) and stripped TMP serialization noise from the scene; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

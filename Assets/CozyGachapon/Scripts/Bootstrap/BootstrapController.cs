@@ -1,5 +1,6 @@
 using CozyGachapon.Contracts;
 using CozyGachapon.Foundation;
+using CozyGachapon.Pooling;
 using UnityEngine;
 
 namespace CozyGachapon
@@ -15,7 +16,11 @@ namespace CozyGachapon
         [SerializeField] private PointerPressInputAdapter _pointerAdapter;
         [SerializeField] private BackKeyInputAdapter _backKeyAdapter;
         [SerializeField] private EventSystemUiHitTester _uiHitTester;
+        [SerializeField] private PoolingConfig _poolingConfig;
+        [SerializeField] private Transform _poolContainer;
         [SerializeField] private bool _failFirstBootForTest;
+
+        private PoolingBootModule _pooling;
 
         public BootstrapGraph Graph { get; private set; }
 
@@ -27,7 +32,7 @@ namespace CozyGachapon
                 return;
             }
 
-            if (_bootConfig == null || _sceneFlowConfig == null || !_sceneFlowConfig.HasValidAspectRange)
+            if (_bootConfig == null || _sceneFlowConfig == null || !_sceneFlowConfig.HasValidAspectRange || _poolingConfig == null || _poolContainer == null)
             {
                 _view.ShowFallbackError(BootStepSequencer.MissingConfigStepId);
                 enabled = false;
@@ -46,12 +51,14 @@ namespace CozyGachapon
 
             _view.Bind(Graph.Curtain, Graph.Viewport, _bootConfig.ErrorPanelFadeSeconds);
             InitializeAdapters();
+            RegisterPoolingSteps();
             RegisterDebugSteps();
         }
 
         private void Update()
         {
             Graph.SetScreenSize(Screen.width, Screen.height);
+            _pooling.Tick();
             Graph.Tick(Time.unscaledDeltaTime);
         }
 
@@ -71,6 +78,12 @@ namespace CozyGachapon
             {
                 _backKeyAdapter.Initialize(Graph.Back, Graph.FirstInteraction);
             }
+        }
+
+        private void RegisterPoolingSteps()
+        {
+            _pooling = new PoolingBootModule(_poolingConfig, _poolContainer, new PoolDiagnosticsRecorder(), _bootConfig.TargetFps);
+            _pooling.RegisterSteps(Graph.RegisterStep);
         }
 
         private void RegisterDebugSteps()
