@@ -71,6 +71,17 @@ namespace CozyGachapon.Audio
             ReleaseInstance(voice, cues);
         }
 
+        public void StopAllSfx(IVoiceBackend backend, CueRuntimeTable cues)
+        {
+            for (int i = 0; i < _slots.Length; i++)
+            {
+                if (_slots[i].Partition == VoicePartition.Sfx)
+                {
+                    Evict(i, backend, cues);
+                }
+            }
+        }
+
         public void Tick(IVoiceBackend backend, CueRuntimeTable cues)
         {
             for (int i = 0; i < _slots.Length; i++)

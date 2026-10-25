@@ -47,7 +47,7 @@ This epic is complete when:
 | 006 | Pentatonic Pitch, Clip Selection & Pan | Logic | Complete | ADR-0004 |
 | 007 | Bus Gain, Background Bus & User Volume | Logic | Complete | ADR-0004 |
 | 008 | Background Suspend, User Mute & Settings Persistence | Logic | Complete | ADR-0004, ADR-0002 |
-| 009 | Ad Mute Reason & Reason Stacking | Logic | Ready | ADR-0004 |
+| 009 | Ad Mute Reason & Reason Stacking | Logic | Complete | ADR-0004 |
 | 010 | `audio.service` Boot Step & Failed State | Logic | Ready | ADR-0004, ADR-0002 |
 | 011 | WebGL Audio Unlock & Music Start | Logic | Ready | ADR-0004, ADR-0002 |
 | 012 | Unity Voice Backend & Bootstrap Wiring | Integration | Ready | ADR-0004, ADR-0002 |

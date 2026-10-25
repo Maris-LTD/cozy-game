@@ -1,7 +1,7 @@
 # Story 009: Ad Mute Reason & Reason Stacking
 
 > **Epic**: Audio
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1 day
@@ -34,8 +34,8 @@
 
 *From Docs/design/gdd/audio.md, scoped to this story:*
 
-- [ ] `AC-22 [EditMode]` **GIVEN** trạng thái Active, **WHEN** lần lượt: bật `Ad`, bật `Background`, tắt `Ad`, tắt `Background`; và riêng một ca: cửa sổ mất focus mà không có `Paused`, **THEN** trạng thái lần lượt Suspended, Suspended, Suspended, Active; ca mất focus giữ Active.
-- [ ] `AC-43 [EditMode]` (Alpha; Bootstrap B) **GIVEN** Audio Active, 3 voice SFX và voice nhạc đang phát, Bootstrap giả **không** phát `Paused`, **WHEN** gọi `SetMuteReason(Ad, true)`, gửi `Play(Plinko.PegHitScored)` và `Play(Plinko.JackpotHit)`, cho đồng hồ tiêm trôi `T.stormTestSeconds` (dữ liệu fixture: 3 voice SFX, 2 yêu cầu), rồi gọi `SetMuteReason(Ad, false)`, **THEN** ngay khi `Ad` bật trạng thái là Suspended, 3 voice SFX ở Free (không giữ vị trí) và voice nhạc ở Paused giữ vị trí; hai `Play` → `Dropped(Suspended)`; sau khi tắt `Ad` trạng thái Active, voice nhạc tiếp tục từ vị trí cũ với âm lượng theo `fade_factor` trong `C.resumeFadeInSeconds`, số voice SFX đang phát = 0 (không phát bù) và `Play` kế tiếp → Played.
+- [x] `AC-22 [EditMode]` **GIVEN** trạng thái Active, **WHEN** lần lượt: bật `Ad`, bật `Background`, tắt `Ad`, tắt `Background`; và riêng một ca: cửa sổ mất focus mà không có `Paused`, **THEN** trạng thái lần lượt Suspended, Suspended, Suspended, Active; ca mất focus giữ Active.
+- [x] `AC-43 [EditMode]` (Alpha; Bootstrap B) **GIVEN** Audio Active, 3 voice SFX và voice nhạc đang phát, Bootstrap giả **không** phát `Paused`, **WHEN** gọi `SetMuteReason(Ad, true)`, gửi `Play(Plinko.PegHitScored)` và `Play(Plinko.JackpotHit)`, cho đồng hồ tiêm trôi `T.stormTestSeconds` (dữ liệu fixture: 3 voice SFX, 2 yêu cầu), rồi gọi `SetMuteReason(Ad, false)`, **THEN** ngay khi `Ad` bật trạng thái là Suspended, 3 voice SFX ở Free (không giữ vị trí) và voice nhạc ở Paused giữ vị trí; hai `Play` → `Dropped(Suspended)`; sau khi tắt `Ad` trạng thái Active, voice nhạc tiếp tục từ vị trí cũ với âm lượng theo `fade_factor` trong `C.resumeFadeInSeconds`, số voice SFX đang phát = 0 (không phát bù) và `Play` kế tiếp → Played.
 
 ## Implementation Notes
 
@@ -71,9 +71,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/AdMuteReasonTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `AdMuteReasonTests.cs`, `MuteReasonStackTests.cs`, `AdMuteZeroAllocTests.cs`
 
 ## Dependencies
 
 - Depends on: Story 004, Story 008
 - Unlocks: Story 011
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 2/2 passing (AC-22, AC-43 + QA edge cases)
+**Harness**: unity-harness all PASS (rules, compile, EditMode); smoke n/a (no scene change)
+**Run result**: N/A - mute reasons on the fake voice backend
+**Deviations**: ADVISORY - `AdMuteHandler` + `VoicePool.StopAllSfx` run before the suspend transition: Ad stops SFX voices to Free and pauses only music; reason stacking reuses `MuteReasonSet` / `AudioSuspendController`
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/AdMuteReasonTests.cs`, `MuteReasonStackTests.cs`, `AdMuteZeroAllocTests.cs`, passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 0 findings; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

@@ -4,6 +4,7 @@ namespace CozyGachapon.Audio
 {
     public sealed class AudioMuteCoordinator
     {
+        private readonly AdMuteHandler _adMute;
         private readonly AudioSuspendController _suspend;
         private readonly UserMuteController _userMute;
         private readonly VoicePool _pool;
@@ -17,7 +18,8 @@ namespace CozyGachapon.Audio
             VoicePool pool,
             IVoiceBackend backend,
             VoiceGainUpdater gainUpdater,
-            AudioUserSettings settings)
+            AudioUserSettings settings,
+            AdMuteHandler adMute)
         {
             _suspend = suspend;
             _userMute = userMute;
@@ -25,6 +27,7 @@ namespace CozyGachapon.Audio
             _backend = backend;
             _gainUpdater = gainUpdater;
             _settings = settings;
+            _adMute = adMute;
         }
 
         public void Restore(bool userMuted)
@@ -40,6 +43,7 @@ namespace CozyGachapon.Audio
                 _settings.SaveUserMuted(active);
             }
 
+            _adMute.Apply(reason, active);
             SuspendTransition transition = _suspend.Apply(reason, active, now);
             if (transition == SuspendTransition.Suspended)
             {

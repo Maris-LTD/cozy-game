@@ -83,7 +83,8 @@ namespace CozyGachapon.Audio
             _gain = new VoiceGainCalculator(config, RuntimeState, _busTable, _background, suspend, userMute);
             _gainUpdater = new VoiceGainUpdater(_pool, _cues, backend, _gain);
             _settings = new AudioUserSettings(config, settingsStore);
-            _mute = new AudioMuteCoordinator(suspend, userMute, _pool, backend, _gainUpdater, _settings);
+            _mute = new AudioMuteCoordinator(
+                suspend, userMute, _pool, backend, _gainUpdater, _settings, new AdMuteHandler(RuntimeState, _pool, backend, _cues));
             _busTable.SetUserVolume(AudioBus.Music, _settings.ReadSlider(AudioBus.Music));
             _busTable.SetUserVolume(AudioBus.Sfx, _settings.ReadSlider(AudioBus.Sfx));
             _mute.Restore(_settings.ReadUserMuted());
