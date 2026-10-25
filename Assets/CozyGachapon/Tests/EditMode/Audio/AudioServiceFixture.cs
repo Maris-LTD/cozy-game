@@ -16,6 +16,7 @@ namespace CozyGachapon.Tests.Audio
         protected FakeAudioClock Clock { get; private set; }
         protected CountingAudioDiagnosticsSink Sink { get; private set; }
         protected IAudioRandom Random { get; private set; }
+        protected FakeAudioSettingsStore SettingsStore { get; private set; }
 
         [SetUp]
         public void SetUpAudioService()
@@ -25,6 +26,12 @@ namespace CozyGachapon.Tests.Audio
             Sink = new CountingAudioDiagnosticsSink();
             Backend = null;
             Random = new SystemAudioRandom(DefaultRandomSeed);
+            SettingsStore = new FakeAudioSettingsStore();
+        }
+
+        protected void UseSettingsStore(FakeAudioSettingsStore store)
+        {
+            SettingsStore = store;
         }
 
         protected void UseRandom(IAudioRandom random)
@@ -38,7 +45,7 @@ namespace CozyGachapon.Tests.Audio
             Assert.IsNotNull(config);
             Backend = new FakeVoiceBackend(config.TotalVoices);
             SoundCueRepository repository = new SoundCueRepository(DefaultAudioAssets.LoadCues());
-            Assert.IsTrue(Service.Initialize(config, repository, Backend, Clock, Sink, Random));
+            Assert.IsTrue(Service.Initialize(config, repository, Backend, Clock, Sink, Random, SettingsStore));
         }
 
         protected void InitializeWithDefaultAssets(params SoundCue[] extraCues)
@@ -48,14 +55,14 @@ namespace CozyGachapon.Tests.Audio
             Backend = new FakeVoiceBackend(config.TotalVoices);
             List<SoundCue> cues = DefaultAudioAssets.LoadCues();
             cues.AddRange(extraCues);
-            Assert.IsTrue(Service.Initialize(config, new SoundCueRepository(cues), Backend, Clock, Sink, Random));
+            Assert.IsTrue(Service.Initialize(config, new SoundCueRepository(cues), Backend, Clock, Sink, Random, SettingsStore));
         }
 
         protected void InitializeWithCues(params SoundCue[] cues)
         {
             Backend = new FakeVoiceBackend(Config.TotalVoices);
             SoundCueRepository repository = new SoundCueRepository(new List<SoundCue>(cues));
-            Assert.IsTrue(Service.Initialize(Config, repository, Backend, Clock, Sink, Random));
+            Assert.IsTrue(Service.Initialize(Config, repository, Backend, Clock, Sink, Random, SettingsStore));
         }
 
         protected SoundCue CreateLimitedCue(

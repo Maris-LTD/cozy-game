@@ -14,12 +14,15 @@ namespace CozyGachapon.Tests.Audio
         private readonly bool[] _paused;
         private readonly int[] _startCounts;
         private readonly int[] _stopCounts;
+        private readonly float[] _positions;
 
         public int VoiceCount { get; private set; }
         public bool SupportsPan { get; private set; } = true;
         public int StartCount { get; private set; }
         public int StopCount { get; private set; }
         public int SetVolumeCount { get; private set; }
+        public int PauseCount { get; private set; }
+        public int ResumeCount { get; private set; }
         public int LastStartedVoice { get; private set; } = -1;
         public int MaxStartedVoice { get; private set; } = -1;
 
@@ -52,6 +55,7 @@ namespace CozyGachapon.Tests.Audio
             _paused = new bool[voiceCount];
             _startCounts = new int[voiceCount];
             _stopCounts = new int[voiceCount];
+            _positions = new float[voiceCount];
         }
 
         public void SetSupportsPan(bool supportsPan)
@@ -68,6 +72,7 @@ namespace CozyGachapon.Tests.Audio
             _loops[voice] = loop;
             _playing[voice] = true;
             _paused[voice] = false;
+            _positions[voice] = 0f;
             _startCounts[voice]++;
             StartCount++;
             LastStartedVoice = voice;
@@ -88,11 +93,13 @@ namespace CozyGachapon.Tests.Audio
         public void Pause(int voice)
         {
             _paused[voice] = true;
+            PauseCount++;
         }
 
         public void Resume(int voice)
         {
             _paused[voice] = false;
+            ResumeCount++;
         }
 
         public void SetVolume(int voice, float volume)
@@ -103,12 +110,23 @@ namespace CozyGachapon.Tests.Audio
 
         public bool IsPlaying(int voice)
         {
-            return _playing[voice];
+            return _playing[voice] && !_paused[voice];
         }
 
         public float GetPosition(int voice)
         {
-            return 0f;
+            return _positions[voice];
+        }
+
+        public void AdvancePlayback(float seconds)
+        {
+            for (int i = 0; i < VoiceCount; i++)
+            {
+                if (_playing[i] && !_paused[i])
+                {
+                    _positions[i] += seconds;
+                }
+            }
         }
 
         public float GetSpatialBlend(int voice)

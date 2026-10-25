@@ -5,16 +5,16 @@ namespace CozyGachapon.Audio
 {
     public sealed class AudioRuntimeState
     {
-        private const MuteReason SuspendMask = MuteReason.Ad | MuteReason.Background;
-
         private readonly bool[] _busSilent;
         private readonly bool[] _busBackground;
         private readonly int _maxHops;
+        private MuteReasonSet _reasons;
 
         public bool IsLocked { get; private set; }
-        public MuteReason SuspendReasons { get; private set; }
-        public bool IsUserMuted { get; private set; }
-        public bool IsSuspended => SuspendReasons != MuteReason.None;
+        public MuteReason MuteReasons => _reasons.Reasons;
+        public MuteReason SuspendReasons => _reasons.SuspendReasons;
+        public bool IsUserMuted => _reasons.IsUserMuted;
+        public bool IsSuspended => _reasons.IsSuspended;
 
         public AudioRuntimeState()
         {
@@ -28,15 +28,14 @@ namespace CozyGachapon.Audio
             IsLocked = locked;
         }
 
-        public void SetSuspendReason(MuteReason reason, bool active)
+        public bool SetSuspendReason(MuteReason reason, bool active)
         {
-            MuteReason masked = reason & SuspendMask;
-            SuspendReasons = active ? SuspendReasons | masked : SuspendReasons & ~masked;
+            return _reasons.Set(reason & MuteReasonSet.SuspendMask, active);
         }
 
-        public void SetUserMuted(bool muted)
+        public bool SetUserMuted(bool muted)
         {
-            IsUserMuted = muted;
+            return _reasons.Set(MuteReason.User, muted);
         }
 
         public void SetBusSilent(AudioBus bus, bool silent)

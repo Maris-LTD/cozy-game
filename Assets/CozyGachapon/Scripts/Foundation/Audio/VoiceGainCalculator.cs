@@ -12,18 +12,24 @@ namespace CozyGachapon.Audio
         private readonly AudioRuntimeState _state;
         private readonly BusStateTable _busTable;
         private readonly BusBackgroundController _background;
+        private readonly AudioSuspendController _suspend;
+        private readonly UserMuteController _userMute;
         private readonly int _maxHops;
 
         public VoiceGainCalculator(
             AudioConfig config,
             AudioRuntimeState state,
             BusStateTable busTable,
-            BusBackgroundController background)
+            BusBackgroundController background,
+            AudioSuspendController suspend,
+            UserMuteController userMute)
         {
             _config = config;
             _state = state;
             _busTable = busTable;
             _background = background;
+            _suspend = suspend;
+            _userMute = userMute;
             _maxHops = Enum.GetValues(typeof(AudioBus)).Length;
         }
 
@@ -49,7 +55,9 @@ namespace CozyGachapon.Audio
                 current = parent;
             }
 
-            return Mathf.Min(MaxLinearVolume, AudioMath.DbToLinear(totalDb, _config.SilenceFloorDb));
+            return Mathf.Min(MaxLinearVolume, AudioMath.DbToLinear(totalDb, _config.SilenceFloorDb))
+                * _suspend.FadeFactor(now)
+                * _userMute.Gain(now);
         }
     }
 }

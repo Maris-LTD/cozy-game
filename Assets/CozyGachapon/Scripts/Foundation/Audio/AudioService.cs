@@ -1,3 +1,4 @@
+using System;
 using CozyGachapon.Contracts;
 using UnityEngine;
 
@@ -5,6 +6,9 @@ namespace CozyGachapon.Audio
 {
     public sealed class AudioService : IAudioService
     {
+        private const string SoundOnCueId = "Ui.SoundOn";
+        private const int NoCueIndex = -1;
+
         private readonly AudioCounters _counters = new AudioCounters();
         private AudioConfig _config;
         private IVoiceBackend _backend;
@@ -18,9 +22,15 @@ namespace CozyGachapon.Audio
         private BusBackgroundController _background;
         private VoiceGainCalculator _gain;
         private VoiceGainUpdater _gainUpdater;
+        private AudioUserSettings _settings;
+        private AudioMuteCoordinator _mute;
+        private int _soundOnIndex = NoCueIndex;
+
+        public event Action<bool> MuteChanged;
 
         public bool IsReady { get; private set; }
         public AudioRuntimeState RuntimeState { get; private set; }
+        public bool IsUserMuted => RuntimeState.IsUserMuted;
         public int VoiceCount => _pool == null ? 0 : _pool.Count;
         public AudioStats Stats => _counters.ToStats(_pool == null ? 0 : _pool.ActiveCount);
 
@@ -35,14 +45,15 @@ namespace CozyGachapon.Audio
             IVoiceBackend backend,
             IAudioClock clock,
             IAudioDiagnosticsSink sink,
-            IAudioRandom random)
+            IAudioRandom random,
+            IAudioSettingsStore settingsStore)
         {
             if (IsReady)
             {
                 return false;
             }
 
-            if (!HasValidInputs(config, repository, backend, clock, sink, random))
+            if (!AudioServiceInputValidator.HasValidInputs(config, repository, backend, clock, sink, random, settingsStore))
             {
                 if (sink != null)
                 {
@@ -67,8 +78,16 @@ namespace CozyGachapon.Audio
             _pitch = new PitchResolver(config, random, new CueClipSelector(_cues.Count));
             _busTable = new BusStateTable(config, RuntimeState);
             _background = new BusBackgroundController(config, RuntimeState);
-            _gain = new VoiceGainCalculator(config, RuntimeState, _busTable, _background);
+            AudioSuspendController suspend = new AudioSuspendController(config, RuntimeState);
+            UserMuteController userMute = new UserMuteController(config, RuntimeState);
+            _gain = new VoiceGainCalculator(config, RuntimeState, _busTable, _background, suspend, userMute);
             _gainUpdater = new VoiceGainUpdater(_pool, _cues, backend, _gain);
+            _settings = new AudioUserSettings(config, settingsStore);
+            _mute = new AudioMuteCoordinator(suspend, userMute, _pool, backend, _gainUpdater, _settings);
+            _busTable.SetUserVolume(AudioBus.Music, _settings.ReadSlider(AudioBus.Music));
+            _busTable.SetUserVolume(AudioBus.Sfx, _settings.ReadSlider(AudioBus.Sfx));
+            _mute.Restore(_settings.ReadUserMuted());
+            _soundOnIndex = _cues.TryResolve(SoundOnCueId, out int soundOnIndex) ? soundOnIndex : NoCueIndex;
             IsReady = true;
             return true;
         }
@@ -125,9 +144,15 @@ namespace CozyGachapon.Audio
 
             _pool.Tick(_backend, _cues);
             double now = _clock.Now;
-            if (_background.ConsumeRefresh(now))
+            bool backgroundRefresh = _background.ConsumeRefresh(now);
+            if (_mute.Tick(now, out bool soundOnDue) || backgroundRefresh)
             {
                 _gainUpdater.RefreshPlaying(now);
+            }
+
+            if (soundOnDue && _soundOnIndex != NoCueIndex)
+            {
+                Admit(_soundOnIndex, AudioPlayParams.None);
             }
         }
 
@@ -143,8 +168,37 @@ namespace CozyGachapon.Audio
         {
             if (IsReady && _busTable.SetUserVolume(bus, slider))
             {
+                _settings.SaveSlider(bus, _busTable.GetUserSlider(bus));
                 _gainUpdater.RefreshPlaying(_clock.Now);
             }
+        }
+
+        public float GetUserVolume(AudioBus bus)
+        {
+            return IsReady ? _busTable.GetUserSlider(bus) : 0f;
+        }
+
+        public void SetUserMuted(bool muted)
+        {
+            SetMuteReason(MuteReason.User, muted);
+        }
+
+        public void SetMuteReason(MuteReason reason, bool active)
+        {
+            if (IsReady && _mute.Apply(reason, active, _clock.Now))
+            {
+                MuteChanged?.Invoke(RuntimeState.IsUserMuted);
+            }
+        }
+
+        public void HandlePaused(in PausedEvent pausedEvent)
+        {
+            SetMuteReason(MuteReason.Background, true);
+        }
+
+        public void HandleResumed(in ResumedEvent resumedEvent)
+        {
+            SetMuteReason(MuteReason.Background, false);
         }
 
         private PlayResult Admit(int cueIndex, in AudioPlayParams playParams)
@@ -189,28 +243,6 @@ namespace CozyGachapon.Audio
         {
             _counters.RecordDropped(reason);
             return PlayResult.Dropped(reason);
-        }
-
-        private static bool HasValidInputs(
-            AudioConfig config,
-            SoundCueRepository repository,
-            IVoiceBackend backend,
-            IAudioClock clock,
-            IAudioDiagnosticsSink sink,
-            IAudioRandom random)
-        {
-            if (config == null || repository == null || backend == null || clock == null || sink == null || random == null)
-            {
-                return false;
-            }
-
-            if (config.TotalVoices < 1 || config.MusicVoices < 0 || config.AmbienceVoices < 0)
-            {
-                return false;
-            }
-
-            return config.MusicVoices + config.AmbienceVoices <= config.TotalVoices
-                && backend.VoiceCount >= config.TotalVoices;
         }
     }
 }

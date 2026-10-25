@@ -76,12 +76,38 @@ namespace CozyGachapon.Audio
             for (int i = 0; i < _slots.Length; i++)
             {
                 VoiceSlot slot = _slots[i];
-                if (!slot.IsPlaying || slot.Loop || backend.IsPlaying(i))
+                if (!slot.IsPlaying || slot.Loop || slot.IsPaused || backend.IsPlaying(i))
                 {
                     continue;
                 }
 
                 ReleaseInstance(i, cues);
+            }
+        }
+
+        public void PauseAll(IVoiceBackend backend)
+        {
+            for (int i = 0; i < _slots.Length; i++)
+            {
+                VoiceSlot slot = _slots[i];
+                if (slot.IsPlaying && !slot.IsPaused)
+                {
+                    backend.Pause(i);
+                    slot.SetPaused(true);
+                }
+            }
+        }
+
+        public void ResumeAll(IVoiceBackend backend)
+        {
+            for (int i = 0; i < _slots.Length; i++)
+            {
+                VoiceSlot slot = _slots[i];
+                if (slot.IsPlaying && slot.IsPaused)
+                {
+                    backend.Resume(i);
+                    slot.SetPaused(false);
+                }
             }
         }
 

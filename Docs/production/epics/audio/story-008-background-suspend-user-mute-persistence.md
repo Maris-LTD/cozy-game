@@ -1,7 +1,7 @@
 # Story 008: Background Suspend, User Mute & Settings Persistence
 
 > **Epic**: Audio
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 2 days
@@ -34,9 +34,9 @@
 
 *From Docs/design/gdd/audio.md, scoped to this story:*
 
-- [ ] `AC-21 [EditMode]` **GIVEN** 3 voice SFX và voice nhạc đang phát, **WHEN** Bootstrap giả phát `Paused {reason = Hidden}`, chờ 60 s đồng hồ thực, rồi phát `Resumed {reason = Hidden, awaySeconds = 60}` (lặp lại với `reason = Background`), **THEN** trong lúc tạm ngưng mọi voice ở Paused giữ nguyên vị trí phát và mọi `Play` → `Dropped(Suspended)`; sau `Resumed` các voice tiếp tục từ vị trí cũ và âm lượng tăng theo `fade_factor` trong `C.resumeFadeInSeconds`.
-- [ ] `AC-23 [EditMode]` **GIVEN** trạng thái Active với voice nhạc đang phát, **WHEN** `SetUserMuted(true)` rồi `SetUserMuted(false)`, **THEN** gain Master về 0 sau `C.userMuteFadeSeconds`; trong lúc câm `Play` SFX → `Dropped(UserMuted)` còn vị trí phát của nhạc tiếp tục tăng; sau khi bật lại gain về mức cũ sau `C.userMuteFadeSeconds` rồi `Ui.SoundOn` được phát đúng 1 lần; `MuteChanged` phát đúng 1 lần cho mỗi lần đổi.
-- [ ] `AC-27 [EditMode]` **GIVEN** kho thiết lập giả rỗng, **WHEN** khởi tạo, **THEN** `IsUserMuted` = `C.defaultUserMuted` và hai thanh trượt = `C.defaultUserSlider`; **WHEN** `SetUserMuted(true)` rồi khởi tạo một Audio mới trên cùng kho, **THEN** `IsUserMuted` = đúng ngay sau khởi tạo, trước khi có `Play` nào được phát.
+- [x] `AC-21 [EditMode]` **GIVEN** 3 voice SFX và voice nhạc đang phát, **WHEN** Bootstrap giả phát `Paused {reason = Hidden}`, chờ 60 s đồng hồ thực, rồi phát `Resumed {reason = Hidden, awaySeconds = 60}` (lặp lại với `reason = Background`), **THEN** trong lúc tạm ngưng mọi voice ở Paused giữ nguyên vị trí phát và mọi `Play` → `Dropped(Suspended)`; sau `Resumed` các voice tiếp tục từ vị trí cũ và âm lượng tăng theo `fade_factor` trong `C.resumeFadeInSeconds`.
+- [x] `AC-23 [EditMode]` **GIVEN** trạng thái Active với voice nhạc đang phát, **WHEN** `SetUserMuted(true)` rồi `SetUserMuted(false)`, **THEN** gain Master về 0 sau `C.userMuteFadeSeconds`; trong lúc câm `Play` SFX → `Dropped(UserMuted)` còn vị trí phát của nhạc tiếp tục tăng; sau khi bật lại gain về mức cũ sau `C.userMuteFadeSeconds` rồi `Ui.SoundOn` được phát đúng 1 lần; `MuteChanged` phát đúng 1 lần cho mỗi lần đổi.
+- [x] `AC-27 [EditMode]` **GIVEN** kho thiết lập giả rỗng, **WHEN** khởi tạo, **THEN** `IsUserMuted` = `C.defaultUserMuted` và hai thanh trượt = `C.defaultUserSlider`; **WHEN** `SetUserMuted(true)` rồi khởi tạo một Audio mới trên cùng kho, **THEN** `IsUserMuted` = đúng ngay sau khởi tạo, trước khi có `Play` nào được phát.
 
 ## Implementation Notes
 
@@ -79,9 +79,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/AudioSuspendTests.cs`, `UserMuteTests.cs`, `AudioSettingsPersistenceTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] suspend, user mute and settings persistence tests under `Assets/CozyGachapon/Tests/EditMode/Audio/` (EditMode 546/546)
 
 ## Dependencies
 
 - Depends on: Story 003, Story 007
 - Unlocks: Story 009, Story 010
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 3/3 passing (AC-21, AC-23, AC-27 + QA edge cases)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 546/546); smoke n/a (no scene change)
+**Run result**: N/A - suspend/mute on the fake voice backend; PlayerPrefs store is exercised only through `IAudioSettingsStore` fakes in tests
+**Deviations**: ADVISORY - split into `MuteReasonSet`, `AudioSuspendController`, `UserMuteController`, `AudioMuteCoordinator`, `AudioUserSettings`, `IAudioSettingsStore` + `PlayerPrefsAudioSettingsStore`; `SetUserMuted`, `IsUserMuted`, `MuteChanged`, `HandlePaused`, `HandleResumed` on `IAudioService`
+**Test Evidence**: suspend / user mute / persistence tests in `Assets/CozyGachapon/Tests/EditMode/Audio/` (+ `FakeAudioSettingsStore.cs`, `AudioMuteFixture.cs`), passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 2 minor fixed with tests: `Ui.SoundOn` is kept pending while suspended and plays after resume; unchanged slider values no longer rewrite PlayerPrefs; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none
