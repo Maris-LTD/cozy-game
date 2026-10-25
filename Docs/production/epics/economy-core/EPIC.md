@@ -3,7 +3,7 @@
 > **Layer**: Foundation
 > **GDD**: Docs/design/gdd/economy-core.md
 > **Code area**: Assets/CozyGachapon/Scripts/Core/Economy/ (assembly `CozyGachapon.Core` theo architecture.md — asmdef chưa tồn tại, story đầu tiên phải tạo)
-> **Status**: Ready
+> **Status**: In Progress
 > **Stories**: 18 — see table
 
 ## Overview
@@ -46,7 +46,7 @@ This epic is complete when:
 
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
-| 001 | Core Assembly, Economy Contracts & Wallet Add | Logic | Ready | ADR-0005, ADR-0001 |
+| 001 | Core Assembly, Economy Contracts & Wallet Add | Logic | Complete | ADR-0005, ADR-0001 |
 | 002 | Spend, CanAfford & Player Action Context | Logic | Ready | ADR-0005 |
 | 003 | Spin Price Curve, nice_ceil & Derived Price | Logic | Ready | ADR-0005 |
 | 004 | Economy Core Initialization & State Snapshot | Logic | Ready | ADR-0005, ADR-0001 |

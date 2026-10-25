@@ -4,6 +4,7 @@
     "references": [
         "CozyGachapon.Contracts",
         "CozyGachapon.Foundation",
+        "CozyGachapon.Core",
         "CozyGachapon.Runtime",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

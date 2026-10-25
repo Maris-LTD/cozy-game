@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f5c10c148d6af04f9dac1bc3a58d49c, type: 3}
+  m_Name: EconomyConfig
+  m_EditorClassIdentifier: CozyGachapon.Core::CozyGachapon.Economy.EconomyConfig
+  _currencies:
+  - {fileID: 11400000, guid: df4edf144494f2f4eba14c19384ee5b2, type: 2}
+  - {fileID: 11400000, guid: 79ea358ca3c1f104f9bd1374a9307aa7, type: 2}
+  _startingCoins: 0
+  _walletSafeCap: 1e+300
+  _spinBasePrice: 100
+  _spinGrowth: 1.05
+  _coinValueExponent: 0.6
+  _priceNiceSigDigits: 2
+  _idleCpsUnit: 2
+  _synergyTierCap: 4
+  _boostTierCap: 3
+  _prestigeTierCap: 10
+  _globalTierCap: 2
+  _plinkoFlatPerCoinCap: 2
+  _tierOwnerPrefixes:
+    _base:
+    - shelf.
+    _synergy:
+    - shelf.
+    _boost:
+    - boost.
+    - ad.
+    _prestige:
+    - prestige.
+    _global:
+    - event.
+  _maxFrameDelta: 0.25
+  _adCompensationMaxSeconds: 90
+  _plinkoRateWindowSeconds: 10
+  _ratesPublishInterval: 0.5
+  _displaySigDigits: 3
+  _rateDecimals: 1

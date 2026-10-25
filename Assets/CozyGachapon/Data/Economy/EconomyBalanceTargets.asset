@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb9b0ae09d874254ea81b2233011f011, type: 3}
+  m_Name: EconomyBalanceTargets
+  m_EditorClassIdentifier: CozyGachapon.Core::CozyGachapon.Economy.EconomyBalanceTargets
+  _realisticTapRate: 3
+  _plinkoEvEffectiveAssumed: 2.96
+  _plinkoBounceUpliftAtCapAssumed: 0.4
+  _plinkoRawRateCeilingAssumed:
+  - 20
+  - 27.1
+  - 30.7
+  - 42
+  _plinkoJackpotProbMeanAssumed: 0.109
+  _plinkoScoredPegHitsPerCoinAssumed: 14
+  _firstSpinMaxSeconds: 30
+  _spinCheckpoints: 000000003200000064000000
+  _plinkoOnlySpinSecondsMax:
+  - 30
+  - 60
+  - 120
+  _pipelineFrameBudgetMs: 0.2
+  _valueRelTolerance: 0.000000001
+  _plinkoSoftCapTestFactor: 1.5

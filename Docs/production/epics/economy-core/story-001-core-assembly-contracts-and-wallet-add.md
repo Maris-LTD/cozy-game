@@ -1,7 +1,7 @@
 # Story 001: Core Assembly, Economy Contracts & Wallet Add
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 2 days
@@ -34,9 +34,9 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-2 [EditMode]` **GIVEN** Xu = 0, **WHEN** `Add(coin, 2.5)` hai lần, rồi từ 0 `Add(coin, 0.4)` ba lần, **THEN** số dư lần lượt là 5.0 và 1.2; chuỗi hiển thị "5" và "1"; mỗi lần `Add` thành công phát đúng một `WalletChanged` có `delta` = amount và đúng `reason`.
-- [ ] `AC-3 [EditMode]` **GIVEN** Xu = 10, **WHEN** `Add` với amount ∈ {−1, 0, NaN, +∞} hoặc với `currencyId` chưa đăng ký, **THEN** trả `false`, số dư vẫn 10, không có sự kiện nào.
-- [ ] `AC-4 [EditMode]` **GIVEN** Xu = `C.walletSafeCap` − 1, **WHEN** `Add(coin, C.walletSafeCap / 10)`, **THEN** Xu = `C.walletSafeCap`.
+- [x] `AC-2 [EditMode]` **GIVEN** Xu = 0, **WHEN** `Add(coin, 2.5)` hai lần, rồi từ 0 `Add(coin, 0.4)` ba lần, **THEN** số dư lần lượt là 5.0 và 1.2; chuỗi hiển thị "5" và "1"; mỗi lần `Add` thành công phát đúng một `WalletChanged` có `delta` = amount và đúng `reason`.
+- [x] `AC-3 [EditMode]` **GIVEN** Xu = 10, **WHEN** `Add` với amount ∈ {−1, 0, NaN, +∞} hoặc với `currencyId` chưa đăng ký, **THEN** trả `false`, số dư vẫn 10, không có sự kiện nào.
+- [x] `AC-4 [EditMode]` **GIVEN** Xu = `C.walletSafeCap` − 1, **WHEN** `Add(coin, C.walletSafeCap / 10)`, **THEN** Xu = `C.walletSafeCap`.
 
 ## Implementation Notes
 
@@ -82,9 +82,33 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/WalletAddTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `WalletAddTests.cs`, `WalletAddZeroAllocTests.cs`, `EconomyConfigValidatorTests.cs`, `EconomyDefaultAssetsTests.cs` (EditMode 690/690)
 
 ## Dependencies
 
 - Depends on: None
 - Unlocks: Story 002, Story 003, Story 004, Story 006
+
+## Completion Notes
+
+- Namespace: asmdef `CozyGachapon.Core` dùng `rootNamespace`/namespace `CozyGachapon.Economy` (giống Foundation dùng `CozyGachapon.Audio`), khác `CozyGachapon.Core` ghi trong story/ADR-0001; tránh namespace `Core` che các tên khác trong `CozyGachapon.*`.
+- `IWallet` theo GDD (đa tiền tệ, `Add(currencyId, amount, reason)`, `GetBalance(currencyId)`, `event Action<WalletChangedEvent>`), lệch bản phác `Credit(double)`/`Coins` của ADR-0005 (TD-011).
+- `IValidatableAsset` (ADR-0009) chưa có; `EconomyConfigValidator` theo mẫu validator thuần của Audio, tách `EconomyCurrencyValidator` và `EconomyKnobRangeValidator`.
+- Safe range của 18 knob runtime nằm ở asset mới `EconomySafeRanges` (ngoài danh sách asset của story) để logic không có hằng literal; safe range của `EconomyBalanceTargets` để Story 016.
+- `WalletChangeReason` thêm `IdleIncome`, `PlinkoIncome` cho thu nhập pipeline (Open Questions của EPIC); Story 004, 011, 012 dùng hai giá trị này.
+- `Add` từ chối `reason` không thuộc faucet (sink và giá trị enum không định nghĩa), suy từ R2.4; trả `false`, báo `RejectedAdd`.
+- `Add` khi đã ở đúng trần: trả `true`, số dư không đổi, không phát `WalletChanged` (delta 0), không báo sink.
+- AC-4 kiểm hai lần: cap mặc định 1e300 (chỉ kiểm số dư, vì `1e300 − 1 == 1e300` trong double) và cap test 1000 (kiểm `delta` = 1).
+- `RegisterCurrency` là `internal` (test qua `InternalsVisibleTo`); Story 004 thay bằng khởi tạo từ config.
+- `ReleaseTier { Mvp, VerticalSlice, Alpha, PostLaunch }` đặt ở Contracts; `CurrencyShopStamp.asset` có tier `Alpha`.
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 3/3 passing (AC-2, AC-3, AC-4 + QA edge cases)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 690/690); smoke n/a (no scene change)
+**Run result**: N/A - wallet logic, not wired into the scene until Story 018
+**Deviations**: ADVISORY - new `CozyGachapon.Core` asmdef (namespace `CozyGachapon.Economy`, refs Contracts + Foundation) added to the test asmdef; `IWallet` follows the GDD (multi-currency `Add(currencyId, amount, reason)`, `GetBalance`, `WalletChanged`) over the ADR-0005 single-currency sketch (TD-011); `Add` rejects sink reasons; knob safe ranges live in a separate `EconomySafeRanges` SO; AC-4 tested with two caps because 1e300 - 1 == 1e300 in double; 5 data assets created through the Editor (`EconomyConfig`, `EconomySafeRanges`, `EconomyBalanceTargets`, `CurrencyCoin`, `CurrencyShopStamp`); no `IValidatableAsset` yet (plain validator like Audio)
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/WalletAddTests.cs`, `WalletAddZeroAllocTests.cs`, `EconomyConfigValidatorTests.cs`, `EconomyDefaultAssetsTests.cs`, passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 1 minor (unused `CurrencyLedger.Count`) removed; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

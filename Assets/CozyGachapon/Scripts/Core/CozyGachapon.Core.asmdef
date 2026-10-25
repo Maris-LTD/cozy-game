@@ -1,0 +1,17 @@
+{
+    "name": "CozyGachapon.Core",
+    "rootNamespace": "CozyGachapon.Economy",
+    "references": [
+        "CozyGachapon.Contracts",
+        "CozyGachapon.Foundation"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
