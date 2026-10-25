@@ -1,7 +1,7 @@
 # Story 003: Play Admission & Voice Pool Core
 
 > **Epic**: Audio
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 2 days
@@ -34,10 +34,10 @@
 
 *From Docs/design/gdd/audio.md, scoped to this story:*
 
-- [ ] `AC-7 [EditMode]` **GIVEN** Audio chưa khởi tạo, **WHEN** gọi `Play(Plinko.CoinSpawn)` và `Play("Khong.Ton.Tai")` sau khi khởi tạo, **THEN** lần lượt `Dropped(NotReady)` và `Dropped(UnknownCue)`; không voice nào phát; không có exception.
-- [ ] `AC-8 [EditMode]` **GIVEN** đồng hồ tiêm, **WHEN** yêu cầu `Plinko.PegHitScored` tại t = 0, t = `Q.minInterval` − ε, t = `Q.minInterval`, **THEN** kết quả lần lượt Played / `RateLimited` / Played, và yêu cầu bị bỏ không dời mốc.
-- [ ] `AC-10 [EditMode]` **GIVEN** mỗi bước A3 được làm sai riêng lẻ (Locked, Suspended, UserMuted, BusSilent, BackgroundFiltered, RateLimited, InstanceCap, NoVoice), **WHEN** gửi yêu cầu, **THEN** lý do trả về đúng bước đó; khi nhiều bước cùng sai, lý do là bước có số thứ tự nhỏ nhất.
-- [ ] `AC-29 [EditMode]` **GIVEN** time scale = 0 rồi = 2, **WHEN** lặp AC-8, **THEN** kết quả giống hệt (minInterval đo bằng đồng hồ thực).
+- [x] `AC-7 [EditMode]` **GIVEN** Audio chưa khởi tạo, **WHEN** gọi `Play(Plinko.CoinSpawn)` và `Play("Khong.Ton.Tai")` sau khi khởi tạo, **THEN** lần lượt `Dropped(NotReady)` và `Dropped(UnknownCue)`; không voice nào phát; không có exception.
+- [x] `AC-8 [EditMode]` **GIVEN** đồng hồ tiêm, **WHEN** yêu cầu `Plinko.PegHitScored` tại t = 0, t = `Q.minInterval` − ε, t = `Q.minInterval`, **THEN** kết quả lần lượt Played / `RateLimited` / Played, và yêu cầu bị bỏ không dời mốc.
+- [x] `AC-10 [EditMode]` **GIVEN** mỗi bước A3 được làm sai riêng lẻ (Locked, Suspended, UserMuted, BusSilent, BackgroundFiltered, RateLimited, InstanceCap, NoVoice), **WHEN** gửi yêu cầu, **THEN** lý do trả về đúng bước đó; khi nhiều bước cùng sai, lý do là bước có số thứ tự nhỏ nhất.
+- [x] `AC-29 [EditMode]` **GIVEN** time scale = 0 rồi = 2, **WHEN** lặp AC-8, **THEN** kết quả giống hệt (minInterval đo bằng đồng hồ thực).
 
 ## Implementation Notes
 
@@ -89,9 +89,29 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/PlayAdmissionTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Created (pending `unity-harness tests`): `Assets/CozyGachapon/Tests/EditMode/Audio/PlayAdmissionTests.cs` (AC-7, AC-10), `AudioRateLimitTests.cs` (AC-8, AC-29), `AudioCueExclusionTests.cs` (AC-7 edge: broken cues, Initialize input), `AudioDiagnosticsCounterTests.cs` (A14 counters), `VoicePoolTests.cs` (A4), `AudioPlayZeroAllocTests.cs` (0 B GC on `Play`)
 
 ## Dependencies
 
 - Depends on: Story 001, Story 002
 - Unlocks: Story 004, Story 006, Story 007, Story 008
+
+## Completion Notes
+
+- Deviation from ADR-0004 (TD-009): the API follows the GDD, not the ADR sketch `PlayCue(string, float, float)`. `IAudioService` exposes `TryResolveCue(string, out int)`, `Play(string, in AudioPlayParams)`, `Play(int, in AudioPlayParams)`, `IsReady`, `Stats` and returns `PlayResult`.
+- Temporary until Story 004: a `StealOldest` cue at `maxInstances` does not steal its own oldest instance yet; it returns `Dropped(NoVoice)` and never exceeds the cap. `DropNew` at the cap returns `InstanceCap`. Free voices only; no priority stealing.
+- `BusSilent` and `BackgroundFiltered` check the cue bus and its ancestors up to Master (`AudioRuntimeState`); Story 007 may narrow this in one place.
+- Runtime cue exclusion (treated as `UnknownCue`, reported once as `CueExcluded`): repository-excluded cues (no clip, duplicate id), `maxInstances < 1`, `minInterval < 0` or NaN, bus with no path to Master. Out-of-range `priority` is left to the Editor validator (priority is first used in Story 004).
+- Played voices start with the first playable clip (first pitched sample for `Scale` cues), volume `min(1, db_to_linear(volumeDb))`, pitch 1, pan 0; Story 006/007 replace clip, pitch, pan and bus gain.
+- `AudioService` is not registered in Bootstrap yet (Story 011); `Locked`/`Suspended`/`UserMuted`/bus flags live in `AudioRuntimeState` and are only written by tests here.
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 4/4 passing (AC-7, AC-8, AC-10, AC-29 + QA edge cases)
+**Harness**: unity-harness all PASS twice in a row (rules, compile, EditMode 411/411); smoke n/a (no scene change)
+**Run result**: N/A - service logic with a fake voice backend; real AudioSource backend in Story 012
+**Deviations**: ADVISORY - `IAudioService` follows the GDD (`Play(cueId|cueIndex, in AudioPlayParams) -> PlayResult`, `TryResolveCue`) over the ADR-0004 sketch (TD-009); StealOldest at the instance cap returns `NoVoice` until Story 004 adds stealing; rate limit compares at float precision so a request exactly `minInterval` later is Played; cues with priority outside `SoundCue.PriorityMin..PriorityMax` are excluded as `UnknownCue`
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/` admission / rate-limit / exclusion / zero-alloc tests (+ `FakeVoiceBackend`, `FakeAudioClock`, `CountingAudioDiagnosticsSink`, `AudioServiceFixture`), passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 2 minor fixed (float/double minInterval boundary; out-of-range priority admitted), each with a test. Side fix: `GcAllocProbe` now runs the body once before measuring (first-call JIT made zero-alloc tests flaky); LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

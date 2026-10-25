@@ -9,6 +9,7 @@ namespace CozyGachapon.Tests.Pooling
 
         public static int CountAllocations(Action body)
         {
+            body();
             Recorder recorder = Recorder.Get(MarkerName);
             recorder.enabled = false;
             recorder.FilterToCurrentThread();

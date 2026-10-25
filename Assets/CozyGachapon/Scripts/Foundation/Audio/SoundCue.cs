@@ -7,6 +7,9 @@ namespace CozyGachapon.Audio
     [CreateAssetMenu(fileName = "SoundCue", menuName = "CozyGachapon/Audio/SoundCue")]
     public class SoundCue : ScriptableObject
     {
+        public const int PriorityMin = 0;
+        public const int PriorityMax = 100;
+
         [SerializeField] private string _cueId;
         [SerializeField] private AudioBus _bus;
         [SerializeField] private AudioClip[] _clips = new AudioClip[0];
