@@ -6,7 +6,7 @@ namespace CozyGachapon.Foundation
     public class BootConfig : ScriptableObject
     {
         [SerializeField] private float _stepTimeoutSeconds = 10f;
-        [SerializeField] private float _errorPanelFadeSeconds = 0.3f;
+        [SerializeField] private float _errorPanelFadeSeconds = 0.2f;
         [SerializeField] private float _curtainMinDisplaySeconds = 0.4f;
         [SerializeField] private float _curtainRevealDuration = 0.35f;
         [SerializeField] private float _maxBootToInteractiveSeconds = 2.0f;
