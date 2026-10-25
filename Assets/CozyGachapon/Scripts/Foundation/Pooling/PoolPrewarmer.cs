@@ -7,6 +7,7 @@ namespace CozyGachapon.Pooling
     {
         private readonly PoolRegistry _registry;
         private readonly Transform[] _containers;
+        private readonly PoolInstanceTable _table;
         private readonly int _perFrame;
         private int _poolIndex;
 
@@ -14,9 +15,10 @@ namespace CozyGachapon.Pooling
         public bool HasFailed { get; private set; }
         public int LastStepCreated { get; private set; }
 
-        public PoolPrewarmer(PoolRegistry registry, Transform root, int perFrame)
+        public PoolPrewarmer(PoolRegistry registry, PoolInstanceTable table, Transform root, int perFrame)
         {
             _registry = registry;
+            _table = table;
             _perFrame = PrewarmBudget.EffectivePerFrame(perFrame);
             _containers = new Transform[registry.Count];
 
@@ -45,7 +47,9 @@ namespace CozyGachapon.Pooling
                     PoolRecord record = _registry.GetAt(_poolIndex);
                     GameObject instance = UnityEngine.Object.Instantiate(record.Definition.Prefab, _containers[_poolIndex], false);
                     instance.SetActive(false);
-                    record.AddPrewarmed(instance);
+                    int instanceId = instance.GetInstanceID();
+                    int slot = record.AddPrewarmed(instance, instanceId);
+                    _table.Add(instanceId, record, slot);
                     LastStepCreated++;
                     budget--;
                     SkipFullPools();

@@ -14,6 +14,12 @@ namespace CozyGachapon.Contracts
         PrewarmPerFrameInvalid = 9,
         PrewarmBudgetExceeded = 10,
         PrewarmMissingContainer = 11,
-        PrewarmFailed = 12
+        PrewarmFailed = 12,
+        GetWrongPhase = 13,
+        GetUnknownPool = 14,
+        ReleaseUnknownPool = 15,
+        ReleaseForeign = 16,
+        ReleaseDouble = 17,
+        ReleaseStale = 18
     }
 }

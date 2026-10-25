@@ -1,7 +1,7 @@
 # Story 003: Lease Get / Release Guards
 
 > **Epic**: Object Pooling
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1 day
@@ -34,11 +34,11 @@
 
 *From Docs/design/gdd/object-pooling.md, scoped to this story:*
 
-- [ ] `AC-11 [EditMode]` **GIVEN** dịch vụ Ready, **WHEN** Get một đối tượng, **THEN** đối tượng đang hiển thị/mô phỏng, hook lấy ra được gọi đúng 1 lần trước khi Get trả về, `inUse` +1 và `peakInUse` ≥ `inUse`.
-- [ ] `AC-12 [EditMode]` **GIVEN** một đối tượng đang mượn, **WHEN** Release bằng phiếu của nó, **THEN** đối tượng không hiển thị, không mô phỏng, hook trả về được gọi đúng 1 lần với lý do `Released`, `inUse` −1; dữ liệu do hệ khách gắn trên đối tượng không bị Pooling đổi.
-- [ ] `AC-13 [EditMode]` **GIVEN** một phiếu đã Release, **WHEN** Release lại cùng phiếu, **THEN** `doubleRelease` +1, một lỗi Editor, `inUse` không đổi, và hai lần Get kế tiếp trả về hai đối tượng khác nhau.
-- [ ] `AC-14 [EditMode]` **GIVEN** đối tượng nằm trong pool khác, một GameObject không thuộc pool nào, và một phiếu rỗng, **WHEN** Release từng cái vào pool đang test, **THEN** cả ba bị bỏ qua, `foreignRelease` +3, không exception.
-- [ ] `AC-15 [EditMode]` **GIVEN** dịch vụ ở Accepting hoặc Prewarming, **WHEN** Get, **THEN** trả rỗng, một lỗi Editor, `created` không đổi.
+- [x] `AC-11 [EditMode]` **GIVEN** dịch vụ Ready, **WHEN** Get một đối tượng, **THEN** đối tượng đang hiển thị/mô phỏng, hook lấy ra được gọi đúng 1 lần trước khi Get trả về, `inUse` +1 và `peakInUse` ≥ `inUse`.
+- [x] `AC-12 [EditMode]` **GIVEN** một đối tượng đang mượn, **WHEN** Release bằng phiếu của nó, **THEN** đối tượng không hiển thị, không mô phỏng, hook trả về được gọi đúng 1 lần với lý do `Released`, `inUse` −1; dữ liệu do hệ khách gắn trên đối tượng không bị Pooling đổi.
+- [x] `AC-13 [EditMode]` **GIVEN** một phiếu đã Release, **WHEN** Release lại cùng phiếu, **THEN** `doubleRelease` +1, một lỗi Editor, `inUse` không đổi, và hai lần Get kế tiếp trả về hai đối tượng khác nhau.
+- [x] `AC-14 [EditMode]` **GIVEN** đối tượng nằm trong pool khác, một GameObject không thuộc pool nào, và một phiếu rỗng, **WHEN** Release từng cái vào pool đang test, **THEN** cả ba bị bỏ qua, `foreignRelease` +3, không exception.
+- [x] `AC-15 [EditMode]` **GIVEN** dịch vụ ở Accepting hoặc Prewarming, **WHEN** Get, **THEN** trả rỗng, một lỗi Editor, `created` không đổi.
 
 ## Implementation Notes
 
@@ -93,9 +93,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Pooling/PoolLeaseTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `PoolLeaseTests.cs`, `PoolReleaseGuardTests.cs` (EditMode 222/222)
 
 ## Dependencies
 
 - Depends on: Story 002
 - Unlocks: Story 004
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 5/5 passing (AC-11..AC-15 covered by EditMode tests)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 222/222); smoke PASS in workflow run (0 console errors)
+**Run result**: N/A - pure pooling logic, no pool is registered in MainGame yet
+**Deviations**: ADVISORY - `PoolLease.Sequence` is `long` per GDD (ADR-0003 says `uint`, TD-008); `CozyGachapon.Contracts.asmdef` now allows engine references (`noEngineReferences: false`) so `PoolLease`/`IPoolHooks` can carry `GameObject`, which ADR-0001 permits (Contracts limited to `UnityEngine.CoreModule`) and ADR-0003 requires; Get/Release split into `PoolGetHandler`, `PoolReleaseHandler`, `PoolLeaseValidator`, `PoolInstanceTable`, `PoolCounters`; `Release(lease)` with an empty lease reports `ReleaseForeign` (no pool context, so no per-pool counter)
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Pooling/PoolLeaseTests.cs`, `PoolReleaseGuardTests.cs` (+ `RecordingPoolHooks.cs`), passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review 0 blockers, 2 minor: asmdef change accepted and recorded (ADR-compliant), empty-lease single-arg release fixed with a test; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

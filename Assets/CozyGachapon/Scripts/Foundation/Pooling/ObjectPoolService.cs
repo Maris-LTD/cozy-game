@@ -10,6 +10,9 @@ namespace CozyGachapon.Pooling
         private readonly PoolingConfig _config;
         private readonly IPoolDiagnosticsSink _sink;
         private readonly PoolRegistry _registry = new PoolRegistry();
+        private readonly PoolGetHandler _getHandler;
+        private readonly PoolReleaseHandler _releaseHandler;
+        private PoolInstanceTable _table;
         private PoolPrewarmer _prewarmer;
 
         public PoolServicePhase Phase { get; private set; }
@@ -20,10 +23,17 @@ namespace CozyGachapon.Pooling
         {
             _config = config;
             _sink = sink;
+            _getHandler = new PoolGetHandler(_registry, sink);
+            _releaseHandler = new PoolReleaseHandler(_registry, sink);
             Phase = PoolServicePhase.Accepting;
         }
 
         public PoolRegistrationResult Register(string id, int clientDeclaredMax, bool forbidRecycle)
+        {
+            return Register(id, clientDeclaredMax, forbidRecycle, null);
+        }
+
+        public PoolRegistrationResult Register(string id, int clientDeclaredMax, bool forbidRecycle, IPoolHooks hooks)
         {
             PoolRegistrationError error = PoolRegistrationValidator.Validate(
                 Phase,
@@ -41,8 +51,23 @@ namespace CozyGachapon.Pooling
                 return PoolRegistrationResult.Reject(error);
             }
 
-            _registry.Add(new PoolRecord(id, definition, capacity));
+            _registry.Add(new PoolRecord(id, definition, capacity, hooks));
             return PoolRegistrationResult.Accept(capacity);
+        }
+
+        public PoolLease Get(string poolId)
+        {
+            return _getHandler.Get(Phase, poolId);
+        }
+
+        public void Release(in PoolLease lease)
+        {
+            _releaseHandler.Release(_table, lease.PoolId, lease);
+        }
+
+        public void Release(string poolId, in PoolLease lease)
+        {
+            _releaseHandler.Release(_table, poolId, lease);
         }
 
         public bool TryGetStats(string id, out PoolStats stats)
@@ -65,6 +90,7 @@ namespace CozyGachapon.Pooling
             }
 
             Phase = PoolServicePhase.Prewarming;
+            _table = new PoolInstanceTable(_registry.TotalCapacity);
             if (_registry.Count == 0)
             {
                 Phase = PoolServicePhase.Ready;
@@ -79,7 +105,7 @@ namespace CozyGachapon.Pooling
 
             try
             {
-                _prewarmer = new PoolPrewarmer(_registry, root, PrewarmBudget.EffectivePerFrame(_config.PrewarmPerFrame));
+                _prewarmer = new PoolPrewarmer(_registry, _table, root, PrewarmBudget.EffectivePerFrame(_config.PrewarmPerFrame));
             }
             catch (Exception)
             {
