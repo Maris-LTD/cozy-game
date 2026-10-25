@@ -38,7 +38,7 @@
   "studio": {
     "stage": "pre-production",
     "rigor": "standard",
-    "automation": "guided",
+    "automation": "autonomous",
     "unityVersion": "6000.3.16f1",
     "renderPipeline": "URP",
     "inputSystem": "new",
