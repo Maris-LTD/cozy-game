@@ -3,8 +3,8 @@
 > **Layer**: Foundation
 > **GDD**: Docs/design/gdd/bootstrap-and-scene-flow.md
 > **Code area**: Assets/CozyGachapon/Scripts/Foundation/Bootstrap/
-> **Status**: Complete
-> **Stories**: 9 — see table
+> **Status**: In Progress
+> **Stories**: 11 — see table
 
 ## Overview
 
@@ -42,6 +42,8 @@ Bootstrap & Scene Flow là hệ hạ tầng điều phối toàn bộ vòng đ�
 | 007 | World Press Input Routing & Modal Back Handler | Integration | Complete | ADR-0002 |
 | 008 | Viewport Calculator & Aspect Ratio Letterboxing | Logic | Complete | ADR-0002, ADR-0006 |
 | 009 | Startup Curtain View & Retry Panel | UI | Complete | ADR-0002 |
+| 010 | Welcome Queue | Logic | Complete | ADR-0002 |
+| 011 | Bootstrap Composition Root | Integration | Ready | ADR-0002 |
 
 ## Definition of Done
 

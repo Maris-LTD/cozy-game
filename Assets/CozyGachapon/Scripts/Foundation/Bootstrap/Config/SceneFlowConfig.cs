@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CozyGachapon.Contracts;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ namespace CozyGachapon.Foundation
         [SerializeField] private AppTab _defaultTab = AppTab.Board;
         [SerializeField] private float _minAspect = 0.4286f;
         [SerializeField] private float _maxAspect = 0.5625f;
+        [SerializeField] private List<string> _welcomeOrder = new List<string>();
 
         public string BootSceneName => _bootSceneName;
         public string GameSceneName => _gameSceneName;
@@ -21,6 +23,7 @@ namespace CozyGachapon.Foundation
         public AppTab DefaultTab => _defaultTab;
         public float MinAspect => _minAspect;
         public float MaxAspect => _maxAspect;
+        public IReadOnlyList<string> WelcomeOrder => _welcomeOrder;
 
         public bool HasValidAspectRange =>
             _referenceWidth > 0f
@@ -33,6 +36,20 @@ namespace CozyGachapon.Foundation
         {
             _minAspect = minAspect;
             _maxAspect = maxAspect;
+        }
+
+        public void SetWelcomeOrderForTest(IReadOnlyList<string> order)
+        {
+            _welcomeOrder.Clear();
+            if (order == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < order.Count; i++)
+            {
+                _welcomeOrder.Add(order[i]);
+            }
         }
     }
 }
