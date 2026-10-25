@@ -28,15 +28,33 @@ namespace CozyGachapon.Pooling
                 return default;
             }
 
-            if (!record.TryPopFree(out int slot))
+            if (record.TryPopFree(out int slot))
+            {
+                return Deliver(record, slot, false);
+            }
+
+            if (!record.Exhaustion.TryReclaim(record, out slot))
             {
                 return default;
             }
 
+            return Deliver(record, slot, true);
+        }
+
+        private static PoolLease Deliver(PoolRecord record, int slot, bool recycled)
+        {
             GameObject instance = record.GetInstance(slot);
             instance.SetActive(true);
             long sequence = record.MarkAcquired(slot);
-            record.Counters.OnAcquired();
+            if (recycled)
+            {
+                record.Counters.AddRecycled();
+            }
+            else
+            {
+                record.Counters.OnAcquired();
+            }
+
             if (record.Hooks != null)
             {
                 record.Hooks.OnAcquire(instance);

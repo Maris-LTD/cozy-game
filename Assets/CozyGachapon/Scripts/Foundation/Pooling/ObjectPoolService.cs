@@ -12,6 +12,8 @@ namespace CozyGachapon.Pooling
         private readonly PoolRegistry _registry = new PoolRegistry();
         private readonly PoolGetHandler _getHandler;
         private readonly PoolReleaseHandler _releaseHandler;
+        private readonly IExhaustionStrategy _fixedExhaustion;
+        private readonly IExhaustionStrategy _recycleExhaustion;
         private PoolInstanceTable _table;
         private PoolPrewarmer _prewarmer;
 
@@ -25,6 +27,8 @@ namespace CozyGachapon.Pooling
             _sink = sink;
             _getHandler = new PoolGetHandler(_registry, sink);
             _releaseHandler = new PoolReleaseHandler(_registry, sink);
+            _fixedExhaustion = new FixedExhaustionPolicy(sink);
+            _recycleExhaustion = new RecycleOldestPolicy(sink);
             Phase = PoolServicePhase.Accepting;
         }
 
@@ -51,7 +55,7 @@ namespace CozyGachapon.Pooling
                 return PoolRegistrationResult.Reject(error);
             }
 
-            _registry.Add(new PoolRecord(id, definition, capacity, hooks));
+            _registry.Add(new PoolRecord(id, definition, capacity, hooks, SelectExhaustion(definition.Policy)));
             return PoolRegistrationResult.Accept(capacity);
         }
 
@@ -152,6 +156,11 @@ namespace CozyGachapon.Pooling
         public void SetPhaseForTest(PoolServicePhase phase)
         {
             Phase = phase;
+        }
+
+        private IExhaustionStrategy SelectExhaustion(PoolExhaustionPolicy policy)
+        {
+            return policy == PoolExhaustionPolicy.RecycleOldest ? _recycleExhaustion : _fixedExhaustion;
         }
 
         private void FailPrewarm(PoolDiagnosticCode code)

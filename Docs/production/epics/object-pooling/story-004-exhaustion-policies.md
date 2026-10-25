@@ -1,7 +1,7 @@
 # Story 004: Exhaustion Policies (Fixed / RecycleOldest)
 
 > **Epic**: Object Pooling
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1 day
@@ -34,11 +34,11 @@
 
 *From Docs/design/gdd/object-pooling.md, scoped to this story:*
 
-- [ ] `AC-16 [EditMode]` **GIVEN** pool Fixed có `capacity` = `C` và `C` đối tượng đang mượn, **WHEN** Get, **THEN** trả rỗng, `exhausted` +1, `created` vẫn = `C`, lần cạn đầu ghi đúng một cảnh báo Editor và các lần cạn sau trong phiên không ghi thêm.
-- [ ] `AC-17 [EditMode]` **GIVEN** pool RecycleOldest `capacity` = `C` đã mượn đủ với seq 1…`C`, **WHEN** Get hai lần, **THEN** lần 1 trả đối tượng seq 1 và lần 2 trả đối tượng seq 2; với mỗi lần, hook trả về (lý do `Recycled`) của chủ cũ được gọi trước hook lấy ra của chủ mới; `recycled` +2; `created` vẫn = `C`.
-- [ ] `AC-18 [EditMode]` **GIVEN** pool RecycleOldest `capacity` = `C` mượn đủ, rồi trả đối tượng seq 3 và mượn lại (seq `C`+1), **WHEN** Get ba lần, **THEN** victim lần lượt là seq 1, 2, 4.
-- [ ] `AC-19 [EditMode]` **GIVEN** pool RecycleOldest `capacity` = 1 đang mượn, **WHEN** Get 3 lần, **THEN** cả ba trả cùng một đối tượng với seq tăng dần, `recycled` +3.
-- [ ] `AC-20 [EditMode]` **GIVEN** đối tượng A bị tái chế cho chủ mới, **WHEN** chủ cũ Release bằng phiếu cũ của A, **THEN** bị bỏ qua, `staleRelease` +1, A vẫn đang mượn và vẫn hiển thị cho chủ mới.
+- [x] `AC-16 [EditMode]` **GIVEN** pool Fixed có `capacity` = `C` và `C` đối tượng đang mượn, **WHEN** Get, **THEN** trả rỗng, `exhausted` +1, `created` vẫn = `C`, lần cạn đầu ghi đúng một cảnh báo Editor và các lần cạn sau trong phiên không ghi thêm.
+- [x] `AC-17 [EditMode]` **GIVEN** pool RecycleOldest `capacity` = `C` đã mượn đủ với seq 1…`C`, **WHEN** Get hai lần, **THEN** lần 1 trả đối tượng seq 1 và lần 2 trả đối tượng seq 2; với mỗi lần, hook trả về (lý do `Recycled`) của chủ cũ được gọi trước hook lấy ra của chủ mới; `recycled` +2; `created` vẫn = `C`.
+- [x] `AC-18 [EditMode]` **GIVEN** pool RecycleOldest `capacity` = `C` mượn đủ, rồi trả đối tượng seq 3 và mượn lại (seq `C`+1), **WHEN** Get ba lần, **THEN** victim lần lượt là seq 1, 2, 4.
+- [x] `AC-19 [EditMode]` **GIVEN** pool RecycleOldest `capacity` = 1 đang mượn, **WHEN** Get 3 lần, **THEN** cả ba trả cùng một đối tượng với seq tăng dần, `recycled` +3.
+- [x] `AC-20 [EditMode]` **GIVEN** đối tượng A bị tái chế cho chủ mới, **WHEN** chủ cũ Release bằng phiếu cũ của A, **THEN** bị bỏ qua, `staleRelease` +1, A vẫn đang mượn và vẫn hiển thị cho chủ mới.
 
 ## Implementation Notes
 
@@ -93,9 +93,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Pooling/PoolExhaustionTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `PoolExhaustionTests.cs`, `PoolRecycleTests.cs` (EditMode 232/232)
 
 ## Dependencies
 
 - Depends on: Story 003
 - Unlocks: Story 005
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 5/5 passing (AC-16..AC-20 covered by EditMode tests)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 232/232); smoke PASS in workflow run (0 console errors)
+**Run result**: N/A - pure pooling logic, no pool registered in MainGame yet
+**Deviations**: ADVISORY - first Fixed exhaustion is reported as a sink WARNING per the story/GDD (ADR-0003 text says error); policies behind internal `IExhaustionStrategy` (`FixedExhaustionPolicy`, `RecycleOldestPolicy`) with shared `ExhaustionReporter`; stale release after recycle reuses the Story 003 stale path
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Pooling/PoolExhaustionTests.cs`, `PoolRecycleTests.cs` (+ `RecordedHookCall.cs`), passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 1 minor (duplicated count-and-warn) fixed via `ExhaustionReporter`; workflow "needs-attention" only for the 3 pre-existing Unity noise files; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

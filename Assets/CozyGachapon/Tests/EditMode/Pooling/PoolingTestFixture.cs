@@ -104,10 +104,15 @@ namespace CozyGachapon.Tests.Pooling
 
         protected ObjectPoolService CreateReadyService(IPoolHooks hooks, params int[] capacities)
         {
+            return CreateReadyPolicyService(PoolExhaustionPolicy.Fixed, hooks, capacities);
+        }
+
+        protected ObjectPoolService CreateReadyPolicyService(PoolExhaustionPolicy policy, IPoolHooks hooks, params int[] capacities)
+        {
             List<PoolDefinition> definitions = new List<PoolDefinition>();
             for (int i = 0; i < capacities.Length; i++)
             {
-                definitions.Add(new PoolDefinition(PoolId(i), CreateVisualPrefab(PoolId(i), 2), PoolExhaustionPolicy.Fixed, 0));
+                definitions.Add(new PoolDefinition(PoolId(i), CreateVisualPrefab(PoolId(i), 2), policy, 0));
             }
 
             Config.SetPoolsForTest(definitions);

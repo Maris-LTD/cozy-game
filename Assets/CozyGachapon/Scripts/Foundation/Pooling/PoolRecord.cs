@@ -19,13 +19,15 @@ namespace CozyGachapon.Pooling
         public long AcquireSeq { get; private set; }
         public IPoolHooks Hooks { get; }
         public PoolCounters Counters { get; }
+        public IExhaustionStrategy Exhaustion { get; }
 
-        public PoolRecord(string id, PoolDefinition definition, int capacity, IPoolHooks hooks)
+        public PoolRecord(string id, PoolDefinition definition, int capacity, IPoolHooks hooks, IExhaustionStrategy exhaustion)
         {
             Id = id;
             Definition = definition;
             Capacity = capacity;
             Hooks = hooks;
+            Exhaustion = exhaustion;
             Created = 0;
             Counters = new PoolCounters();
             _instances = new GameObject[capacity];
@@ -107,6 +109,22 @@ namespace CozyGachapon.Pooling
             _inUse[slot] = false;
         }
 
+        public bool TryFindOldestInUse(out int slot)
+        {
+            slot = -1;
+            long oldest = long.MaxValue;
+            for (int i = 0; i < Created; i++)
+            {
+                if (_inUse[i] && _sequences[i] < oldest)
+                {
+                    oldest = _sequences[i];
+                    slot = i;
+                }
+            }
+
+            return slot >= 0;
+        }
+
         public PoolStats ToStats()
         {
             return new PoolStats(
@@ -114,8 +132,8 @@ namespace CozyGachapon.Pooling
                 Created,
                 Counters.InUse,
                 Counters.PeakInUse,
-                0,
-                0,
+                Counters.Exhausted,
+                Counters.Recycled,
                 Counters.DoubleRelease,
                 Counters.StaleRelease,
                 Counters.ForeignRelease,

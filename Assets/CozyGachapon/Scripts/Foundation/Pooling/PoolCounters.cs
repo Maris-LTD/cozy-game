@@ -7,6 +7,9 @@ namespace CozyGachapon.Pooling
         public int DoubleRelease { get; private set; }
         public int StaleRelease { get; private set; }
         public int ForeignRelease { get; private set; }
+        public int Exhausted { get; private set; }
+        public int Recycled { get; private set; }
+        public bool HasWarnedExhausted { get; private set; }
 
         public void OnAcquired()
         {
@@ -35,6 +38,23 @@ namespace CozyGachapon.Pooling
         public void AddForeignRelease()
         {
             ForeignRelease++;
+        }
+
+        public bool AddExhausted()
+        {
+            Exhausted++;
+            if (HasWarnedExhausted)
+            {
+                return false;
+            }
+
+            HasWarnedExhausted = true;
+            return true;
+        }
+
+        public void AddRecycled()
+        {
+            Recycled++;
         }
     }
 }
