@@ -52,6 +52,11 @@ namespace CozyGachapon.Audio
                 return false;
             }
 
+            if (backend != null && config != null && repository != null)
+            {
+                backend.Allocate();
+            }
+
             if (!AudioServiceInputValidator.HasValidInputs(config, repository, backend, clock, sink, random, settingsStore))
             {
                 if (sink != null)

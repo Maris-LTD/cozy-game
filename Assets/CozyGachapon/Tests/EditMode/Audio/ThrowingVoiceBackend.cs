@@ -9,6 +9,10 @@ namespace CozyGachapon.Tests.Audio
         public int VoiceCount => throw new InvalidOperationException();
         public bool SupportsPan => false;
 
+        public void Allocate()
+        {
+        }
+
         public void Start(int voice, AudioClip clip, float volume, float pitch, float pan, bool loop)
         {
         }

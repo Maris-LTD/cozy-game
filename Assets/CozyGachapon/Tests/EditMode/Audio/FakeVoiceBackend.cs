@@ -18,6 +18,10 @@ namespace CozyGachapon.Tests.Audio
 
         public int VoiceCount { get; private set; }
         public bool SupportsPan { get; private set; } = true;
+
+        public void Allocate()
+        {
+        }
         public int StartCount { get; private set; }
         public int StopCount { get; private set; }
         public int SetVolumeCount { get; private set; }

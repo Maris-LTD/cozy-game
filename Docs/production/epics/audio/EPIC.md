@@ -3,7 +3,7 @@
 > **Layer**: Foundation
 > **GDD**: Docs/design/gdd/audio.md
 > **Code area**: Assets/CozyGachapon/Scripts/Foundation/Audio/
-> **Status**: In Progress
+> **Status**: Complete
 > **Stories**: 12 — see table
 
 ## Overview
@@ -50,7 +50,7 @@ This epic is complete when:
 | 009 | Ad Mute Reason & Reason Stacking | Logic | Complete | ADR-0004 |
 | 010 | `audio.service` Boot Step & Failed State | Logic | Complete | ADR-0004, ADR-0002 |
 | 011 | WebGL Audio Unlock & Music Start | Logic | Complete | ADR-0004, ADR-0002 |
-| 012 | Unity Voice Backend & Bootstrap Wiring | Integration | Ready | ADR-0004, ADR-0002 |
+| 012 | Unity Voice Backend & Bootstrap Wiring | Integration | Complete | ADR-0004, ADR-0002 |
 
 ## Deferred acceptance criteria
 

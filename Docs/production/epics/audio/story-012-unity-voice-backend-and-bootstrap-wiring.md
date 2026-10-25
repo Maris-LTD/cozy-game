@@ -1,7 +1,7 @@
 # Story 012: Unity Voice Backend & Bootstrap Wiring
 
 > **Epic**: Audio
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: 2 days
@@ -35,7 +35,7 @@
 
 *From Docs/design/gdd/audio.md, scoped to this story:*
 
-- [ ] `AC-36 [Play mode]` **GIVEN** backend thật trong Play mode, **WHEN** `Play` trả Played, **THEN** nguồn phát tương ứng báo đang phát trong cùng khung (trễ ≤ `T.requestToStartMaxFrames` khung).
+- [x] `AC-36 [Play mode]` **GIVEN** backend thật trong Play mode, **WHEN** `Play` trả Played, **THEN** nguồn phát tương ứng báo đang phát trong cùng khung (trễ ≤ `T.requestToStartMaxFrames` khung).
 
 ## Implementation Notes
 
@@ -69,9 +69,20 @@
 **Story Type**: Integration
 **Required evidence**: một EditMode/PlayMode test, hoặc playtest note `Docs/production/qa/evidence/audio/story-012-unity-voice-backend-and-bootstrap-wiring/playtest.md`; `unity-harness smoke` pass
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `UnityVoiceBackendTests.cs`, `AudioWiringTests.cs` (EditMode 634/634) + `Docs/production/qa/evidence/audio-story-012-unity-voice-backend/playtest.md` (Play mode AC-36)
 
 ## Dependencies
 
 - Depends on: Story 006, Story 010, Story 011
 - Unlocks: None
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 1/1 passing (AC-36 verified in Play mode: Played -> AudioSource.isPlaying in the same frame, 16 sources on AudioVoices)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 634/634); smoke PASS (MainGame, 0 console errors)
+**Run result**: OBSERVED - Play mode eval: `played=True voice=1 isPlayingSameFrame=True clip=tok voiceCount=16 sourcesOnContainer=16`, console clean (playtest.md)
+**Deviations**: ADVISORY - wiring lives in `AudioWiring` (Scripts/Bootstrap) called by `BootstrapController`, which exposes `Audio` (IAudioService) and `AudioVoices` read-only; cues listed in new `AudioCueLibrary.asset`; `IVoiceBackend.Allocate()` added and called by `AudioService.Initialize` so sources are created only inside `audio.service` Run; `UnityVoiceBackend` always sets pitch (neutral 1 when <= 0); MainGame gains `AudioVoices` + 3 serialized refs, edited only through the Editor and saved clean
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/UnityVoiceBackendTests.cs`, `Assets/CozyGachapon/Tests/EditMode/Bootstrap/AudioWiringTests.cs`, playtest.md
+**Visual sign-off**: n/a (Integration)
+**Code Review**: unity-dev review, 2 minor fixed (stale pitch on reused voice; VoiceCount getter allocating sources); workflow "needs-attention" items were the expected blank smoke frame (no gameplay UI yet) and the intended scene diff; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none in scope (AC-25/33/34/35 deferred per EPIC)

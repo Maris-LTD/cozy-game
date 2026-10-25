@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b891d52b87e868343ab1954f810ef1dd, type: 3}
+  m_Name: AudioCueLibrary
+  m_EditorClassIdentifier: CozyGachapon.Foundation::CozyGachapon.Audio.AudioCueLibrary
+  _cues:
+  - {fileID: 11400000, guid: fe3a52e07e1c640428d1b9ecf4a90daf, type: 2}
+  - {fileID: 11400000, guid: 6a8d111fac3dedf4b9ce2538701ec1aa, type: 2}
+  - {fileID: 11400000, guid: c3f81b7787cf8214e88a863c36817152, type: 2}
+  - {fileID: 11400000, guid: 4704699b0ad3246488957a82be77a047, type: 2}
+  - {fileID: 11400000, guid: b580b1e232be1ae44aa8bc352b8e05b1, type: 2}
+  - {fileID: 11400000, guid: a635ba4ec6f803c4fbfaed4d04fff432, type: 2}
+  - {fileID: 11400000, guid: a5153773560b75a4199033539b7931ff, type: 2}
+  - {fileID: 11400000, guid: 08b927b2047eca24eadab665624f2b73, type: 2}
+  - {fileID: 11400000, guid: 4560134b76e683a4b91b6014e0a5b852, type: 2}
+  - {fileID: 11400000, guid: 1776c45ac1789e446a1da69e3c759718, type: 2}
+  - {fileID: 11400000, guid: b335d7a763778414e89e04102235b995, type: 2}
+  - {fileID: 11400000, guid: e21e7f1c1e0a8b942b3b795824fa2459, type: 2}
+  - {fileID: 11400000, guid: ec8e85478bfe13148a161004f87a2b96, type: 2}
+  - {fileID: 11400000, guid: 177a9ff7768fde646b67734929a2dd39, type: 2}
+  - {fileID: 11400000, guid: 91e9d1fd529c34a42a77dee053df88d0, type: 2}
+  - {fileID: 11400000, guid: dd9403ef6573476438495339d2a2da05, type: 2}
+  - {fileID: 11400000, guid: 00512fc583552554990424b47c150226, type: 2}
+  - {fileID: 11400000, guid: b884473369712fa49b3a0f2fa69364e3, type: 2}

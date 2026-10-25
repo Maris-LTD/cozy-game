@@ -7,6 +7,8 @@ namespace CozyGachapon.Audio
         int VoiceCount { get; }
         bool SupportsPan { get; }
 
+        void Allocate();
+
         void Start(int voice, AudioClip clip, float volume, float pitch, float pan, bool loop);
         void Stop(int voice);
         void Pause(int voice);

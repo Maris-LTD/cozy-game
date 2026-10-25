@@ -1,3 +1,5 @@
+using System;
+using CozyGachapon.Audio;
 using CozyGachapon.Contracts;
 using CozyGachapon.Foundation;
 using CozyGachapon.Pooling;
@@ -18,11 +20,17 @@ namespace CozyGachapon
         [SerializeField] private EventSystemUiHitTester _uiHitTester;
         [SerializeField] private PoolingConfig _poolingConfig;
         [SerializeField] private Transform _poolContainer;
+        [SerializeField] private AudioConfig _audioConfig;
+        [SerializeField] private AudioCueLibrary _audioCueLibrary;
+        [SerializeField] private Transform _audioVoiceContainer;
         [SerializeField] private bool _failFirstBootForTest;
 
         private PoolingBootModule _pooling;
+        private AudioWiring _audio;
 
         public BootstrapGraph Graph { get; private set; }
+        public IAudioService Audio { get; private set; }
+        public UnityVoiceBackend AudioVoices { get; private set; }
 
         private void Awake()
         {
@@ -52,6 +60,7 @@ namespace CozyGachapon
             _view.Bind(Graph.Curtain, Graph.Viewport, _bootConfig.ErrorPanelFadeSeconds);
             InitializeAdapters();
             RegisterPoolingSteps();
+            RegisterAudioSteps();
             RegisterDebugSteps();
         }
 
@@ -60,6 +69,15 @@ namespace CozyGachapon
             Graph.SetScreenSize(Screen.width, Screen.height);
             _pooling.Tick();
             Graph.Tick(Time.unscaledDeltaTime);
+            _audio.Tick();
+        }
+
+        private void OnDestroy()
+        {
+            if (_audio != null)
+            {
+                _audio.Dispose();
+            }
         }
 
         private void InitializeAdapters()
@@ -84,6 +102,21 @@ namespace CozyGachapon
         {
             _pooling = new PoolingBootModule(_poolingConfig, _poolContainer, new PoolDiagnosticsRecorder(), _bootConfig.TargetFps);
             _pooling.RegisterSteps(Graph.RegisterStep);
+        }
+
+        private void RegisterAudioSteps()
+        {
+            AudioPlatformPolicy policy = new AudioPlatformPolicy(Application.platform == RuntimePlatform.WebGLPlayer);
+            _audio = new AudioWiring(
+                _audioConfig,
+                _audioCueLibrary,
+                _audioVoiceContainer,
+                new PlayerPrefsAudioSettingsStore(),
+                new SystemAudioRandom(Environment.TickCount),
+                policy);
+            _audio.Register(Graph);
+            Audio = _audio.Service;
+            AudioVoices = _audio.Voices;
         }
 
         private void RegisterDebugSteps()
