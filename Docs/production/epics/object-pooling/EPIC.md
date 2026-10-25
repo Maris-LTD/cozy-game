@@ -3,7 +3,7 @@
 > **Layer**: Foundation
 > **GDD**: Docs/design/gdd/object-pooling.md
 > **Code area**: Assets/CozyGachapon/Scripts/Foundation/Pooling/
-> **Status**: In Progress
+> **Status**: Complete
 > **Stories**: 6 — see table
 
 ## Overview
@@ -44,7 +44,7 @@ This epic is complete when:
 | 003 | Lease Get / Release Guards | Logic | Complete | ADR-0003 |
 | 004 | Exhaustion Policies (Fixed / RecycleOldest) | Logic | Complete | ADR-0003 |
 | 005 | Diagnostics, Zero-GC & Robustness | Logic | Complete | ADR-0003 |
-| 006 | Session Reset & Namespace Boundary | Logic | Ready | ADR-0003 |
+| 006 | Session Reset & Namespace Boundary | Logic | Complete | ADR-0003 |
 
 Deferred to other epics: AC-10, AC-25 [Perf] (device profiling); AC-26, AC-29, AC-33 (Plinko Board); AC-27, AC-34 (Feedback & Juice); AC-28 (real MVP pool prefabs).
 

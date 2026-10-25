@@ -15,14 +15,13 @@ namespace CozyGachapon.Pooling
         public bool HasFailed { get; private set; }
         public int LastStepCreated { get; private set; }
 
-        public PoolPrewarmer(PoolRegistry registry, PoolInstanceTable table, Transform root, int perFrame)
+        public PoolPrewarmer(PoolRegistry registry, PoolInstanceTable table, PoolContainer factory, Transform root, int perFrame)
         {
             _registry = registry;
             _table = table;
             _perFrame = PrewarmBudget.EffectivePerFrame(perFrame);
             _containers = new Transform[registry.Count];
 
-            PoolContainer factory = new PoolContainer();
             for (int i = 0; i < _containers.Length; i++)
             {
                 _containers[i] = factory.Create(root, registry.GetAt(i).Id);

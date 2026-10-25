@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CozyGachapon.Contracts;
 using UnityEngine;
@@ -7,8 +8,6 @@ namespace CozyGachapon.Pooling
     public sealed class PoolingPrewarmBootStep : IBootStep
     {
         public const string StepId = "pooling.prewarm";
-
-        private static readonly string[] NoDependencies = new string[0];
 
         private readonly PoolingServiceBootStep _serviceStep;
         private readonly PoolingConfig _config;
@@ -21,10 +20,12 @@ namespace CozyGachapon.Pooling
 
         public string Id => StepId;
         public BootPhase Phase => BootPhase.Prewarm;
-        public IReadOnlyList<string> RunsAfter => NoDependencies;
+        public IReadOnlyList<string> RunsAfter => Array.Empty<string>();
         public bool IsCritical => true;
-        public bool IsDone => _service != null && _service.Phase == PoolServicePhase.Ready;
-        public bool IsFailed => _hasFailedToStart || (_service != null && _service.HasPrewarmFailed);
+        public bool IsDone => CurrentService != null && CurrentService.Phase == PoolServicePhase.Ready;
+        public bool IsFailed => _hasFailedToStart || (CurrentService != null && CurrentService.HasPrewarmFailed);
+
+        private ObjectPoolService CurrentService => _service != null && _service == _serviceStep.Service ? _service : null;
 
         public PoolingPrewarmBootStep(
             PoolingServiceBootStep serviceStep,
@@ -58,9 +59,10 @@ namespace CozyGachapon.Pooling
 
         public void Pump()
         {
-            if (_service != null && _service.Phase == PoolServicePhase.Prewarming)
+            ObjectPoolService service = CurrentService;
+            if (service != null && service.Phase == PoolServicePhase.Prewarming)
             {
-                _service.StepPrewarm();
+                service.StepPrewarm();
             }
         }
 

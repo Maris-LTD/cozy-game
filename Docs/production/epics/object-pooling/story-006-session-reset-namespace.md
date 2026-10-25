@@ -1,7 +1,7 @@
 # Story 006: Session Reset & Namespace Boundary
 
 > **Epic**: Object Pooling
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 1 day
@@ -34,8 +34,8 @@
 
 *From Docs/design/gdd/object-pooling.md, scoped to this story:*
 
-- [ ] `AC-31 [EditMode]` **GIVEN** ba ca của phiên cũ — dịch vụ ở Accepting với `plinko.coin` đã đăng ký; ở Prewarming sau một bước prewarm; ở Ready với `plinko.coin` có đối tượng đang mượn và `exhausted` > 0 — **WHEN** mô phỏng nạp lại scene (huỷ dịch vụ cùng mọi đối tượng pool, rồi chạy lại `Run()` của `pooling.service`) và đăng ký lại `plinko.coin` với cùng tham số, **THEN** ở cả ba ca: dịch vụ mới ở Accepting, đăng ký trả thành công, không có lỗi Editor "trùng `id`", trước prewarm `created` = 0 và mọi bộ đếm R9 khác (`inUse`, `peakInUse`, `exhausted`, `recycled`, `doubleRelease`, `staleRelease`, `foreignRelease`, `lost`) = 0; sau prewarm `created` = `capacity` và Get đầu tiên mang `acquire_seq` = 1; hook *trả về* của phiên cũ được gọi 0 lần.
-- [ ] `AC-32 [EditMode]` **GIVEN** tập kiểu Pooling theo R8.5 — mọi kiểu (kể cả kiểu lồng, kiểu generic) có `Type.Namespace` bằng `CozyGachapon.Pooling` hoặc bắt đầu bằng `CozyGachapon.Pooling.`, lấy từ assembly chứa kiểu dịch vụ Pooling (hiện `CozyGachapon.Runtime`; asmdef Pooling riêng nếu ADR D1 tách), bỏ qua kiểu mang `[CompilerGenerated]` (lớp cache lambda `<>c` với field `<>9`, `<>9__N_M`; lớp closure `<>c__DisplayClass…`) và field mang `[CompilerGenerated]`, **trừ** backing field của auto-property static (`<…>k__BackingField`) và của event static dạng field — hai loại này vẫn bị kiểm; tập có ≥ 1 kiểu, **WHEN** duyệt bằng reflection field của từng kiểu với `BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly`, **THEN** mọi field là `const` (`FieldInfo.IsLiteral`) hoặc `static readonly` (`FieldInfo.IsInitOnly`) có `FieldType` thuộc danh sách cho phép — kiểu số nguyên thủy, `bool`, `char`, `string`, enum, `Unity.Profiling.ProfilerMarker` — và số field còn lại = 0; test in tên kiểu + tên field của từng vi phạm. Không có trạng thái Pooling nào sống qua lần nạp lại scene khi domain không reload (R8.5).
+- [x] `AC-31 [EditMode]` **GIVEN** ba ca của phiên cũ — dịch vụ ở Accepting với `plinko.coin` đã đăng ký; ở Prewarming sau một bước prewarm; ở Ready với `plinko.coin` có đối tượng đang mượn và `exhausted` > 0 — **WHEN** mô phỏng nạp lại scene (huỷ dịch vụ cùng mọi đối tượng pool, rồi chạy lại `Run()` của `pooling.service`) và đăng ký lại `plinko.coin` với cùng tham số, **THEN** ở cả ba ca: dịch vụ mới ở Accepting, đăng ký trả thành công, không có lỗi Editor "trùng `id`", trước prewarm `created` = 0 và mọi bộ đếm R9 khác (`inUse`, `peakInUse`, `exhausted`, `recycled`, `doubleRelease`, `staleRelease`, `foreignRelease`, `lost`) = 0; sau prewarm `created` = `capacity` và Get đầu tiên mang `acquire_seq` = 1; hook *trả về* của phiên cũ được gọi 0 lần.
+- [x] `AC-32 [EditMode]` **GIVEN** tập kiểu Pooling theo R8.5 — mọi kiểu (kể cả kiểu lồng, kiểu generic) có `Type.Namespace` bằng `CozyGachapon.Pooling` hoặc bắt đầu bằng `CozyGachapon.Pooling.`, lấy từ assembly chứa kiểu dịch vụ Pooling (hiện `CozyGachapon.Runtime`; asmdef Pooling riêng nếu ADR D1 tách), bỏ qua kiểu mang `[CompilerGenerated]` (lớp cache lambda `<>c` với field `<>9`, `<>9__N_M`; lớp closure `<>c__DisplayClass…`) và field mang `[CompilerGenerated]`, **trừ** backing field của auto-property static (`<…>k__BackingField`) và của event static dạng field — hai loại này vẫn bị kiểm; tập có ≥ 1 kiểu, **WHEN** duyệt bằng reflection field của từng kiểu với `BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly`, **THEN** mọi field là `const` (`FieldInfo.IsLiteral`) hoặc `static readonly` (`FieldInfo.IsInitOnly`) có `FieldType` thuộc danh sách cho phép — kiểu số nguyên thủy, `bool`, `char`, `string`, enum, `Unity.Profiling.ProfilerMarker` — và số field còn lại = 0; test in tên kiểu + tên field của từng vi phạm. Không có trạng thái Pooling nào sống qua lần nạp lại scene khi domain không reload (R8.5).
 
 ## Implementation Notes
 
@@ -76,9 +76,26 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Pooling/PoolSessionResetTests.cs`, `PoolNamespaceBoundaryTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: `Assets/CozyGachapon/Tests/EditMode/Pooling/PoolSessionResetTests.cs`, `PoolSessionResetEdgeTests.cs`, `PoolNamespaceBoundaryTests.cs` (checker: `PoolStaticFieldChecker.cs`, control fakes: `PoolStaticFieldFakes.cs`) — pending `unity-harness tests` run
+
+## Completion Notes
+
+- AC-32 lấy assembly bằng `typeof(ObjectPoolService).Assembly` = `CozyGachapon.Foundation` (chữ AC ghi `CozyGachapon.Runtime`); GDD cần cập nhật tên asmdef.
+- Sửa vi phạm AC-32 có sẵn: bỏ `static readonly string[] NoDependencies` ở `PoolingServiceBootStep` và `PoolingPrewarmBootStep`, thay bằng `Array.Empty<string>()`.
+- Thêm `PoolSession` (dịch vụ + container, `Teardown()` idempotent không gọi hook trả về), `PoolObjectDisposer` (điểm hủy duy nhất theo scene), `ObjectPoolService.Shutdown()`/`IsShutDown`, `PoolContainer.DestroyAll()`; `PoolingServiceBootStep.Run()` teardown phiên trước rồi tạo phiên mới.
 
 ## Dependencies
 
 - Depends on: Story 005
 - Unlocks: Plinko Board và Feedback & Juice epics (các AC tích hợp AC-26, AC-27, AC-28, AC-29, AC-33, AC-34), đợt perf (AC-10, AC-25)
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 2/2 passing (AC-31, AC-32 incl. control cases)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 272/272); smoke PASS (MainGame, 0 console errors)
+**Run result**: OBSERVED - smoke boots MainGame through the new per-Run `PoolSession` with 0 console errors
+**Deviations**: ADVISORY - Pooling types live in assembly `CozyGachapon.Foundation` (GDD AC-32 text says `CozyGachapon.Runtime`; GDD should be updated); test takes it via `typeof(ObjectPoolService).Assembly`; two existing violations fixed (`static readonly string[] NoDependencies` in both boot steps replaced by `Array.Empty<string>()`); `PoolSession` + `PoolObjectDisposer` own teardown (destroy without return hooks); prewarm step ignores a superseded session (review fix)
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Pooling/PoolSessionResetTests.cs`, `PoolSessionResetEdgeTests.cs`, `PoolNamespaceBoundaryTests.cs` (+ `PoolSessionTestBase.cs`, `PoolStaticFieldChecker.cs`, `PoolStaticFieldFakes.cs`), passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 1 minor (prewarm step cached a stale service after a second service Run) fixed with test `PrewarmStep_AfterServiceStepRunsAgain_DoesNotReportOldSessionAsDone`; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CozyGachapon.Contracts;
 
@@ -7,18 +8,17 @@ namespace CozyGachapon.Pooling
     {
         public const string StepId = "pooling.service";
 
-        private static readonly string[] NoDependencies = new string[0];
-
         private readonly PoolingConfig _config;
         private readonly IPoolDiagnosticsSink _sink;
 
         public string Id => StepId;
         public BootPhase Phase => BootPhase.ServiceInit;
-        public IReadOnlyList<string> RunsAfter => NoDependencies;
+        public IReadOnlyList<string> RunsAfter => Array.Empty<string>();
         public bool IsCritical => true;
         public bool IsDone { get; private set; }
         public bool IsFailed { get; private set; }
-        public ObjectPoolService Service { get; private set; }
+        public PoolSession Session { get; private set; }
+        public ObjectPoolService Service => Session != null ? Session.Service : null;
 
         public PoolingServiceBootStep(PoolingConfig config, IPoolDiagnosticsSink sink)
         {
@@ -34,7 +34,12 @@ namespace CozyGachapon.Pooling
                 return;
             }
 
-            Service = new ObjectPoolService(_config, _sink);
+            if (Session != null)
+            {
+                Session.Teardown();
+            }
+
+            Session = new PoolSession(_config, _sink);
             IsDone = true;
         }
     }

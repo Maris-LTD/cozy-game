@@ -8,6 +8,7 @@ namespace CozyGachapon.Pooling
     {
         public PoolingServiceBootStep ServiceStep { get; }
         public PoolingPrewarmBootStep PrewarmStep { get; }
+        public PoolSession Session => ServiceStep.Session;
         public ObjectPoolService Service => ServiceStep.Service;
 
         public PoolingBootModule(PoolingConfig config, Transform root, IPoolDiagnosticsSink sink, int targetFps)

@@ -170,6 +170,22 @@ namespace CozyGachapon.Tests.Pooling
         }
 
         [Test]
+        public void PrewarmStep_AfterServiceStepRunsAgain_DoesNotReportOldSessionAsDone()
+        {
+            ConfigurePools(0, 10);
+            PoolingBootModule module = CreateModule(CreateRoot());
+            module.ServiceStep.Run();
+            module.PrewarmStep.Run();
+            Assert.IsTrue(module.PrewarmStep.IsDone);
+
+            module.ServiceStep.Run();
+
+            Assert.IsFalse(module.PrewarmStep.IsDone);
+            Assert.IsFalse(module.PrewarmStep.IsFailed);
+            Assert.AreEqual(PoolServicePhase.Accepting, module.Service.Phase);
+        }
+
+        [Test]
         public void PrewarmRun_BeforeServiceStepRan_FailsWithoutException()
         {
             ConfigurePools(0, 10);

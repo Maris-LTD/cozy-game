@@ -14,17 +14,25 @@ namespace CozyGachapon.Pooling
         private readonly PoolReleaseHandler _releaseHandler;
         private readonly IExhaustionStrategy _fixedExhaustion;
         private readonly IExhaustionStrategy _recycleExhaustion;
+        private readonly PoolContainer _containers;
         private PoolInstanceTable _table;
         private PoolPrewarmer _prewarmer;
 
         public PoolServicePhase Phase { get; private set; }
         public bool HasPrewarmFailed { get; private set; }
+        public bool IsShutDown { get; private set; }
         public int RegisteredCapacityTotal => _registry.TotalCapacity;
 
         public ObjectPoolService(PoolingConfig config, IPoolDiagnosticsSink sink)
+            : this(config, sink, new PoolContainer())
+        {
+        }
+
+        public ObjectPoolService(PoolingConfig config, IPoolDiagnosticsSink sink, PoolContainer containers)
         {
             _config = config;
             _sink = sink;
+            _containers = containers;
             _getHandler = new PoolGetHandler(_registry, sink, new PoolLostObjectGuard(sink));
             _releaseHandler = new PoolReleaseHandler(_registry, sink);
             _fixedExhaustion = new FixedExhaustionPolicy(sink);
@@ -39,6 +47,11 @@ namespace CozyGachapon.Pooling
 
         public PoolRegistrationResult Register(string id, int clientDeclaredMax, bool forbidRecycle, IPoolHooks hooks)
         {
+            if (IsShutDown)
+            {
+                return PoolRegistrationResult.Reject(PoolRegistrationError.WrongPhase);
+            }
+
             PoolRegistrationError error = PoolRegistrationValidator.Validate(
                 Phase,
                 id,
@@ -61,16 +74,31 @@ namespace CozyGachapon.Pooling
 
         public PoolLease Get(string poolId)
         {
+            if (IsShutDown)
+            {
+                return default;
+            }
+
             return _getHandler.Get(Phase, poolId);
         }
 
         public void Release(in PoolLease lease)
         {
+            if (IsShutDown)
+            {
+                return;
+            }
+
             _releaseHandler.Release(_table, lease.PoolId, lease);
         }
 
         public void Release(string poolId, in PoolLease lease)
         {
+            if (IsShutDown)
+            {
+                return;
+            }
+
             _releaseHandler.Release(_table, poolId, lease);
         }
 
@@ -88,7 +116,7 @@ namespace CozyGachapon.Pooling
 
         public void BeginPrewarm(Transform root)
         {
-            if (Phase != PoolServicePhase.Accepting)
+            if (IsShutDown || Phase != PoolServicePhase.Accepting)
             {
                 return;
             }
@@ -109,7 +137,7 @@ namespace CozyGachapon.Pooling
 
             try
             {
-                _prewarmer = new PoolPrewarmer(_registry, _table, root, PrewarmBudget.EffectivePerFrame(_config.PrewarmPerFrame));
+                _prewarmer = new PoolPrewarmer(_registry, _table, _containers, root, PrewarmBudget.EffectivePerFrame(_config.PrewarmPerFrame));
             }
             catch (Exception)
             {
@@ -119,7 +147,7 @@ namespace CozyGachapon.Pooling
 
         public void StepPrewarm()
         {
-            if (Phase != PoolServicePhase.Prewarming || HasPrewarmFailed || _prewarmer == null)
+            if (IsShutDown || Phase != PoolServicePhase.Prewarming || HasPrewarmFailed || _prewarmer == null)
             {
                 return;
             }
@@ -151,6 +179,25 @@ namespace CozyGachapon.Pooling
             }
 
             return buffer.Count;
+        }
+
+        public void Shutdown()
+        {
+            if (IsShutDown)
+            {
+                return;
+            }
+
+            IsShutDown = true;
+            _prewarmer = null;
+            for (int i = 0; i < _registry.Count; i++)
+            {
+                PoolRecord record = _registry.GetAt(i);
+                for (int slot = 0; slot < record.Created; slot++)
+                {
+                    PoolObjectDisposer.Dispose(record.GetInstance(slot));
+                }
+            }
         }
 
         public void SetPhaseForTest(PoolServicePhase phase)
