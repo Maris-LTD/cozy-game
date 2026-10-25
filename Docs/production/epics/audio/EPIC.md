@@ -4,7 +4,7 @@
 > **GDD**: Docs/design/gdd/audio.md
 > **Code area**: Assets/CozyGachapon/Scripts/Foundation/Audio/
 > **Status**: Ready
-> **Stories**: Not yet created — run `game-tasks audio`
+> **Stories**: 12 — see table
 
 ## Overview
 
@@ -35,6 +35,39 @@ This epic is complete when:
 - Visual/Feel and UI stories have screenshots kept in `Docs/production/qa/evidence/audio/` (Visual/Feel cần có sự xác nhận của người dùng trong `game-done`).
 - `unity-harness all` passes.
 
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | Audio Contracts, Config Assets, dB & Fade Math | Logic | Ready | ADR-0004, ADR-0001 |
+| 002 | Default Cue Table, Placeholder Clips & Config Validator | Logic | Ready | ADR-0004 |
+| 003 | Play Admission & Voice Pool Core | Logic | Ready | ADR-0004 |
+| 004 | Priority Voice Stealing & Instance Caps | Logic | Ready | ADR-0004 |
+| 005 | Storm Scenario & Diagnostics Counters | Logic | Ready | ADR-0004 |
+| 006 | Pentatonic Pitch, Clip Selection & Pan | Logic | Ready | ADR-0004 |
+| 007 | Bus Gain, Background Bus & User Volume | Logic | Ready | ADR-0004 |
+| 008 | Background Suspend, User Mute & Settings Persistence | Logic | Ready | ADR-0004, ADR-0002 |
+| 009 | Ad Mute Reason & Reason Stacking | Logic | Ready | ADR-0004 |
+| 010 | `audio.service` Boot Step & Failed State | Logic | Ready | ADR-0004, ADR-0002 |
+| 011 | WebGL Audio Unlock & Music Start | Logic | Ready | ADR-0004, ADR-0002 |
+| 012 | Unity Voice Backend & Bootstrap Wiring | Integration | Ready | ADR-0004, ADR-0002 |
+
+## Deferred acceptance criteria
+
+Các AC dưới đây không có story trong epic này vì cần đầu vào ngoài hoặc epic khác:
+
+- AC-20 [Play mode]: cần Feedback & Juice nối `TabChanged` và scene Plinko thật (epic Feedback & Juice, Plinko Board).
+- AC-25 [Play mode]: cần bản build WebGL chạy trên Chrome và Safari cùng bàn Plinko thật (đo thiết bị/trình duyệt, Platform Services / Plinko Board).
+- AC-33 [Perf]: cần scene Plinko thật và `ProfilerRecorder` 600 khung (ADR hiệu năng, Plinko Board); EditMode 0 cấp phát đã được bảo đảm bằng quy tắc trong từng story.
+- AC-34 [Perf]: cần thiết bị tham chiếu tầm trung và bàn Plinko bão hòa (ADR hiệu năng, Plinko Board).
+- AC-35 [Perf]: cần build report WebGL và clip âm thanh thật (ADR build/web, asset thật).
+- AC-37 [Screenshot]: icon loa ở header thuộc HUD & Tab Navigation.
+- AC-38 [Screenshot] (Alpha): màn Settings thuộc Settings & Accessibility.
+- AC-39 [Play mode]: playtest cảm nhận "êm tai" cần người chơi và asset âm thanh thật.
+- AC-40 [Play mode]: playtest Tab 2 cần người chơi, Feedback & Juice và asset thật.
+
+Mọi AC còn lại của GDD (AC-1…AC-19, AC-21…AC-24, AC-26…AC-32, AC-36, AC-41…AC-43) có story trong bảng trên.
+
 ## Next Step
 
-Run `game-tasks audio` to break this epic into implementable stories.
+Run `game-readiness` on story 001, then `game-dev`.
