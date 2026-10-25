@@ -8,7 +8,7 @@ Engine: Unity 6000.3.16f1
 | Bootstrap & Scene Flow | Foundation | bootstrap-and-scene-flow | Docs/design/gdd/bootstrap-and-scene-flow.md | 11 stories (11 Complete) | Complete |
 | Object Pooling | Foundation | object-pooling | Docs/design/gdd/object-pooling.md | 6 stories (6 Complete) | Complete |
 | Audio | Foundation | audio | Docs/design/gdd/audio.md | 12 stories (12 Complete) | Complete |
-| Economy Core | Foundation | economy-core | Docs/design/gdd/economy-core.md | Not yet created | Ready |
+| Economy Core | Foundation | economy-core | Docs/design/gdd/economy-core.md | 18 stories (0 Complete) | Ready |
 | Pet Catalog | Foundation | pet-catalog | Docs/design/gdd/pet-catalog.md | Not yet created | Ready |
 | Plinko Board | Core | plinko-board | Docs/design/gdd/plinko-board.md | Not yet created | Ready |
 | Inventory | Core | inventory | Docs/design/gdd/inventory.md | Not yet created | Ready |
