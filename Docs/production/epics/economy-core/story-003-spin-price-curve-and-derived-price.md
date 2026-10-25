@@ -1,7 +1,7 @@
 # Story 003: Spin Price Curve, nice_ceil & Derived Price
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 1 day
@@ -34,9 +34,9 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-28 [EditMode]` **GIVEN** `C` mặc định, **WHEN** tính `spin_price(n)` với n = 0, 1, 2, 3, 10, 20, 50, 100, 150, **THEN** = 100, 110, 120, 120, 170, 270, 1,200, 14,000, 160,000; và với n = 0…2000 dãy không giảm.
-- [ ] `AC-29 [EditMode]` **GIVEN** `nice_ceil`, **WHEN** đầu vào (105, 2), (1,146.74, 2), (7.2, 2), (100, 2), (100 × (1 + 1e-12), 2), (0, 2), (−5, 2), (13,150.1, 3), **THEN** = 110, 1,200, 8, 100, 100, 0, 0, 13,200.
-- [ ] `AC-31 [EditMode]` **GIVEN** coef 1.5, **WHEN** n = 0 và n = 50, **THEN** `derived_price` = 150 và 1,800; coef 2.0 tại n = 100 → 27,000; coef ∈ {0, −1, NaN} → trả về "không có giá".
+- [x] `AC-28 [EditMode]` **GIVEN** `C` mặc định, **WHEN** tính `spin_price(n)` với n = 0, 1, 2, 3, 10, 20, 50, 100, 150, **THEN** = 100, 110, 120, 120, 170, 270, 1,200, 14,000, 160,000; và với n = 0…2000 dãy không giảm.
+- [x] `AC-29 [EditMode]` **GIVEN** `nice_ceil`, **WHEN** đầu vào (105, 2), (1,146.74, 2), (7.2, 2), (100, 2), (100 × (1 + 1e-12), 2), (0, 2), (−5, 2), (13,150.1, 3), **THEN** = 110, 1,200, 8, 100, 100, 0, 0, 13,200.
+- [x] `AC-31 [EditMode]` **GIVEN** coef 1.5, **WHEN** n = 0 và n = 50, **THEN** `derived_price` = 150 và 1,800; coef 2.0 tại n = 100 → 27,000; coef ∈ {0, −1, NaN} → trả về "không có giá".
 
 ## Implementation Notes
 
@@ -79,9 +79,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/SpinPriceCurveTests.cs`, `NiceCeilingTests.cs`, `DerivedPriceTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `SpinPriceCurveTests.cs`, `NiceCeilingTests.cs`, `DerivedPriceTests.cs`, `PriceMathZeroAllocTests.cs` (EditMode 768/768)
 
 ## Dependencies
 
 - Depends on: Story 001
 - Unlocks: Story 004, Story 005, Story 009, Story 016
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 3/3 passing (AC-28, AC-29, AC-31 + QA edge cases)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 768/768); smoke n/a (no scene change)
+**Run result**: N/A - price math
+**Deviations**: ADVISORY - `NiceCeiling`, `SpinPriceCurve`, `DerivedPriceCalculator` as three small allocation-free classes; `nice_epsilon` 1e-9 is a named technical const (GDD: not a design knob); price clamps at `walletSafeCap` for huge n; no asset change (all knobs already existed)
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/SpinPriceCurveTests.cs`, `NiceCeilingTests.cs`, `DerivedPriceTests.cs`, `PriceMathZeroAllocTests.cs`, passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 2 minor test-quality fixes (random invariant now allows nice_epsilon; tiny-coef test asserts the implication); LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

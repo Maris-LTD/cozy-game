@@ -72,5 +72,15 @@ namespace CozyGachapon.Economy
         {
             _spinGrowth = spinGrowth;
         }
+
+        public void SetSpinBasePriceForTest(double spinBasePrice)
+        {
+            _spinBasePrice = spinBasePrice;
+        }
+
+        public void SetPriceNiceSigDigitsForTest(int priceNiceSigDigits)
+        {
+            _priceNiceSigDigits = priceNiceSigDigits;
+        }
     }
 }
