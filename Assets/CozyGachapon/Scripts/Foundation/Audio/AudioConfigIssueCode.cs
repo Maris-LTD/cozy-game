@@ -21,6 +21,7 @@ namespace CozyGachapon.Audio
         SpawnCueNotDropNew,
         SpawnClipTooLong,
         ManualSpawnClipExceedsCooldownMargin,
-        SpawnClipMarginOutOfRange
+        SpawnClipMarginOutOfRange,
+        TotalGainAboveZero
     }
 }

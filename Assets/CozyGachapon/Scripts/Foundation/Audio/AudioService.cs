@@ -5,8 +5,6 @@ namespace CozyGachapon.Audio
 {
     public sealed class AudioService : IAudioService
     {
-        private const float MaxLinearVolume = 1f;
-
         private readonly AudioCounters _counters = new AudioCounters();
         private AudioConfig _config;
         private IVoiceBackend _backend;
@@ -16,6 +14,10 @@ namespace CozyGachapon.Audio
         private VoicePool _pool;
         private PlayAdmission _admission;
         private PitchResolver _pitch;
+        private BusStateTable _busTable;
+        private BusBackgroundController _background;
+        private VoiceGainCalculator _gain;
+        private VoiceGainUpdater _gainUpdater;
 
         public bool IsReady { get; private set; }
         public AudioRuntimeState RuntimeState { get; private set; }
@@ -63,6 +65,10 @@ namespace CozyGachapon.Audio
                 new InstanceCapResolver(_pool),
                 new VoiceStealer(_pool, _cues));
             _pitch = new PitchResolver(config, random, new CueClipSelector(_cues.Count));
+            _busTable = new BusStateTable(config, RuntimeState);
+            _background = new BusBackgroundController(config, RuntimeState);
+            _gain = new VoiceGainCalculator(config, RuntimeState, _busTable, _background);
+            _gainUpdater = new VoiceGainUpdater(_pool, _cues, backend, _gain);
             IsReady = true;
             return true;
         }
@@ -112,9 +118,32 @@ namespace CozyGachapon.Audio
 
         public void Tick()
         {
+            if (!IsReady)
+            {
+                return;
+            }
+
+            _pool.Tick(_backend, _cues);
+            double now = _clock.Now;
+            if (_background.ConsumeRefresh(now))
+            {
+                _gainUpdater.RefreshPlaying(now);
+            }
+        }
+
+        public void SetBusBackground(AudioBus bus, bool background)
+        {
             if (IsReady)
             {
-                _pool.Tick(_backend, _cues);
+                _background.Set(bus, background, _clock.Now);
+            }
+        }
+
+        public void SetUserVolume(AudioBus bus, float slider)
+        {
+            if (IsReady && _busTable.SetUserVolume(bus, slider))
+            {
+                _gainUpdater.RefreshPlaying(_clock.Now);
             }
         }
 
@@ -134,7 +163,7 @@ namespace CozyGachapon.Audio
             }
 
             SoundCue cue = _cues.GetCue(cueIndex);
-            float volume = Mathf.Min(MaxLinearVolume, AudioMath.DbToLinear(cue.VolumeDb, _config.SilenceFloorDb));
+            float volume = _gain.Compute(cue, now);
             float pitch = _pitch.Resolve(cueIndex, cue, playParams, _cues.GetDefaultClip(cueIndex), out AudioClip clip);
             float pan = PanCalculator.Resolve(cue.PanFromPosition, playParams.PanPosition, _config.MaxPan, _backend.SupportsPan);
             _backend.Start(voice, clip, volume, pitch, pan, cue.Loop);

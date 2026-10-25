@@ -9,6 +9,10 @@ namespace CozyGachapon.Tests.Audio
     public class AudioPlayZeroAllocTests : AudioServiceFixture
     {
         private const string PegHitScoredId = "Plinko.PegHitScored";
+        private const string ShopLoopId = "Music.ShopLoop";
+        private const double GainStep = 0.025d;
+        private const int GainCycle = 8;
+        private const int GainSliderSteps = 5;
         private const string MissingId = "Khong.Ton.Tai";
         private const string LowId = "Test.Low";
         private const string OtherLowId = "Test.OtherLow";
@@ -86,6 +90,32 @@ namespace CozyGachapon.Tests.Audio
             Assert.AreEqual(0, allocations);
             Assert.AreEqual(0, withoutPan);
             Assert.Greater(Service.Stats.Played, 0);
+        }
+
+        [Test]
+        public void Tick_DuringBackgroundFadeAndSlider_DoesNotAllocate()
+        {
+            InitializeWithDefaultAssets(CreateMusicCue(ShopLoopId));
+            Service.Play(ResolveCue(PegHitScoredId), AudioPlayParams.None);
+            Service.Play(ResolveCue(ShopLoopId), AudioPlayParams.None);
+
+            RunGainUpdates();
+            int volumeWrites = Backend.SetVolumeCount;
+            int allocations = GcAllocProbe.CountAllocations(RunGainUpdates);
+
+            Assert.AreEqual(0, allocations);
+            Assert.Greater(Backend.SetVolumeCount, volumeWrites);
+        }
+
+        private void RunGainUpdates()
+        {
+            for (int i = 0; i < Iterations; i++)
+            {
+                Clock.Advance(GainStep);
+                Service.SetBusBackground(AudioBus.Plinko, i % GainCycle < GainCycle / 2);
+                Service.Tick();
+                Service.SetUserVolume(AudioBus.Music, (i % GainSliderSteps) / (float)GainSliderSteps);
+            }
         }
 
         [Test]

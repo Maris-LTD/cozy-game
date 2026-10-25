@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using CozyGachapon.Audio;
 using CozyGachapon.Contracts;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace CozyGachapon.Tests.Audio
@@ -129,6 +130,34 @@ namespace CozyGachapon.Tests.Audio
             Assert.AreEqual(AudioConfigIssueCode.VolumeAboveZero, issues[0].Code);
             Assert.IsFalse(issues[0].IsError);
             Assert.AreEqual(0, AudioConfigValidator.CountErrors(issues));
+        }
+
+        [Test]
+        public void BusPathPushingTheTotalAboveZeroIsOnlyAWarning()
+        {
+            SerializedObject serialized = new SerializedObject(DefaultConfig);
+            serialized.FindProperty("_gachaDefaultDb").floatValue = 6f;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            List<AudioConfigIssue> issues = RunValidator();
+
+            int warnings = 0;
+            for (int i = 0; i < issues.Count; i++)
+            {
+                Assert.AreNotEqual(AudioConfigIssueCode.VolumeAboveZero, issues[i].Code);
+                if (issues[i].Code != AudioConfigIssueCode.TotalGainAboveZero)
+                {
+                    continue;
+                }
+
+                warnings++;
+                Assert.IsFalse(issues[i].IsError);
+                Assert.Greater(issues[i].Value, 0f);
+                Assert.AreEqual(6f, issues[i].SecondaryValue);
+                Assert.IsTrue(issues[i].CueId.StartsWith("Gacha.RarityReveal"), issues[i].CueId);
+            }
+
+            Assert.AreEqual(2, warnings);
         }
     }
 }

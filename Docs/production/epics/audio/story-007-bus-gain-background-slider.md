@@ -1,7 +1,7 @@
 # Story 007: Bus Gain, Background Bus & User Volume
 
 > **Epic**: Audio
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: 2 days
@@ -34,10 +34,10 @@
 
 *From Docs/design/gdd/audio.md, scoped to this story:*
 
-- [ ] `AC-3 [EditMode]` **GIVEN** backend giả, `C` mặc định, **WHEN** phát `Plinko.BucketX5` khi bus Plinko Normal, rồi khi bus Plinko đã ở Background quá `C.busTransitionSeconds`, và phát `Music.ShopLoop`, **THEN** volume của voice lần lượt = db_to_linear(`Q[BucketX5].volumeDb`) (0.398), db_to_linear(`Q[BucketX5].volumeDb` + `C.plinkoBackgroundOffsetDb`) (0.100), db_to_linear(`Q[ShopLoop].volumeDb` + `C.busDefaultDb[Sfx]` + `C.musicOffsetFromSfxDb`) (0.251); một cue cấu hình +6 dB cho volume = 1 và validator cảnh báo.
-- [ ] `AC-18 [EditMode]` **GIVEN** `SetBusBackground(Plinko, true)`, **WHEN** yêu cầu từng cue bus Plinko và một cue bus Gacha, Ui, **THEN** mọi cue có `keepWhenBusBackground = false` (PegHitScored, PegHitUnscored, CoinSpawn, CoinSpawnAuto, JackpotBurstSpawn, CoinFizzle, BoardBusy) → `Dropped(BackgroundFiltered)`; BucketX1/X2/X5 và JackpotHit được phát với âm lượng thấp hơn `C.plinkoBackgroundOffsetDb` so với khi Normal; cue Gacha/Ui không đổi âm lượng.
-- [ ] `AC-19 [EditMode]` **GIVEN** một voice `PegHitScored` đang phát, **WHEN** gọi `SetBusBackground(Plinko, true)`, rồi `false` sau `C.busTransitionSeconds`, **THEN** voice không bị dừng, âm lượng giảm đúng `fade_factor` tới −12 dB sau `C.busTransitionSeconds`, rồi trở lại mức cũ sau thêm `C.busTransitionSeconds`; gọi `true` hai lần liên tiếp không đổi gì.
-- [ ] `AC-28 [EditMode]` **GIVEN** thanh trượt (Alpha), **WHEN** s = 1, 0.75, 0.5, 0, NaN, 1.5, **THEN** user_db = 0, −10, −20, im (cue SFX trên bus → `Dropped(BusSilent)`, nhạc vẫn chạy câm), `slider_to_db(C.defaultUserSlider)`, 0.
+- [x] `AC-3 [EditMode]` **GIVEN** backend giả, `C` mặc định, **WHEN** phát `Plinko.BucketX5` khi bus Plinko Normal, rồi khi bus Plinko đã ở Background quá `C.busTransitionSeconds`, và phát `Music.ShopLoop`, **THEN** volume của voice lần lượt = db_to_linear(`Q[BucketX5].volumeDb`) (0.398), db_to_linear(`Q[BucketX5].volumeDb` + `C.plinkoBackgroundOffsetDb`) (0.100), db_to_linear(`Q[ShopLoop].volumeDb` + `C.busDefaultDb[Sfx]` + `C.musicOffsetFromSfxDb`) (0.251); một cue cấu hình +6 dB cho volume = 1 và validator cảnh báo.
+- [x] `AC-18 [EditMode]` **GIVEN** `SetBusBackground(Plinko, true)`, **WHEN** yêu cầu từng cue bus Plinko và một cue bus Gacha, Ui, **THEN** mọi cue có `keepWhenBusBackground = false` (PegHitScored, PegHitUnscored, CoinSpawn, CoinSpawnAuto, JackpotBurstSpawn, CoinFizzle, BoardBusy) → `Dropped(BackgroundFiltered)`; BucketX1/X2/X5 và JackpotHit được phát với âm lượng thấp hơn `C.plinkoBackgroundOffsetDb` so với khi Normal; cue Gacha/Ui không đổi âm lượng.
+- [x] `AC-19 [EditMode]` **GIVEN** một voice `PegHitScored` đang phát, **WHEN** gọi `SetBusBackground(Plinko, true)`, rồi `false` sau `C.busTransitionSeconds`, **THEN** voice không bị dừng, âm lượng giảm đúng `fade_factor` tới −12 dB sau `C.busTransitionSeconds`, rồi trở lại mức cũ sau thêm `C.busTransitionSeconds`; gọi `true` hai lần liên tiếp không đổi gì.
+- [x] `AC-28 [EditMode]` **GIVEN** thanh trượt (Alpha), **WHEN** s = 1, 0.75, 0.5, 0, NaN, 1.5, **THEN** user_db = 0, −10, −20, im (cue SFX trên bus → `Dropped(BusSilent)`, nhạc vẫn chạy câm), `slider_to_db(C.defaultUserSlider)`, 0.
 
 ## Implementation Notes
 
@@ -86,9 +86,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/VoiceGainTests.cs`, `BusBackgroundTests.cs`, `SliderMathTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] `VoiceGainTests.cs`, `BusBackgroundTests.cs`, `UserVolumeSliderTests.cs`, `SliderMathTests.cs` (EditMode 521/521)
 
 ## Dependencies
 
 - Depends on: Story 002, Story 003
 - Unlocks: Story 008
+
+## Completion Notes
+**Completed**: 2026-10-25
+**Criteria**: 4/4 passing (AC-3, AC-18, AC-19, AC-28 + QA edge cases)
+**Harness**: unity-harness all PASS (rules, compile, EditMode 521/521); smoke n/a (no scene change)
+**Run result**: N/A - gains applied to the fake voice backend
+**Deviations**: ADVISORY - `SetBusBackground` / `SetUserVolume` added to `IAudioService`; Tick refreshes playing voice volume only while a background fade runs (no allocation); validator gains a `TotalGainAboveZero` warning; AC-3 uses a 0 dB Music fixture cue for the VS-only `Music.ShopLoop`; resume fade and user mute gain stay 1 until Story 008
+**Test Evidence**: `Assets/CozyGachapon/Tests/EditMode/Audio/VoiceGainTests.cs`, `BusBackgroundTests.cs`, `UserVolumeSliderTests.cs`, `SliderMathTests.cs` (+ `AudioGainFixture.cs`), passing
+**Visual sign-off**: n/a (Logic)
+**Code Review**: unity-dev review, 0 findings; LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none

@@ -58,6 +58,10 @@ namespace CozyGachapon.Audio
             {
                 results.Add(new AudioConfigIssue(AudioConfigIssueCode.VolumeAboveZero, cue.CueId, null, -1, cue.VolumeDb, 0f, 0f, false));
             }
+            else if (AudioBusPath.TryGetPathDb(config, cue.Bus, out float pathDb) && cue.VolumeDb + pathDb > 0f)
+            {
+                results.Add(new AudioConfigIssue(AudioConfigIssueCode.TotalGainAboveZero, cue.CueId, null, -1, cue.VolumeDb + pathDb, pathDb, 0f, false));
+            }
 
             if (cue.PitchMode == PitchMode.Scale)
             {

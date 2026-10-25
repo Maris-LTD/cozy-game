@@ -19,6 +19,7 @@ namespace CozyGachapon.Tests.Audio
         public bool SupportsPan { get; private set; } = true;
         public int StartCount { get; private set; }
         public int StopCount { get; private set; }
+        public int SetVolumeCount { get; private set; }
         public int LastStartedVoice { get; private set; } = -1;
         public int MaxStartedVoice { get; private set; } = -1;
 
@@ -97,6 +98,7 @@ namespace CozyGachapon.Tests.Audio
         public void SetVolume(int voice, float volume)
         {
             _volumes[voice] = volume;
+            SetVolumeCount++;
         }
 
         public bool IsPlaying(int voice)
