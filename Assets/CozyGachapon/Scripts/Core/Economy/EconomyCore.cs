@@ -12,6 +12,7 @@ namespace CozyGachapon.Economy
         private WalletService _wallet;
         private SpinPriceCurve _curve;
         private BaseCoinValueCalculator _baseCoinValueCalculator;
+        private IncomePipeline _incomePipeline;
 
         public event Action<WalletChangedEvent> WalletChanged;
         public event Action<SpendRejectedEvent> SpendRejected;
@@ -26,6 +27,7 @@ namespace CozyGachapon.Economy
         public int SpinsThisShop { get; private set; }
         public double BaseCoinValue { get; private set; }
         public double SpinPrice { get; private set; }
+        public IIncomePipeline IncomePipeline => _incomePipeline;
 
         public bool Initialize(EconomyConfig config, ReleaseTier buildTier, EconomyStateData loaded)
         {
@@ -38,6 +40,8 @@ namespace CozyGachapon.Economy
             _curve = new SpinPriceCurve(config);
             _baseCoinValueCalculator = new BaseCoinValueCalculator(config, _curve);
             RegisterCurrencies(config, buildTier);
+            _incomePipeline = new IncomePipeline(config);
+            _incomePipeline.RegisterIncomeSource(EconomyIds.PlinkoCoinSource, IncomeChannel.Plinko, 0d);
 
             EconomyStateRestorer restorer = new EconomyStateRestorer(config, _sink);
             if (IsNewGame(loaded))

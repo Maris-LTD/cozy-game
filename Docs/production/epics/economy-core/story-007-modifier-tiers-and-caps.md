@@ -1,7 +1,7 @@
 # Story 007: Income Modifier Tiers & Caps
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 2 days
@@ -92,3 +92,16 @@
 
 - Depends on: Story 001, Story 004
 - Unlocks: Story 005, Story 009, Story 011
+
+## Completion Notes
+
+- Năm tầng `Base/Synergy/Boost/Prestige/Global` theo GDD R4.4, không theo bốn layer phác trong ADR-0005 (TD-011).
+- `ModifierTarget` có hai giá trị `Channel` và `Source`; khóa nguồn nằm ở `TargetKey`.
+- `RegisterIncomeSource` là upsert; từ chối key rỗng, kênh `Both`, gốc âm hoặc không hữu hạn.
+- Modifier tầng Base chỉ tính khi nhắm một nguồn (`Target = Source`); Base nhắm kênh bị bỏ qua.
+- Modifier Boost, Prestige, Global luôn tính theo kênh, kể cả khi `Target = Source`, theo công thức `tier_multiplier`.
+- `GetChannelIncome(sourceKey, flatUnitValue)`: đơn vị cộng phẳng (`idleCpsUnit`, `baseCoinValue`) do Story 009 và 011 truyền vào.
+- Value xấu (âm, NaN, vô cực) vẫn được đăng ký và gỡ được; chỉ bị trung hòa khi tính (R4.5).
+- Không kiểm tiền tố `sourceId`, không thay thế khi trùng: thuộc Story 008.
+- Pipeline được truy cập qua `EconomyCore.IncomePipeline`; `plinko.coin` được đăng ký sẵn trong `Initialize`.
+- Cache theo cờ bẩn chỉ tính lại khi đăng ký hoặc gỡ; đổi trần trong config lúc chạy không làm bẩn cache.

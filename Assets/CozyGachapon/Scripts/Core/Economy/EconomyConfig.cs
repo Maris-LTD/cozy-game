@@ -87,5 +87,25 @@ namespace CozyGachapon.Economy
         {
             _priceNiceSigDigits = priceNiceSigDigits;
         }
+
+        public void SetSynergyTierCapForTest(double synergyTierCap)
+        {
+            _synergyTierCap = synergyTierCap;
+        }
+
+        public void SetBoostTierCapForTest(double boostTierCap)
+        {
+            _boostTierCap = boostTierCap;
+        }
+
+        public void SetPrestigeTierCapForTest(double prestigeTierCap)
+        {
+            _prestigeTierCap = prestigeTierCap;
+        }
+
+        public void SetGlobalTierCapForTest(double globalTierCap)
+        {
+            _globalTierCap = globalTierCap;
+        }
     }
 }
