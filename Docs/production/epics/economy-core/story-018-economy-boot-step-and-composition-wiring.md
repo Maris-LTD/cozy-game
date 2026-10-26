@@ -1,11 +1,11 @@
 # Story 018: `economy.core` Boot Step, Composition Root Wiring & Zero-Alloc Frame
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`, nối dây ở `CozyGachapon.Runtime`)
 > **Type**: Integration
 > **Estimate**: 2 days
-> **Last Updated**: —
+> **Last Updated**: 2026-10-27
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,8 +34,8 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-46 [EditMode]` **GIVEN** registry bước khởi động giả của Bootstrap, **WHEN** scene nạp và Economy Core đăng ký, **THEN** có đúng một bước `Id` = `economy.core`, `Phase` = `GameplayInit`, `RunsAfter` rỗng, `IsCritical` = đúng; trước `Run()` Economy Core ở Uninitialized, `Add`/`TrySpend` trả `false` và registry dịch vụ giả không có `IBaseCoinValueSource`; sau `Run()` bước báo `IsDone` trong cùng lời gọi, Economy Core ở **Ready** (không phải Running), `Add` và `TrySpend` (có ngữ cảnh hành động) hợp lệ, registry có đúng một `IBaseCoinValueSource` là Economy Core, và với một nguồn Idle có `idle_cps` > 0 chạy 60 bước khi Bootstrap giả giữ `IsSimulationRunning` sai thì số dư không đổi — Idle chỉ bắt đầu cộng sau khi Bootstrap giả phát `Interactive`; với `EconomyConfig` thiếu `currency.coin`, bước báo `IsFailed` và số dư không đổi.
-- [ ] `AC-43 [Perf]` **GIVEN** trạng thái ổn định, Idle cộng mỗi khung, 24 `CoinResolved`/s, số dư và hai tốc độ được định dạng mỗi khung, **WHEN** ghi 600 khung bằng `ProfilerRecorder` "GC Allocated In Frame", **THEN** 0 B mỗi khung do Economy Core và bộ định dạng.
+- [x] `AC-46 [EditMode]` **GIVEN** registry bước khởi động giả của Bootstrap, **WHEN** scene nạp và Economy Core đăng ký, **THEN** có đúng một bước `Id` = `economy.core`, `Phase` = `GameplayInit`, `RunsAfter` rỗng, `IsCritical` = đúng; trước `Run()` Economy Core ở Uninitialized, `Add`/`TrySpend` trả `false` và registry dịch vụ giả không có `IBaseCoinValueSource`; sau `Run()` bước báo `IsDone` trong cùng lời gọi, Economy Core ở **Ready** (không phải Running), `Add` và `TrySpend` (có ngữ cảnh hành động) hợp lệ, registry có đúng một `IBaseCoinValueSource` là Economy Core, và với một nguồn Idle có `idle_cps` > 0 chạy 60 bước khi Bootstrap giả giữ `IsSimulationRunning` sai thì số dư không đổi — Idle chỉ bắt đầu cộng sau khi Bootstrap giả phát `Interactive`; với `EconomyConfig` thiếu `currency.coin`, bước báo `IsFailed` và số dư không đổi.
+- [x] `AC-43 [Perf]` **GIVEN** trạng thái ổn định, Idle cộng mỗi khung, 24 `CoinResolved`/s, số dư và hai tốc độ được định dạng mỗi khung, **WHEN** ghi 600 khung bằng `ProfilerRecorder` "GC Allocated In Frame", **THEN** 0 B mỗi khung do Economy Core và bộ định dạng.
 
 ## Implementation Notes
 
@@ -75,7 +75,7 @@
 **Story Type**: Integration
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/EconomyBootStepTests.cs`, `EconomyFrameAllocationTests.cs`, passing in `unity-harness tests`; `unity-harness smoke` xác nhận boot không `BootFailed` khi `EconomyConfig` đã gán
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Verified (`EconomyBootStepTests.cs`, `EconomyFrameAllocationTests.cs` — 1014/1014 EditMode tests PASS, `unity-harness rules` PASS, `unity-harness smoke` PASS, 2026-10-27)
 
 ## Dependencies
 

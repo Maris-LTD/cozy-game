@@ -1,6 +1,7 @@
 using System;
 using CozyGachapon.Audio;
 using CozyGachapon.Contracts;
+using CozyGachapon.Economy;
 using CozyGachapon.Foundation;
 using CozyGachapon.Pooling;
 using UnityEngine;
@@ -10,7 +11,6 @@ namespace CozyGachapon
     [DefaultExecutionOrder(-1000)]
     public sealed class BootstrapController : MonoBehaviour
     {
-
         [SerializeField] private BootConfig _bootConfig;
         [SerializeField] private SceneFlowConfig _sceneFlowConfig;
         [SerializeField] private StartupCurtainView _view;
@@ -23,14 +23,19 @@ namespace CozyGachapon
         [SerializeField] private AudioConfig _audioConfig;
         [SerializeField] private AudioCueLibrary _audioCueLibrary;
         [SerializeField] private Transform _audioVoiceContainer;
+        [SerializeField] private EconomyConfig _economyConfig;
         [SerializeField] private bool _failFirstBootForTest;
 
+        private IServiceRegistry _services;
         private PoolingBootModule _pooling;
         private AudioWiring _audio;
+        private EconomyWiring _economy;
 
         public BootstrapGraph Graph { get; private set; }
+        public IServiceRegistry Services => _services;
         public IAudioService Audio { get; private set; }
         public UnityVoiceBackend AudioVoices { get; private set; }
+        public EconomyCore Economy { get; private set; }
 
         private void Awake()
         {
@@ -47,6 +52,7 @@ namespace CozyGachapon
                 return;
             }
 
+            _services = new ServiceRegistry();
             IUiHitTester uiHitTester = _uiHitTester != null ? _uiHitTester : null;
             Graph = new BootstrapGraph(
                 _bootConfig,
@@ -61,6 +67,7 @@ namespace CozyGachapon
             InitializeAdapters();
             RegisterPoolingSteps();
             RegisterAudioSteps();
+            RegisterEconomySteps();
             RegisterDebugSteps();
         }
 
@@ -69,15 +76,14 @@ namespace CozyGachapon
             Graph.SetScreenSize(Screen.width, Screen.height);
             _pooling.Tick();
             Graph.Tick(Time.unscaledDeltaTime);
+            _economy?.Tick(Time.unscaledDeltaTime);
             _audio.Tick();
         }
 
         private void OnDestroy()
         {
-            if (_audio != null)
-            {
-                _audio.Dispose();
-            }
+            _economy?.Dispose();
+            _audio?.Dispose();
         }
 
         private void InitializeAdapters()
@@ -117,6 +123,13 @@ namespace CozyGachapon
             _audio.Register(Graph);
             Audio = _audio.Service;
             AudioVoices = _audio.Voices;
+        }
+
+        private void RegisterEconomySteps()
+        {
+            _economy = new EconomyWiring(_economyConfig, _services);
+            _economy.Register(Graph);
+            Economy = _economy.Core;
         }
 
         private void RegisterDebugSteps()

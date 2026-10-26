@@ -20,6 +20,7 @@ namespace CozyGachapon.Economy
 
             EconomyCurrencyValidator.Validate(config.Currencies, results);
             EconomyKnobRangeValidator.Validate(config, ranges, results);
+            TierOwnerPrefixValidator.Validate(config.TierOwnerPrefixes, results);
         }
 
         public static int CountErrors(List<EconomyConfigIssue> issues)

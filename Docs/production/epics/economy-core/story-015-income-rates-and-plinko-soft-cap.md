@@ -1,11 +1,11 @@
 # Story 015: Published Income Rates & Plinko Soft Cap
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 2 days
-> **Last Updated**: —
+> **Last Updated**: 2026-10-27
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,9 +34,9 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-25 [EditMode]` **GIVEN** `C.plinkoRateWindowSeconds` = 10, **WHEN** cộng 100 xu Plinko mỗi giây trong 10 s; hoặc 300 trong 3 s đầu; hoặc 50 trong 0.4 s đầu; hoặc ngừng cộng thêm 10 s, **THEN** `PlinkoRateAvg` lần lượt = 100, 100, 50, 0.
-- [ ] `AC-26 [EditMode]` **GIVEN** modifier đổi mỗi khung trong 10 s, **WHEN** đếm `IncomeRatesChanged`, **THEN** số sự kiện ≤ ceil(10 / `C.ratesPublishInterval`) + 1, và giá trị mới xuất hiện trong ≤ `C.ratesPublishInterval` sau mỗi thay đổi.
-- [ ] `AC-47 [EditMode]` (trần mềm, R5.5) **GIVEN** game mới (n = 0, `base_coin_value` = 1), không modifier, Plinko giả phát mỗi bước dt = 1/60 s một `CoinResolved` (`Bucket`) với `rawValue` = `T.plinkoSoftCapTestFactor` × `T.plinkoRawRateCeilingAssumed[3]` / 60 (tổng 1.5 × 42 = 63 xu thô/s, cao hơn mọi cấu hình mô hình), **WHEN** chạy `C.plinkoRateWindowSeconds` (10 s) mô phỏng, **THEN** số dư tăng đúng Σ `rawValue` (630) trong sai số `T.valueRelTolerance`, số `IncomeCredited` bằng số `CoinResolved` (600) và mỗi `creditedAmount` = `rawValue` (không khoản nào bị kẹp hay bỏ), và `PlinkoRateAvg` = 63.
+- [x] `AC-25 [EditMode]` **GIVEN** `C.plinkoRateWindowSeconds` = 10, **WHEN** cộng 100 xu Plinko mỗi giây trong 10 s; hoặc 300 trong 3 s đầu; hoặc 50 trong 0.4 s đầu; hoặc ngừng cộng thêm 10 s, **THEN** `PlinkoRateAvg` lần lượt = 100, 100, 50, 0.
+- [x] `AC-26 [EditMode]` **GIVEN** modifier đổi mỗi khung trong 10 s, **WHEN** đếm `IncomeRatesChanged`, **THEN** số sự kiện ≤ ceil(10 / `C.ratesPublishInterval`) + 1, và giá trị mới xuất hiện trong ≤ `C.ratesPublishInterval` sau mỗi thay đổi.
+- [x] `AC-47 [EditMode]` (trần mềm, R5.5) **GIVEN** game mới (n = 0, `base_coin_value` = 1), không modifier, Plinko giả phát mỗi bước dt = 1/60 s một `CoinResolved` (`Bucket`) với `rawValue` = `T.plinkoSoftCapTestFactor` × `T.plinkoRawRateCeilingAssumed[3]` / 60 (tổng 1.5 × 42 = 63 xu thô/s, cao hơn mọi cấu hình mô hình), **WHEN** chạy `C.plinkoRateWindowSeconds` (10 s) mô phỏng, **THEN** số dư tăng đúng Σ `rawValue` (630) trong sai số `T.valueRelTolerance`, số `IncomeCredited` bằng số `CoinResolved` (600) và mỗi `creditedAmount` = `rawValue` (không khoản nào bị kẹp hay bỏ), và `PlinkoRateAvg` = 63.
 
 ## Implementation Notes
 
@@ -80,7 +80,7 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/PlinkoRateAvgTests.cs`, `IncomeRatesPublishTests.cs`, `PlinkoSoftCapTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Verified (`PlinkoRateAvgTests.cs`, `IncomeRatesPublishTests.cs`, `PlinkoSoftCapTests.cs` — 1002/1002 EditMode tests PASS, `unity-harness rules` PASS, 2026-10-27)
 
 ## Dependencies
 

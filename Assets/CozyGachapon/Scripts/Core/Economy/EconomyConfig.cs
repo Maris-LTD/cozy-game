@@ -103,9 +103,44 @@ namespace CozyGachapon.Economy
             _prestigeTierCap = prestigeTierCap;
         }
 
+        public void SetCoinValueExponentForTest(double coinValueExponent)
+        {
+            _coinValueExponent = coinValueExponent;
+        }
+
+        public void SetIdleCpsUnitForTest(double idleCpsUnit)
+        {
+            _idleCpsUnit = idleCpsUnit;
+        }
+
         public void SetGlobalTierCapForTest(double globalTierCap)
         {
             _globalTierCap = globalTierCap;
+        }
+
+        public void SetPlinkoFlatPerCoinCapForTest(double plinkoFlatPerCoinCap)
+        {
+            _plinkoFlatPerCoinCap = plinkoFlatPerCoinCap;
+        }
+
+        public void SetMaxFrameDeltaForTest(double maxFrameDelta)
+        {
+            _maxFrameDelta = maxFrameDelta;
+        }
+
+        public void SetAdCompensationMaxSecondsForTest(double adCompensationMaxSeconds)
+        {
+            _adCompensationMaxSeconds = adCompensationMaxSeconds;
+        }
+
+        public void SetPlinkoRateWindowSecondsForTest(double plinkoRateWindowSeconds)
+        {
+            _plinkoRateWindowSeconds = plinkoRateWindowSeconds;
+        }
+
+        public void SetRatesPublishIntervalForTest(double ratesPublishInterval)
+        {
+            _ratesPublishInterval = ratesPublishInterval;
         }
     }
 }

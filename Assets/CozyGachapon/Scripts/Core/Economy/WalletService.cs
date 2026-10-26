@@ -36,6 +36,26 @@ namespace CozyGachapon.Economy
             }
         }
 
+        internal bool TryResetBalance(string currencyId, double targetAmount, out WalletChangedEvent changeEvent)
+        {
+            changeEvent = default;
+            if (!_ledger.TryGet(currencyId, out double previous))
+            {
+                return false;
+            }
+
+            double next = Math.Max(0d, Math.Min(targetAmount, _config.WalletSafeCap));
+            if (Math.Abs(next - previous) > 0d)
+            {
+                double delta = next - previous;
+                _ledger.Set(currencyId, next);
+                changeEvent = new WalletChangedEvent(currencyId, previous, next, delta, WalletChangeReason.ShopReset);
+                return true;
+            }
+
+            return false;
+        }
+
         public bool Add(string currencyId, double amount, WalletChangeReason reason)
         {
             if (!IsValidAmount(amount)

@@ -1,11 +1,11 @@
 # Story 014: Ad Idle Compensation & Wallet Event Integrity
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 2 days
-> **Last Updated**: —
+> **Last Updated**: 2026-10-26
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,8 +34,8 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-48 [EditMode]` **GIVEN** Running, `idle_cps` = 58, `C.adCompensationMaxSeconds` (90), **WHEN** `AdClosed` đến: (a) `{30}` sau khi cờ ad giả bật mà không có khung nào chạy; (b) `{30}` sau 1,800 bước dt = 1/60 s với cờ ad bật; (c) `{200}` như (a); (d) `{30}` khi `IsSimulationRunning` sai (Ready); (e) `{NaN}` và `{−5}`, **THEN** phần bù (ngoài 58 × giây đã cộng ở `idle_accrual`) lần lượt = 1,740 (một `WalletChanged` với `reason` = AdIdleCompensation), 0 (tổng tăng đúng 58 × 30, không cộng đôi), 5,220, 0, 0; `PlinkoRateAvg` và mọi modifier Plinko không đổi.
-- [ ] `AC-39 [EditMode]` **GIVEN** phiên kịch bản 60 s (Idle, 200 xu Plinko, 3 lượt quay, 1 lần `SpendRejected`), **WHEN** ghi mọi `WalletChanged`, **THEN** mỗi sự kiện có delta = current − previous và `reason` thuộc bảng faucet/sink R14; Idle phát ≤ 1 `WalletChanged` mỗi khung; tổng delta trong mỗi khung = Σ `creditedAmount` + phần Idle − chi tiêu của khung đó.
+- [x] `AC-48 [EditMode]` **GIVEN** Running, `idle_cps` = 58, `C.adCompensationMaxSeconds` (90), **WHEN** `AdClosed` đến: (a) `{30}` sau khi cờ ad giả bật mà không có khung nào chạy; (b) `{30}` sau 1,800 bước dt = 1/60 s với cờ ad bật; (c) `{200}` như (a); (d) `{30}` khi `IsSimulationRunning` sai (Ready); (e) `{NaN}` và `{−5}`, **THEN** phần bù (ngoài 58 × giây đã cộng ở `idle_accrual`) lần lượt = 1,740 (một `WalletChanged` với `reason` = AdIdleCompensation), 0 (tổng tăng đúng 58 × 30, không cộng đôi), 5,220, 0, 0; `PlinkoRateAvg` và mọi modifier Plinko không đổi.
+- [x] `AC-39 [EditMode]` **GIVEN** phiên kịch bản 60 s (Idle, 200 xu Plinko, 3 lượt quay, 1 lần `SpendRejected`), **WHEN** ghi mọi `WalletChanged`, **THEN** mỗi sự kiện có delta = current − previous và `reason` thuộc bảng faucet/sink R14; Idle phát ≤ 1 `WalletChanged` mỗi khung; tổng delta trong mỗi khung = Σ `creditedAmount` + phần Idle − chi tiêu của khung đó.
 
 ## Implementation Notes
 
@@ -73,7 +73,16 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/AdIdleCompensationTests.cs`, `WalletEventIntegrityTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Passed 997/997 tests in `unity-harness tests` (`AdIdleCompensationTests`, `WalletEventIntegrityTests`).
+
+## Completion Notes
+
+- **Review Gate**: `[LP-CODE-REVIEW] skipped (lean)`.
+- **Harness Verification**: Rules PASS (69 files), Compile PASS, EditMode tests PASS (997/997).
+- **Core Additions**:
+  - `ISimulationState.cs`: added `bool IsAdOpen { get; }`.
+  - `AdSimulatedTimeTracker.cs` & `AdIdleCompensator.cs`: tracks simulated Idle accrual during ad display and credits remaining uncompensated time up to `adCompensationMaxSeconds` upon `AdClosedEvent` when `CanAccrueIdle` is true.
+  - `WalletChangeReasonValidator.cs`: validates `WalletChangeReason` enum values against R14 faucet/sink reasons.
 
 ## Dependencies
 

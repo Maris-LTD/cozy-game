@@ -18,5 +18,30 @@ namespace CozyGachapon.Economy
         public IReadOnlyList<string> Boost => _boost;
         public IReadOnlyList<string> Prestige => _prestige;
         public IReadOnlyList<string> Global => _global;
+
+        public void SetBaseForTest(string[] prefixes)
+        {
+            _base = prefixes;
+        }
+
+        public void SetSynergyForTest(string[] prefixes)
+        {
+            _synergy = prefixes;
+        }
+
+        public void SetBoostForTest(string[] prefixes)
+        {
+            _boost = prefixes;
+        }
+
+        public void SetPrestigeForTest(string[] prefixes)
+        {
+            _prestige = prefixes;
+        }
+
+        public void SetGlobalForTest(string[] prefixes)
+        {
+            _global = prefixes;
+        }
     }
 }

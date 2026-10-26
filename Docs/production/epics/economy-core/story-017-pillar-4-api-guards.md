@@ -1,11 +1,11 @@
 # Story 017: Pillar 4 API Guards (reflection, boundary inputs, spin count)
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 2 days
-> **Last Updated**: —
+> **Last Updated**: 2026-10-27
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,9 +34,9 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-7a [EditMode]` **GIVEN** assembly runtime chứa Economy Core, **WHEN** liệt kê bằng reflection mọi phương thức public (kể cả accessor của property) của mọi kiểu public trong assembly đó thuộc ví / Economy Core, **THEN** tập tên phương thức có ít nhất một tham số thuộc kiểu ngữ cảnh hành động người chơi (tên kiểu do ADR chốt) đúng bằng {`TrySpend`, `TryPaySpin`, `ResetForNewShop`}; không có property số dư nào có setter public, không có field public không `readonly` nào chứa số dư hay bảng ví, và không phương thức public nào trả về tham chiếu ghi được (`ref`) tới số dư (Pillar 4).
-- [ ] `AC-7b [EditMode]` **GIVEN** Xu = 500 (Tem = 7 khi đã đăng ký), Economy Core ở Running, **WHEN** gọi bằng reflection mọi phương thức public còn lại (không thuộc tập của AC-7a), mỗi tham số lần lượt nhận từng giá trị biên — số thực {0, −1, NaN, +∞, −∞, `double.MaxValue`}, số nguyên {0, −1, `int.MaxValue`}, chuỗi/id {rỗng, null, `currency.unknown`, `currency.coin`, `sourceKey` lạ}, mọi giá trị của mỗi enum — trong khi các tham số khác giữ giá trị hợp lệ mặc định, rồi thêm một lần với mọi tham số cùng ở giá trị biên, **THEN** sau từng lời gọi Xu ≥ 500 và Tem ≥ 7, không có ngoại lệ nào thoát ra ngoài Economy Core, và không có `WalletChanged` nào có `delta` < 0.
-- [ ] `AC-35 [EditMode]` **GIVEN** n = 5, **WHEN** gọi mọi API public của Economy Core ngoại trừ `TryPaySpin` thành công và `ResetForNewShop`, **THEN** n vẫn là 5 (lượt quay miễn phí không tăng giá).
+- [x] `AC-7a [EditMode]` **GIVEN** assembly runtime chứa Economy Core, **WHEN** liệt kê bằng reflection mọi phương thức public (kể cả accessor của property) của mọi kiểu public trong assembly đó thuộc ví / Economy Core, **THEN** tập tên phương thức có ít nhất một tham số thuộc kiểu ngữ cảnh hành động người chơi (tên kiểu do ADR chốt) đúng bằng {`TrySpend`, `TryPaySpin`, `ResetForNewShop`}; không có property số dư nào có setter public, không có field public không `readonly` nào chứa số dư hay bảng ví, và không phương thức public nào trả về tham chiếu ghi được (`ref`) tới số dư (Pillar 4).
+- [x] `AC-7b [EditMode]` **GIVEN** Xu = 500 (Tem = 7 khi đã đăng ký), Economy Core ở Running, **WHEN** gọi bằng reflection mọi phương thức public còn lại (không thuộc tập của AC-7a), mỗi tham số lần lượt nhận từng giá trị biên — số thực {0, −1, NaN, +∞, −∞, `double.MaxValue`}, số nguyên {0, −1, `int.MaxValue`}, chuỗi/id {rỗng, null, `currency.unknown`, `currency.coin`, `sourceKey` lạ}, mọi giá trị của mỗi enum — trong khi các tham số khác giữ giá trị hợp lệ mặc định, rồi thêm một lần với mọi tham số cùng ở giá trị biên, **THEN** sau từng lời gọi Xu ≥ 500 và Tem ≥ 7, không có ngoại lệ nào thoát ra ngoài Economy Core, và không có `WalletChanged` nào có `delta` < 0.
+- [x] `AC-35 [EditMode]` **GIVEN** n = 5, **WHEN** gọi mọi API public của Economy Core ngoại trừ `TryPaySpin` thành công và `ResetForNewShop`, **THEN** n vẫn là 5 (lượt quay miễn phí không tăng giá).
 
 ## Implementation Notes
 
@@ -78,7 +78,7 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/ActionContextReflectionTests.cs`, `PublicApiBoundaryTests.cs`, `SpinCountIntegrityTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Verified (`ActionContextReflectionTests.cs`, `PublicApiBoundaryTests.cs`, `SpinCountIntegrityTests.cs` — 1011/1011 EditMode tests PASS, `unity-harness rules` PASS, 2026-10-27)
 
 ## Dependencies
 

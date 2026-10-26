@@ -2,7 +2,7 @@ using CozyGachapon.Contracts;
 
 namespace CozyGachapon.Economy
 {
-    public static class PlayerActionGate
+    internal static class PlayerActionGate
     {
         public static bool IsValid(in PlayerActionContext context)
         {

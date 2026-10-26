@@ -84,3 +84,9 @@ unity_compile_output.log
 # Studio per-session scratch
 Docs/production/session-state/
 Docs/production/session-logs/
+
+# IDE and Solution files
+.idea/
+.vscode/
+.vsconfig
+*.slnx

@@ -27,6 +27,23 @@ namespace CozyGachapon.Economy
             return Clamp(sum, CapFor(ModifierTier.Synergy));
         }
 
+        public double SynergyTargeted(ModifierBook book, string sourceKey)
+        {
+            double sum = 0d;
+            for (int i = 0; i < book.Count; i++)
+            {
+                ref readonly IncomeModifier modifier = ref book.At(i);
+                if (modifier.Tier == ModifierTier.Synergy
+                    && modifier.Target == ModifierTarget.Source
+                    && string.Equals(modifier.TargetKey, sourceKey, StringComparison.Ordinal))
+                {
+                    sum += ValueSanitizer.Sanitize(modifier.Value);
+                }
+            }
+
+            return Clamp(sum, CapFor(ModifierTier.Synergy));
+        }
+
         public double ChannelTier(ModifierBook book, ModifierTier tier, IncomeChannel channel)
         {
             double sum = 0d;
@@ -49,6 +66,61 @@ namespace CozyGachapon.Economy
             {
                 ref readonly IncomeModifier modifier = ref book.At(i);
                 if (modifier.Tier == ModifierTier.Base
+                    && modifier.Target == ModifierTarget.Source
+                    && string.Equals(modifier.TargetKey, sourceKey, StringComparison.Ordinal))
+                {
+                    sum += ValueSanitizer.Sanitize(modifier.Value);
+                }
+            }
+
+            return sum;
+        }
+
+        public double SynergyPermanent(ModifierBook book, string sourceKey, IncomeChannel sourceChannel)
+        {
+            double sum = 0d;
+            for (int i = 0; i < book.Count; i++)
+            {
+                ref readonly IncomeModifier modifier = ref book.At(i);
+                if (modifier.Tier == ModifierTier.Synergy
+                    && !modifier.IsTemporary
+                    && TargetsSource(in modifier, sourceKey, sourceChannel))
+                {
+                    sum += ValueSanitizer.Sanitize(modifier.Value);
+                }
+            }
+
+            return Clamp(sum, CapFor(ModifierTier.Synergy));
+        }
+
+        public double ChannelTierPermanent(ModifierBook book, ModifierTier tier, IncomeChannel channel)
+        {
+            if (tier == ModifierTier.Boost)
+            {
+                return 1d;
+            }
+
+            double sum = 0d;
+            for (int i = 0; i < book.Count; i++)
+            {
+                ref readonly IncomeModifier modifier = ref book.At(i);
+                if (modifier.Tier == tier && !modifier.IsTemporary && CoversChannel(modifier.Channel, channel))
+                {
+                    sum += ValueSanitizer.Sanitize(modifier.Value);
+                }
+            }
+
+            return Clamp(sum, CapFor(tier));
+        }
+
+        public double FlatUnitsPermanent(ModifierBook book, string sourceKey)
+        {
+            double sum = 0d;
+            for (int i = 0; i < book.Count; i++)
+            {
+                ref readonly IncomeModifier modifier = ref book.At(i);
+                if (modifier.Tier == ModifierTier.Base
+                    && !modifier.IsTemporary
                     && modifier.Target == ModifierTarget.Source
                     && string.Equals(modifier.TargetKey, sourceKey, StringComparison.Ordinal))
                 {

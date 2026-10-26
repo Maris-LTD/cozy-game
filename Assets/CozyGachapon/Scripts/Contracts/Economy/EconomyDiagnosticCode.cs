@@ -5,6 +5,8 @@ namespace CozyGachapon.Contracts
         RejectedAdd,
         RejectedSpend,
         LoadedBalanceClamped,
-        LoadedSpinsClamped
+        LoadedSpinsClamped,
+        ModifierTierRejected,
+        InvalidIncomeInput
     }
 }

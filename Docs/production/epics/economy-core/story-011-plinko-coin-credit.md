@@ -1,11 +1,11 @@
 # Story 011: Plinko Coin Credit (`CoinResolved` → Wallet)
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 2 days
-> **Last Updated**: —
+> **Last Updated**: 2026-10-26
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -27,25 +27,24 @@
 
 **Unity hints**:
 - Code: `Assets/CozyGachapon/Scripts/Contracts/Plinko/` (`CoinResolvedEvent.cs`, `CoinOrigin.cs`, `CoinResolveReason.cs`; Plinko sở hữu, xem Open Questions của EPIC); `Assets/CozyGachapon/Scripts/Contracts/Economy/` (`IncomeCreditedEvent.cs`); `Assets/CozyGachapon/Scripts/Core/Economy/` (`PlinkoCreditHandler.cs`, `PlinkoCreditCalculator.cs`)
-- Test: `Assets/CozyGachapon/Tests/EditMode/Economy/PlinkoCreditTests.cs`, `FakePlinkoSource.cs`
+- Test: `Assets/CozyGachapon/Tests/EditMode/Economy/PlinkoCreditTests.cs`, `PlinkoCreditFormulaTests.cs`
 - Data: `EconomyConfig.plinkoFlatPerCoinCap` (Story 001)
 
 ## Acceptance Criteria
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-15 [EditMode]` **GIVEN** modifier đã biết, **WHEN** Plinko giả phát `CoinResolved` cho mỗi tổ hợp origin {Manual, Auto, Rain, JackpotBurst} × reason {Bucket, Stuck, Overflow}, **THEN** mỗi sự kiện cộng đúng `plinko_credit`, phát đúng một `IncomeCredited` với `baseAmount` = rawValue, `coinId`, `bucketIndex` (kể cả none), origin và reason sao chép nguyên, và `creditedAmount` = delta của ví; **WHEN** `SubmitIncome(Plinko, shelf.slot1, 10)`, **THEN** `IncomeCredited` có `coinId` = none và `bucketIndex` = none.
-- [ ] `AC-17 [EditMode]` **GIVEN** listener đếm sự kiện, **WHEN** `CoinResolved` được xử lý, **THEN** khi lệnh xử lý trả về, số dư đã tăng và `IncomeCredited` + `WalletChanged` đã phát trong cùng lời gọi (trễ 0 khung).
-- [ ] `AC-18 [EditMode]` **GIVEN** n = 100, Synergy kênh Plinko +0.5, Trà +1.0, **WHEN** xu vào hũ x5 (rawValue = 5 × `base_coin_value(100)`), **THEN** credit = 280.2 (± 0.1); thêm cộng phẳng `plinko.coin` 0.4 → 302.6 (± 0.1); cộng phẳng 10 → dùng `C.plinkoFlatPerCoinCap` (2.0).
+- [x] `AC-15 [EditMode]` **GIVEN** modifier đã biết, **WHEN** Plinko giả phát `CoinResolved` cho mỗi tổ hợp origin {Manual, Auto, Rain, JackpotBurst} × reason {Bucket, Stuck, Overflow}, **THEN** mỗi sự kiện cộng đúng `plinko_credit`, phát đúng một `IncomeCredited` với `baseAmount` = rawValue, `coinId`, `bucketIndex` (kể cả none), origin và reason sao chép nguyên, và `creditedAmount` = delta của ví; **WHEN** `SubmitIncome(Plinko, shelf.slot1, 10)`, **THEN** `IncomeCredited` có `coinId` = none và `bucketIndex` = none.
+- [x] `AC-17 [EditMode]` **GIVEN** listener đếm sự kiện, **WHEN** `CoinResolved` được xử lý, **THEN** khi lệnh xử lý trả về, số dư đã tăng và `IncomeCredited` + `WalletChanged` đã phát trong cùng lời gọi (trễ 0 khung).
+- [x] `AC-18 [EditMode]` **GIVEN** n = 100, Synergy kênh Plinko +0.5, Trà +1.0, **WHEN** xu vào hũ x5 (rawValue = 5 × `base_coin_value(100)`), **THEN** credit = 280.2 (± 0.1); thêm cộng phẳng `plinko.coin` 0.4 → 302.6 (± 0.1); cộng phẳng 10 → dùng `C.plinkoFlatPerCoinCap` (2.0).
 
 ## Implementation Notes
 
-- Hợp đồng `CoinResolved` theo GDD (R5.1): `{ coinId, origin, bucketIndex | none, multiplier, rawValue, scoredPegHits, reason }`, `origin ∈ {Manual, Auto, Rain, JackpotBurst}`, `reason ∈ {Bucket, Stuck, Overflow}`. Plinko Board sở hữu hợp đồng; vì epic Plinko chưa làm, định nghĩa tối thiểu đặt ở `Contracts/Plinko/` để Plinko epic nhận lại (không đổi tên trường). `bucketIndex | none` biểu diễn bằng `int` với −1 = none hoặc `bool HasBucket` (chọn một, ghi vào Completion Notes). `IncomeCredited` mang `{ channel, coinId, bucketIndex, origin, reason, sourceKey, baseAmount, creditedAmount }`; từ `SubmitIncome` thì `coinId` và `bucketIndex` là none (Story 012).
+- Hợp đồng `CoinResolved` theo GDD (R5.1): `{ coinId, origin, bucketIndex | none, multiplier, rawValue, scoredPegHits, reason }`, `origin ∈ {Manual, Auto, Rain, JackpotBurst}`, `reason ∈ {Bucket, Stuck, Overflow}`. Plinko Board sở hữu hợp đồng; vì epic Plinko chưa làm, định nghĩa tối thiểu đặt ở `Contracts/Plinko/` để Plinko epic nhận lại (không đổi tên trường). `bucketIndex | none` biểu diễn bằng `int` với −1 = none / NoBucket. `IncomeCredited` mang `{ channel, coinId, bucketIndex, origin, reason, sourceKey, baseAmount, creditedAmount }`; từ `SubmitIncome` thì `coinId` và `bucketIndex` là none (Story 012).
 - `PlinkoCreditHandler.Handle(in CoinResolvedEvent)` xử lý **mọi** origin và **mọi** reason qua kênh Plinko với `rawValue` làm giá trị gốc; không tính lại `rawValue` (R5.1). Credit theo `plinko_credit`: `(rawValue + min(flat_units_coin, plinkoFlatPerCoinCap) × baseCoinValue) × M_Synergy(plinko.coin) × M_Boost(Plinko) × M_Prestige(Plinko) × M_Global(Plinko)`. `flat_units_coin` = Σ sanitize(v) tầng Base nhắm `plinko.coin`. `baseCoinValue` đọc từ giá trị cache hiện tại của Story 005 tại thời điểm giải quyết.
-- Cộng vào ví ngay trong cùng lời gọi: số dư tăng, `WalletChanged` rồi `IncomeCredited` phát trước khi hàm trả về (R5.4, AC-17, Game Feel 0 khung). `IncomeCredited` phát đúng một lần mỗi khoản, `creditedAmount` bằng delta của ví (số bay "+n"). Trường hợp credit bằng 0 (hũ hệ số 0) vẫn phát `IncomeCredited` với 0, không phát `WalletChanged` vì `Add` từ chối amount 0 (GDD không quy định rõ, ghi vào Completion Notes); trường hợp ví đã ở `walletSafeCap` thì `creditedAmount` là delta thực.
-- `rawValue` âm, NaN hoặc vô cực: bỏ qua khoản, không cộng ví, không `IncomeCredited` (kiểm ở Story 012 theo AC-19, nhưng logic nằm trong handler này). Cùng một xu phát hai lần: cộng cả hai (Plinko chặn trùng, Edge Case).
+- Cộng vào ví ngay trong cùng lời gọi: số dư tăng, `WalletChanged` rồi `IncomeCredited` phát trước khi hàm trả về (R5.4, AC-17, Game Feel 0 khung). `IncomeCredited` phát đúng một lần mỗi khoản, `creditedAmount` bằng delta của ví (số bay "+n"). Trường hợp credit bằng 0 (hũ hệ số 0) vẫn phát `IncomeCredited` với 0, không phát `WalletChanged` vì `Add` từ chối amount 0; trường hợp ví đã ở `walletSafeCap` thì `creditedAmount` là delta thực.
+- `rawValue` âm, NaN hoặc vô cực: bỏ qua khoản, không cộng ví, không `IncomeCredited`. Cùng một xu phát hai lần: cộng cả hai.
 - Hàng chục xu trong một khung: mỗi xu cộng riêng và phát `IncomeCredited` riêng; tổng delta ví = tổng `creditedAmount`.
-- Handler không phụ thuộc trạng thái Running (xử lý ở Ready và Paused, Story 013 kiểm AC-49); story này không gắn điều kiện trạng thái. `plinko_rate_avg` ghi nhận credit ở Story 015: handler phát tín hiệu nội bộ để Story 015 móc vào, không tự tính tốc độ.
 - Quy tắc dự án: không comment, không `Debug.Log*`, không LINQ, file ≤ 250 dòng, SRP, không static singleton, không cấp phát (struct sự kiện, không boxing).
 
 ## Out of Scope
@@ -78,9 +77,21 @@
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/PlinkoCreditTests.cs`, passing in `unity-harness tests`
+**Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/PlinkoCreditTests.cs`, `PlinkoCreditFormulaTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Verified via `unity-harness all`:
+- Rules: PASS (43 files, 0 comments, 0 Debug.Log, file <= 250 dòng)
+- Compile: PASS
+- EditMode Tests: PASS (969/969 tests passing, bao gồm `PlinkoCreditTests` và `PlinkoCreditFormulaTests`)
+- Code Review: APPROVED (0 findings) by `unity-reviewer`
+
+## Completion Notes
+
+- Đã tạo các contracts: `CoinOrigin.cs`, `CoinResolveReason.cs`, `CoinResolvedEvent.cs`, `IncomeCreditedEvent.cs` dạng `readonly struct` đảm bảo 0 B GC allocation.
+- Biểu diễn `bucketIndex | none`: sử dụng hằng số `NoBucket = -1`.
+- Đã tạo `PlinkoCreditCalculator` tính `plinko_credit` với sanitization các giá trị không hợp lệ (NaN, âm, infinity) và kẹp trần `plinkoFlatPerCoinCap`.
+- Đã tạo `PlinkoCreditHandler` và tích hợp vào `EconomyCore`: xử lý đồng bộ trễ 0 khung, tính delta ví thực tế (bao gồm cả khi kẹp `walletSafeCap`) và phát `IncomeCreditedEvent`.
+- Quyết định xử lý biên: khi `credit == 0`, không gọi `wallet.Add` (tránh lỗi RejectedAdd của ví với amount = 0) và vẫn phát `IncomeCreditedEvent` với `creditedAmount = 0` theo đúng GDD.
 
 ## Dependencies
 

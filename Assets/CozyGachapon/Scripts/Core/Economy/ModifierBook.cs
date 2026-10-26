@@ -19,6 +19,13 @@ namespace CozyGachapon.Economy
 
         public void Add(in IncomeModifier modifier)
         {
+            int existingIndex = FindMatchingIndex(in modifier);
+            if (existingIndex >= 0)
+            {
+                _modifiers[existingIndex] = modifier;
+                return;
+            }
+
             if (Count == _modifiers.Length)
             {
                 Array.Resize(ref _modifiers, _modifiers.Length * 2);
@@ -59,6 +66,37 @@ namespace CozyGachapon.Economy
 
             Count = write;
             return removed;
+        }
+
+        private int FindMatchingIndex(in IncomeModifier modifier)
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                ref readonly IncomeModifier existing = ref _modifiers[i];
+                if (IsSameTarget(in existing, in modifier))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private static bool IsSameTarget(in IncomeModifier a, in IncomeModifier b)
+        {
+            if (!string.Equals(a.SourceId, b.SourceId, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (a.Tier != b.Tier || a.Channel != b.Channel || a.Target != b.Target)
+            {
+                return false;
+            }
+
+            string keyA = a.TargetKey ?? string.Empty;
+            string keyB = b.TargetKey ?? string.Empty;
+            return string.Equals(keyA, keyB, StringComparison.Ordinal);
         }
     }
 }

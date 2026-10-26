@@ -1,11 +1,11 @@
 # Story 016: Balance Model Targets (first spin, seconds per spin)
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 1 day
-> **Last Updated**: —
+> **Last Updated**: 2026-10-27
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,8 +34,8 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-40 [EditMode]` **GIVEN** `C` và `T` mặc định, **WHEN** tính `first_spin_time`, **THEN** kết quả (13.8 s) ≤ `T.firstSpinMaxSeconds` (30).
-- [ ] `AC-41 [EditMode]` **GIVEN** `T.spinCheckpoints`, **WHEN** tính `seconds_per_spin` tại từng mốc, **THEN** test in bảng (11.3 / 31.3 / 84.4 s) và mỗi giá trị ≤ phần tử tương ứng của `T.plinkoOnlySpinSecondsMax` (30 / 60 / 120).
+- [x] `AC-40 [EditMode]` **GIVEN** `C` và `T` mặc định, **WHEN** tính `first_spin_time`, **THEN** kết quả (13.8 s) ≤ `T.firstSpinMaxSeconds` (30).
+- [x] `AC-41 [EditMode]` **GIVEN** `T.spinCheckpoints`, **WHEN** tính `seconds_per_spin` tại từng mốc, **THEN** test in bảng (11.3 / 31.3 / 84.4 s) và mỗi giá trị ≤ phần tử tương ứng của `T.plinkoOnlySpinSecondsMax` (30 / 60 / 120).
 
 ## Implementation Notes
 
@@ -72,7 +72,7 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/FirstSpinTimeTests.cs`, `SecondsPerSpinTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Verified (`FirstSpinTimeTests.cs`, `SecondsPerSpinTests.cs` — 1007/1007 EditMode tests PASS, `unity-harness rules` PASS, 2026-10-27)
 
 ## Dependencies
 

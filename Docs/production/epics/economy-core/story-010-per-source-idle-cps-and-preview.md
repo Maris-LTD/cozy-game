@@ -1,11 +1,11 @@
 # Story 010: Per-Source Idle CPS & Preview Functions
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 1 day
-> **Last Updated**: —
+> **Last Updated**: 2026-10-26
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,8 +34,8 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-50 [EditMode]` **GIVEN** cấu hình của AC-20 (`idle_cps` = 58) và nguồn `shelf.slot1.idle` = A, `shelf.slot2.idle` = B, **WHEN** gọi `GetSourceIdleCps` cho A, B và một khóa chưa đăng ký, rồi gỡ B, **THEN** = 40, 18, 0; sau khi gỡ B, A = 40 và Σ = `IdleCps`; mỗi lần Σ các giá trị = `IdleCps` trong sai số `T.valueRelTolerance`.
-- [ ] `AC-51 [EditMode]` **GIVEN** cấu hình của AC-20, bộ đếm ví/modifier/sự kiện và bộ đếm tính lại `idle_cps` (AC-24), **WHEN** gọi `PreviewIdleCps` với (a) plan = trạng thái hiện tại; (b) plan thêm nguồn C gốc 4 không modifier; (c) plan bỏ B; (d) plan có `baseRate` NaN hoặc modifier −0.5; ở Running, Ready và Paused, **THEN** (a) = 58; (b) = 58 + 4 × 2 (Trà) = 66; (c) = 40; (d) bằng kết quả khi giá trị đó coi là 0; sau mọi lời gọi `IdleCps`, số dư, danh sách modifier không đổi, 0 sự kiện, bộ đếm tính lại không tăng.
+- [x] `AC-50 [EditMode]` **GIVEN** cấu hình của AC-20 (`idle_cps` = 58) và nguồn `shelf.slot1.idle` = A, `shelf.slot2.idle` = B, **WHEN** gọi `GetSourceIdleCps` cho A, B và một khóa chưa đăng ký, rồi gỡ B, **THEN** = 40, 18, 0; sau khi gỡ B, A = 40 và Σ = `IdleCps`; mỗi lần Σ các giá trị = `IdleCps` trong sai số `T.valueRelTolerance`.
+- [x] `AC-51 [EditMode]` **GIVEN** cấu hình của AC-20, bộ đếm ví/modifier/sự kiện và bộ đếm tính lại `idle_cps` (AC-24), **WHEN** gọi `PreviewIdleCps` với (a) plan = trạng thái hiện tại; (b) plan thêm nguồn C gốc 4 không modifier; (c) plan bỏ B; (d) plan có `baseRate` NaN hoặc modifier −0.5; ở Running, Ready và Paused, **THEN** (a) = 58; (b) = 58 + 4 × 2 (Trà) = 66; (c) = 40; (d) bằng kết quả khi giá trị đó coi là 0; sau mọi lời gọi `IdleCps`, số dư, danh sách modifier không đổi, 0 sự kiện, bộ đếm tính lại không tăng.
 
 ## Implementation Notes
 
@@ -73,7 +73,16 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/SourceIdleCpsTests.cs`, `PreviewIdleCpsTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Passed 991/991 tests in `unity-harness tests` (`SourceIdleCpsTests`, `PreviewIdleCpsTests`).
+
+## Completion Notes
+
+- **Review Gate**: `[LP-CODE-REVIEW] skipped (lean)`.
+- **Harness Verification**: Rules PASS (63 files), Compile PASS, EditMode tests PASS (991/991).
+- **Core Additions**:
+  - `IdlePlanSource.cs` & `IIdlePlan.cs`: allocation-free plan contract for Shelf & Synergy.
+  - `SourceIdleCpsCalculator.cs` & `IdlePreviewCalculator.cs`: pure, read-only calculators that evaluate per-source CPS and plan preview CPS without mutating dirty flags, recompute counters, or wallet state.
+  - `IncomePipeline.cs` & `EconomyCore.cs`: exposed `GetSourceIdleCps` and `PreviewIdleCps`.
 
 ## Dependencies
 

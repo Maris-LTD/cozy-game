@@ -1,11 +1,11 @@
 # Story 013: Lifecycle State Machine & Idle Accrual
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 2 days
-> **Last Updated**: —
+> **Last Updated**: 2026-10-26
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,9 +34,9 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-21 [EditMode]` **GIVEN** `idle_cps` = 58, **WHEN** 60 bước dt = 1/60 s; một bước dt = 1.0 s; một bước dt âm hoặc NaN, **THEN** số dư tăng lần lượt 58, 58 × `C.maxFrameDelta` (14.5), 0.
-- [ ] `AC-22 [EditMode]` **GIVEN** `idle_cps` > 0, bước dt = 1/60 s và Bootstrap giả điều khiển được `IsSimulationRunning`, **WHEN** (a) ngay sau `Run()` (`IsSimulationRunning` sai, vòng đời giả ở `Booting.Curtain`) chạy 600 bước, rồi phát `Interactive` (`IsSimulationRunning` đúng) và chạy 60 bước; (b) từ Running phát `Paused {Hidden}`, chạy 600 bước, rồi phát `Resumed {Hidden, 10}` với `IsSimulationRunning` đúng và chạy 60 bước; (c) trước `Interactive`, phát `Paused {Hidden}` (vòng đời giả ở `Booting.Curtain`), chạy 600 bước, phát `Resumed {Hidden, 10}` với `IsSimulationRunning` sai, chạy 600 bước, rồi phát `Interactive` và chạy 60 bước; (d) ở Running, Bootstrap giả đặt `IsSimulationRunning` sai mà không phát sự kiện nào, chạy 60 bước, **THEN** (a) 600 bước đầu: Economy Core ở Ready, số dư không đổi, không có `WalletChanged`; sau `Interactive`: Running, số dư tăng `idle_cps` × 1 s (sai số `T.valueRelTolerance`); (b) không có `WalletChanged` và số dư không đổi trong lúc tạm dừng; sau `Resumed`: Running, cộng Idle chạy lại ở bước kế tiếp, tổng tăng `idle_cps` × 1 s, không cộng gì cho `awaySeconds`; (c) sau `Resumed` Economy Core ở Ready (không phải Running), số dư không đổi trong cả 1,200 bước trước `Interactive`, và chỉ tăng (`idle_cps` × 1 s) trong 60 bước sau `Interactive`; (d) số dư không đổi (dt = 0, R6.2).
-- [ ] `AC-49 [EditMode]` **GIVEN** Economy Core ở (a) Ready (sau `Run()`, chưa `Interactive`) hoặc (b) Paused (sau `Paused {Hidden}`), modifier đã biết, **WHEN** Plinko giả phát `CoinResolved` với `reason` = Overflow, `bucketIndex` = none, `rawValue` r, **THEN** cộng đúng `plinko_credit(r)`, phát đúng một `IncomeCredited` (`bucketIndex` = none, `reason` = Overflow), trạng thái giữ nguyên Ready / Paused và không có khoản Idle nào được cộng.
+- [x] `AC-21 [EditMode]` **GIVEN** `idle_cps` = 58, **WHEN** 60 bước dt = 1/60 s; một bước dt = 1.0 s; một bước dt âm hoặc NaN, **THEN** số dư tăng lần lượt 58, 58 × `C.maxFrameDelta` (14.5), 0.
+- [x] `AC-22 [EditMode]` **GIVEN** `idle_cps` > 0, bước dt = 1/60 s và Bootstrap giả điều khiển được `IsSimulationRunning`, **WHEN** (a) ngay sau `Run()` (`IsSimulationRunning` sai, vòng đời giả ở `Booting.Curtain`) chạy 600 bước, rồi phát `Interactive` (`IsSimulationRunning` đúng) và chạy 60 bước; (b) từ Running phát `Paused {Hidden}`, chạy 600 bước, rồi phát `Resumed {Hidden, 10}` với `IsSimulationRunning` đúng và chạy 60 bước; (c) trước `Interactive`, phát `Paused {Hidden}` (vòng đời giả ở `Booting.Curtain`), chạy 600 bước, phát `Resumed {Hidden, 10}` với `IsSimulationRunning` sai, chạy 600 bước, rồi phát `Interactive` và chạy 60 bước; (d) ở Running, Bootstrap giả đặt `IsSimulationRunning` sai mà không phát sự kiện nào, chạy 60 bước, **THEN** (a) 600 bước đầu: Economy Core ở Ready, số dư không đổi, không có `WalletChanged`; sau `Interactive`: Running, số dư tăng `idle_cps` × 1 s (sai số `T.valueRelTolerance`); (b) không có `WalletChanged` và số dư không đổi trong lúc tạm dừng; sau `Resumed`: Running, cộng Idle chạy lại ở bước kế tiếp, tổng tăng `idle_cps` × 1 s, không cộng gì cho `awaySeconds`; (c) sau `Resumed` Economy Core ở Ready (không phải Running), số dư không đổi trong cả 1,200 bước trước `Interactive`, và chỉ tăng (`idle_cps` × 1 s) trong 60 bước sau `Interactive`; (d) số dư không đổi (dt = 0, R6.2).
+- [x] `AC-49 [EditMode]` **GIVEN** Economy Core ở (a) Ready (sau `Run()`, chưa `Interactive`) hoặc (b) Paused (sau `Paused {Hidden}`), modifier đã biết, **WHEN** Plinko giả phát `CoinResolved` với `reason` = Overflow, `bucketIndex` = none, `rawValue` r, **THEN** cộng đúng `plinko_credit(r)`, phát đúng một `IncomeCredited` (`bucketIndex` = none, `reason` = Overflow), trạng thái giữ nguyên Ready / Paused và không có khoản Idle nào được cộng.
 
 ## Implementation Notes
 
@@ -79,7 +79,17 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/IdleAccrualTests.cs`, `EconomyLifecycleTests.cs`, `PausedResolveTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Passed 988/988 tests in `unity-harness tests` (`IdleAccrualTests`, `EconomyLifecycleTests`, `PausedResolveTests`).
+
+## Completion Notes
+
+- **Review Gate**: `[LP-CODE-REVIEW] skipped (lean)`.
+- **Harness Verification**: Rules PASS (56 files), Compile PASS, EditMode tests PASS (988/988).
+- **Core Additions**:
+  - `ISimulationState.cs`: contract interface for checking `IsSimulationRunning`.
+  - `EconomyRunState.cs` & `EconomyLifecycle.cs`: implements state transitions `Uninitialized -> Ready -> Running <-> Paused` and `CanAccrueIdle` guard.
+  - `IdleAccrual.cs`: clamps frame delta `min(dt, maxFrameDelta)` and credits `IdleCps * clampedDt` only when `CanAccrueIdle` is true.
+  - `EconomyCore.cs`: integrated `Tick(double dt)`, `HandleInteractive`, `HandlePaused`, `HandleResumed`, and `RunState`.
 
 ## Dependencies
 

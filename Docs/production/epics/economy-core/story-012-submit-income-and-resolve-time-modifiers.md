@@ -1,11 +1,11 @@
 # Story 012: SubmitIncome, Resolve-Time Modifiers & Invalid Input
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 1 day
-> **Last Updated**: —
+> **Last Updated**: 2026-10-26
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,8 +34,8 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-16 [EditMode]` **GIVEN** xu A sinh trước khi Trà (+1.0, Both) được đăng ký và giải quyết khi Trà còn, xu B giải quyết sau khi Trà bị gỡ, cùng rawValue r, **WHEN** giải quyết, **THEN** A được 2r, B được r.
-- [ ] `AC-19 [EditMode]` **GIVEN** Synergy nhắm `shelf.slot1` +0.5 và Trà +1.0, **WHEN** `SubmitIncome(Plinko, shelf.slot1, 10)`, **THEN** cộng 30; `SubmitIncome` với baseAmount ≤ 0 / NaN và `CoinResolved` với rawValue âm / NaN / vô cực bị bỏ qua, số dư không đổi.
+- [x] `AC-16 [EditMode]` **GIVEN** xu A sinh trước khi Trà (+1.0, Both) được đăng ký và giải quyết khi Trà còn, xu B giải quyết sau khi Trà bị gỡ, cùng rawValue r, **WHEN** giải quyết, **THEN** A được 2r, B được r.
+- [x] `AC-19 [EditMode]` **GIVEN** Synergy nhắm `shelf.slot1` +0.5 và Trà +1.0, **WHEN** `SubmitIncome(Plinko, shelf.slot1, 10)`, **THEN** cộng 30; `SubmitIncome` với baseAmount ≤ 0 / NaN và `CoinResolved` với rawValue âm / NaN / vô cực bị bỏ qua, số dư không đổi.
 
 ## Implementation Notes
 
@@ -72,7 +72,19 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/SubmitIncomeTests.cs`, `ResolveTimeModifierTests.cs`, `InvalidIncomeInputTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Passed 979/979 tests in `unity-harness all` (EditMode suite including all 3 new test suites).
+
+## Completion Notes
+
+- **Lead Programmer Code Review**: APPROVED by `unity-reviewer` (017cfbb2-db50-4e08-ab94-f8a8694a58c5).
+- **Harness Verification**: Passed rules, compile, EditMode tests (979/979 passed).
+- **Core Additions**:
+  - `SubmitIncomeHandler.cs`: calculates credit via `baseAmount * M_Synergy * M_Boost * M_Prestige * M_Global`, credits wallet with `WalletChangeReason.PlinkoIncome`, emits `IncomeCreditedEvent` with `NoCoinId`, `NoBucket`, `CoinOrigin.None`, `CoinResolveReason.None`.
+  - `IncomeInputGuard.cs`: centralized validation for `IsValidRawValue` (>= 0, not NaN/Inf) and `IsValidSubmitAmount` (> 0, not NaN/Inf).
+  - `PlinkoCreditHandler.cs`: wired with `IEconomyDiagnosticsSink` and `IncomeInputGuard`.
+  - `TierMultiplierCalculator.cs`: added `SynergyTargeted` to support direct source-targeted modifiers without pre-registration requirement.
+  - `EconomyCore.cs` & `IncomePipeline.cs`: exposed and routed `SubmitIncome` seamlessly.
+- **Diagnostics**: `EconomyDiagnosticCode.InvalidIncomeInput` reported on rejected submit amounts, negative raw values, non-Plinko channels, and null/empty source keys.
 
 ## Dependencies
 

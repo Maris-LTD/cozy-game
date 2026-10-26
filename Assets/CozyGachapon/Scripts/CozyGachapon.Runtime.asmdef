@@ -4,6 +4,7 @@
     "references": [
         "CozyGachapon.Contracts",
         "CozyGachapon.Foundation",
+        "CozyGachapon.Core",
         "Unity.InputSystem",
         "UnityEngine.UI",
         "Unity.TextMeshPro"

@@ -1,11 +1,11 @@
 # Story 009: Idle CPS Computation, Dirty Flag & Offline Snapshot
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 2 days
-> **Last Updated**: —
+> **Last Updated**: 2026-10-26
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,10 +34,10 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-20 [EditMode]` **GIVEN** `C.idleCpsUnit` = 2, nguồn A gốc 10 với Synergy nhắm A +0.5, nguồn B gốc 4 với cộng phẳng 1 đơn vị, Synergy kênh Idle +0.5, Trà +1.0, **WHEN** tính, **THEN** `idle_cps` = 58.
-- [ ] `AC-24 [EditMode]` **GIVEN** bộ đếm số lần tính lại `idle_cps`, **WHEN** chạy 600 khung không đăng ký/gỡ gì, rồi đăng ký 3 modifier, **THEN** bộ đếm tăng 0 trong 600 khung đầu và ≤ 3 sau đó.
-- [ ] `AC-27 [EditMode]` **GIVEN** cấu hình của AC-20 (có Trà), **WHEN** đọc `OfflineRateSnapshot`, **THEN** = 29; gỡ Trà → bằng `idle_cps`; luôn ≤ `idle_cps`.
-- [ ] `AC-32 [EditMode]` **GIVEN** n = 30 và các giá đã tính, **WHEN** đăng ký/gỡ nguồn Idle làm `idle_cps` tăng 10 lần rồi giảm về 0, **THEN** `spin_price` và mọi `derived_price` không đổi (D2, chống khai thác tháo kệ).
+- [x] `AC-20 [EditMode]` **GIVEN** `C.idleCpsUnit` = 2, nguồn A gốc 10 với Synergy nhắm A +0.5, nguồn B gốc 4 với cộng phẳng 1 đơn vị, Synergy kênh Idle +0.5, Trà +1.0, **WHEN** tính, **THEN** `idle_cps` = 58.
+- [x] `AC-24 [EditMode]` **GIVEN** bộ đếm số lần tính lại `idle_cps`, **WHEN** chạy 600 khung không đăng ký/gỡ gì, rồi đăng ký 3 modifier, **THEN** bộ đếm tăng 0 trong 600 khung đầu và ≤ 3 sau đó.
+- [x] `AC-27 [EditMode]` **GIVEN** cấu hình của AC-20 (có Trà), **WHEN** đọc `OfflineRateSnapshot`, **THEN** = 29; gỡ Trà → bằng `idle_cps`; luôn ≤ `idle_cps`.
+- [x] `AC-32 [EditMode]` **GIVEN** n = 30 và các giá đã tính, **WHEN** đăng ký/gỡ nguồn Idle làm `idle_cps` tăng 10 lần rồi giảm về 0, **THEN** `spin_price` và mọi `derived_price` không đổi (D2, chống khai thác tháo kệ).
 
 ## Implementation Notes
 
@@ -87,7 +87,23 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/IdleCpsTests.cs`, `IdleRecomputeCounterTests.cs`, `OfflineRateSnapshotTests.cs`, `PriceIndependenceTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Assets/CozyGachapon/Tests/EditMode/Economy/IdleCpsTests.cs, IdleRecomputeCounterTests.cs, OfflineRateSnapshotTests.cs, PriceIndependenceTests.cs passing in unity-harness tests (CozyGachapon.Tests.EditMode 954/954)
+
+## Completion Notes
+
+**Completed**: 2026-10-26
+**Criteria**: 4/4 passing
+**Harness**: unity-harness all PASS; rules PASS; compile PASS; tests CozyGachapon.Tests.EditMode 954/954
+**Run result**: N/A - Logic story with no scene or UI surface
+**Deviations**: None
+**Test Evidence**: Assets/CozyGachapon/Tests/EditMode/Economy/IdleCpsTests.cs, IdleRecomputeCounterTests.cs, OfflineRateSnapshotTests.cs, PriceIndependenceTests.cs passing
+**Visual sign-off**: n/a (not Visual/Feel or UI)
+**Code Review**: unity-reviewer: 0 blockers, APPROVE. LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none
+
+- `idle_cps` tính theo cờ bẩn: chỉ tính lại khi đăng ký/gỡ nguồn hoặc modifier.
+- `OfflineRateSnapshot` tính theo yêu cầu, loại bỏ toàn bộ modifier `isTemporary == true` và tầng Boost, không ảnh hưởng cờ bẩn hay bộ đếm tính lại chính.
+- `idleCpsUnit` là hằng số đọc từ `EconomyConfig`, không co giãn theo số lần quay n.
 
 ## Dependencies
 

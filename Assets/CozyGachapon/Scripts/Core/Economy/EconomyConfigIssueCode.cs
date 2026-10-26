@@ -9,6 +9,8 @@ namespace CozyGachapon.Economy
         CurrencyIdMissing,
         DuplicateCurrencyId,
         CoinCurrencyMissing,
-        KnobOutOfRange
+        KnobOutOfRange,
+        TierPrefixForbidden,
+        TierPrefixListEmpty
     }
 }

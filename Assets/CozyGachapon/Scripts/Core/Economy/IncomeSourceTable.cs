@@ -51,6 +51,29 @@ namespace CozyGachapon.Economy
             return true;
         }
 
+        public bool Remove(string key)
+        {
+            int index = IndexOf(key);
+            if (index < 0)
+            {
+                return false;
+            }
+
+            int last = Count - 1;
+            if (index < last)
+            {
+                _keys[index] = _keys[last];
+                _channels[index] = _channels[last];
+                _baseRates[index] = _baseRates[last];
+                _flatUnits[index] = _flatUnits[last];
+                _synergy[index] = _synergy[last];
+            }
+
+            _keys[last] = null;
+            Count--;
+            return true;
+        }
+
         public string KeyAt(int index)
         {
             return _keys[index];

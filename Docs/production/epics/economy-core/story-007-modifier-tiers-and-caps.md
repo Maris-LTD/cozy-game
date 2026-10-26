@@ -1,11 +1,11 @@
 # Story 007: Income Modifier Tiers & Caps
 
 > **Epic**: Economy Core
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 2 days
-> **Last Updated**: —
+> **Last Updated**: 2026-10-26
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,10 +34,10 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-9 [EditMode]` **GIVEN** nguồn Idle A, B và nguồn `plinko.coin`, mỗi ca bắt đầu không có modifier, **WHEN** đăng ký (a) không gì; (b) hai Synergy kênh Idle +1.0; (c) Synergy kênh Idle tổng +4.2; (d) một Synergy nhắm A +0.5; (e) một Synergy kênh Idle +0.5; (f) một Synergy kênh Both +0.5, **THEN** (a) `M_Synergy(A)` = 1; (b) = 3; (c) = `C.synergyTierCap` (4.0); (d) `M_Synergy(A)` = 1.5, `M_Synergy(B)` = 1; (e) `M_Synergy(plinko.coin)` = 1; (f) `M_Synergy(A)` = `M_Synergy(plinko.coin)` = 1.5.
-- [ ] `AC-10 [EditMode]` **GIVEN** hai modifier Boost +1.0 (một Both, một Plinko), **WHEN** tính, **THEN** `M_Boost(Plinko)` = min(3, `C.boostTierCap`) = 3 và `M_Boost(Idle)` = 2; tương tự tầng Prestige và Global bị kẹp tại `C.prestigeTierCap` và `C.globalTierCap` khi tổng vượt trần.
-- [ ] `AC-11 [EditMode]` **GIVEN** một nguồn gốc 50, hai Synergy kênh +1.0, Boost +1.0, Global `event.test` +1.0, **WHEN** tính `channel_income`, **THEN** kết quả = 600.
-- [ ] `AC-12 [EditMode]` **GIVEN** một cấu hình modifier hợp lệ cho kết quả X, **WHEN** thêm một modifier có value −0.5, NaN hoặc +∞ ở bất kỳ tầng nào, **THEN** kết quả vẫn bằng X.
+- [x] `AC-9 [EditMode]` **GIVEN** nguồn Idle A, B và nguồn `plinko.coin`, mỗi ca bắt đầu không có modifier, **WHEN** đăng ký (a) không gì; (b) hai Synergy kênh Idle +1.0; (c) Synergy kênh Idle tổng +4.2; (d) một Synergy nhắm A +0.5; (e) một Synergy kênh Idle +0.5; (f) một Synergy kênh Both +0.5, **THEN** (a) `M_Synergy(A)` = 1; (b) = 3; (c) = `C.synergyTierCap` (4.0); (d) `M_Synergy(A)` = 1.5, `M_Synergy(B)` = 1; (e) `M_Synergy(plinko.coin)` = 1; (f) `M_Synergy(A)` = `M_Synergy(plinko.coin)` = 1.5.
+- [x] `AC-10 [EditMode]` **GIVEN** hai modifier Boost +1.0 (một Both, một Plinko), **WHEN** tính, **THEN** `M_Boost(Plinko)` = min(3, `C.boostTierCap`) = 3 và `M_Boost(Idle)` = 2; tương tự tầng Prestige và Global bị kẹp tại `C.prestigeTierCap` và `C.globalTierCap` khi tổng vượt trần.
+- [x] `AC-11 [EditMode]` **GIVEN** một nguồn gốc 50, hai Synergy kênh +1.0, Boost +1.0, Global `event.test` +1.0, **WHEN** tính `channel_income`, **THEN** kết quả = 600.
+- [x] `AC-12 [EditMode]` **GIVEN** một cấu hình modifier hợp lệ cho kết quả X, **WHEN** thêm một modifier có value −0.5, NaN hoặc +∞ ở bất kỳ tầng nào, **THEN** kết quả vẫn bằng X.
 
 ## Implementation Notes
 
@@ -86,7 +86,7 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/ModifierTierTests.cs`, `ChannelIncomeTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Assets/CozyGachapon/Tests/EditMode/Economy/ModifierTierTests.cs, ChannelIncomeTests.cs, IncomePipelineZeroAllocTests.cs, ModifierSanitizeTests.cs passing in unity-harness tests (CozyGachapon.Tests.EditMode 937/937)
 
 ## Dependencies
 
@@ -94,6 +94,17 @@
 - Unlocks: Story 005, Story 009, Story 011
 
 ## Completion Notes
+
+**Completed**: 2026-10-26
+**Criteria**: 4/4 passing
+**Harness**: unity-harness all PASS; rules PASS; compile PASS; tests CozyGachapon.Tests.EditMode 937/937
+**Run result**: N/A - Logic story with no scene or UI surface
+**Deviations**: None
+**Test Evidence**: Assets/CozyGachapon/Tests/EditMode/Economy/ModifierTierTests.cs, ChannelIncomeTests.cs, IncomePipelineZeroAllocTests.cs, ModifierSanitizeTests.cs passing
+**Visual sign-off**: n/a (not Visual/Feel or UI)
+**Code Review**: unity-reviewer: 0 findings, APPROVE. LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none
+
 
 - Năm tầng `Base/Synergy/Boost/Prestige/Global` theo GDD R4.4, không theo bốn layer phác trong ADR-0005 (TD-011).
 - `ModifierTarget` có hai giá trị `Channel` và `Source`; khóa nguồn nằm ở `TargetKey`.

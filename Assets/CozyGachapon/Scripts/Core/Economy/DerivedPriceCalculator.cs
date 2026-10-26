@@ -11,15 +11,17 @@ namespace CozyGachapon.Economy
             _curve = curve ?? throw new ArgumentNullException(nameof(curve));
         }
 
-        public bool TryGet(double coef, int n, out double price)
+        public bool TryGet(double coef, int n, out double price) => TryCompute(_curve, coef, n, out price);
+
+        internal static bool TryCompute(SpinPriceCurve curve, double coef, int n, out double price)
         {
             price = 0d;
-            if (!(coef > 0d) || double.IsPositiveInfinity(coef))
+            if (curve == null || !(coef > 0d) || double.IsPositiveInfinity(coef))
             {
                 return false;
             }
 
-            double candidate = _curve.ToNicePrice(coef * _curve.RawPrice(n));
+            double candidate = curve.ToNicePrice(coef * curve.RawPrice(n));
             if (!(candidate > 0d))
             {
                 return false;

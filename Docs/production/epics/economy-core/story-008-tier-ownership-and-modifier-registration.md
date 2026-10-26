@@ -1,11 +1,11 @@
 # Story 008: Tier Ownership & Modifier Registration Rules
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 1 day
-> **Last Updated**: —
+> **Last Updated**: 2026-10-26
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,8 +34,8 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-13 [EditMode]` **GIVEN** `C.tierOwnerPrefixes` mặc định, **WHEN** `shelf.x` đăng ký vào Boost, Prestige hoặc Global, hoặc `boost.x` đăng ký vào Synergy, **THEN** bị từ chối và `idle_cps` không đổi; `ad.x` vào Boost và `shelf.x` vào Synergy được nhận; validator báo lỗi nếu cấu hình cho `shelf.` vào Global.
-- [ ] `AC-14 [EditMode]` **GIVEN** `idle_cps` = X, **WHEN** đăng ký hai lần cùng `sourceId` + đích với value 0.5 rồi `Unregister(sourceId)`, **THEN** sau lần đăng ký thứ hai chỉ tính một lần +0.5 (không +1.0), sau khi gỡ `idle_cps` = X; `Unregister` một id không tồn tại không đổi gì.
+- [x] `AC-13 [EditMode]` **GIVEN** `C.tierOwnerPrefixes` mặc định, **WHEN** `shelf.x` đăng ký vào Boost, Prestige hoặc Global, hoặc `boost.x` đăng ký vào Synergy, **THEN** bị từ chối và `idle_cps` không đổi; `ad.x` vào Boost và `shelf.x` vào Synergy được nhận; validator báo lỗi nếu cấu hình cho `shelf.` vào Global.
+- [x] `AC-14 [EditMode]` **GIVEN** `idle_cps` = X, **WHEN** đăng ký hai lần cùng `sourceId` + đích với value 0.5 rồi `Unregister(sourceId)`, **THEN** sau lần đăng ký thứ hai chỉ tính một lần +0.5 (không +1.0), sau khi gỡ `idle_cps` = X; `Unregister` một id không tồn tại không đổi gì.
 
 ## Implementation Notes
 
@@ -72,7 +72,20 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/TierOwnershipTests.cs`, `ModifierReplacementTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Verified via `unity-harness all`:
+- Rules: PASS (35 files)
+- Compile: PASS
+- EditMode Tests: PASS (959/959 tests passing, bao gồm `TierOwnershipTests` & `ModifierReplacementTests`)
+- Reviewer Verdict: APPROVED (0 findings)
+
+## Completion Notes
+
+- Đã tạo `TierOwnershipPolicy` kiểm tra tiền tố modifier theo tầng và chặn thú/shelf vào tầng cao (Boost, Prestige, Global) theo R4.7 và AC-13.
+- Đã tạo `TierOwnerPrefixValidator` và enum `EconomyConfigIssueCode.TierPrefixForbidden`, `TierPrefixListEmpty`, tích hợp vào `EconomyConfigValidator`.
+- Đã mở rộng `ModifierBook.Add` để kiểm tra trùng đích (`IsSameTarget`) và thay thế in-place, không cộng dồn theo R4.3 và AC-14.
+- Đã bổ sung `EconomyDiagnosticCode.ModifierTierRejected` vào `IEconomyDiagnosticsSink` khi đăng ký modifier sai tầng.
+- Lệch thiết kế so với ADR-0005: ADR-0005 nêu ném ngoại lệ khi trùng ID, nhưng theo GDD Edge Cases quy định thay thế in-place bản ghi sau đè bản ghi trước, do đó tuân thủ theo GDD.
+- Cập nhật fixture `IncomePipelineFixture.cs` cấu hình các test prefix mở rộng để đảm bảo tương thích toàn bộ 959 test suites.
 
 ## Dependencies
 

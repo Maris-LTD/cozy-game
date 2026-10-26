@@ -26,6 +26,11 @@ namespace CozyGachapon.Tests.Economy
             Config.SetBoostTierCapForTest(BoostCap);
             Config.SetPrestigeTierCapForTest(PrestigeCap);
             Config.SetGlobalTierCapForTest(GlobalCap);
+            Config.TierOwnerPrefixes.SetBaseForTest(new[] { "shelf.", "base.", "flat", "bad." });
+            Config.TierOwnerPrefixes.SetSynergyForTest(new[] { "shelf.", "syn.", "syn", "m.", "good", "bad." });
+            Config.TierOwnerPrefixes.SetBoostForTest(new[] { "boost.", "ad.", "m.", "many.", "good", "bad." });
+            Config.TierOwnerPrefixes.SetPrestigeForTest(new[] { "prestige.", "prestige", "m.", "bad." });
+            Config.TierOwnerPrefixes.SetGlobalForTest(new[] { "event.", "global", "m.", "bad." });
             Pipeline = new IncomePipeline(Config);
             Pipeline.RegisterIncomeSource(SourceA, IncomeChannel.Idle, 50d);
             Pipeline.RegisterIncomeSource(SourceB, IncomeChannel.Idle, 20d);

@@ -3,7 +3,7 @@
 > **Layer**: Foundation
 > **GDD**: Docs/design/gdd/economy-core.md
 > **Code area**: Assets/CozyGachapon/Scripts/Core/Economy/ (assembly `CozyGachapon.Core` theo architecture.md — asmdef chưa tồn tại, story đầu tiên phải tạo)
-> **Status**: In Progress
+> **Status**: Complete
 > **Stories**: 18 — see table
 
 ## Overview
@@ -50,20 +50,20 @@ This epic is complete when:
 | 002 | Spend, CanAfford & Player Action Context | Logic | Complete | ADR-0005 |
 | 003 | Spin Price Curve, nice_ceil & Derived Price | Logic | Complete | ADR-0005 |
 | 004 | Economy Core Initialization & State Snapshot | Logic | Complete | ADR-0005, ADR-0001 |
-| 005 | Spin Payment, Base Coin Value Source & Shop Reset | Logic | Ready | ADR-0005 |
+| 005 | Spin Payment, Base Coin Value Source & Shop Reset | Logic | Complete | ADR-0005 |
 | 006 | Number Formatter (K, M, B, T, aa…) | Logic | Complete | ADR-0005 |
-| 007 | Income Modifier Tiers & Caps | Logic | Ready | ADR-0005 |
-| 008 | Tier Ownership & Modifier Registration Rules | Logic | Ready | ADR-0005 |
-| 009 | Idle CPS Computation, Dirty Flag & Offline Snapshot | Logic | Ready | ADR-0005 |
-| 010 | Per-Source Idle CPS & Preview Functions | Logic | Ready | ADR-0005 |
-| 011 | Plinko Coin Credit (`CoinResolved` → Wallet) | Logic | Ready | ADR-0005 |
-| 012 | SubmitIncome, Resolve-Time Modifiers & Invalid Input | Logic | Ready | ADR-0005 |
-| 013 | Lifecycle State Machine & Idle Accrual | Logic | Ready | ADR-0002, ADR-0005 |
-| 014 | Ad Idle Compensation & Wallet Event Integrity | Logic | Ready | ADR-0005, ADR-0002 |
-| 015 | Published Income Rates & Plinko Soft Cap | Logic | Ready | ADR-0005 |
-| 016 | Balance Model Targets (first spin, seconds per spin) | Logic | Ready | ADR-0005 |
-| 017 | Pillar 4 API Guards (reflection, boundary inputs, spin count) | Logic | Ready | ADR-0005 |
-| 018 | `economy.core` Boot Step, Composition Root Wiring & Zero-Alloc Frame | Integration | Ready | ADR-0002, ADR-0005, ADR-0001 |
+| 007 | Income Modifier Tiers & Caps | Logic | Complete | ADR-0005 |
+| 008 | Tier Ownership & Modifier Registration Rules | Logic | Complete | ADR-0005 |
+| 009 | Idle CPS Computation, Dirty Flag & Offline Snapshot | Logic | Complete | ADR-0005 |
+| 010 | Per-Source Idle CPS & Preview Functions | Logic | Complete | ADR-0005 |
+| 011 | Plinko Coin Credit (`CoinResolved` → Wallet) | Logic | Complete | ADR-0005 |
+| 012 | SubmitIncome, Resolve-Time Modifiers & Invalid Input | Logic | Complete | ADR-0005 |
+| 013 | Lifecycle State Machine & Idle Accrual | Logic | Complete | ADR-0002, ADR-0005 |
+| 014 | Ad Idle Compensation & Wallet Event Integrity | Logic | Complete | ADR-0005, ADR-0002 |
+| 015 | Published Income Rates & Plinko Soft Cap | Logic | Complete | ADR-0005 |
+| 016 | Balance Model Targets (first spin, seconds per spin) | Logic | Complete | ADR-0005 |
+| 017 | Pillar 4 API Guards (reflection, boundary inputs, spin count) | Logic | Complete | ADR-0005 |
+| 018 | `economy.core` Boot Step, Composition Root Wiring & Zero-Alloc Frame | Integration | Complete | ADR-0002, ADR-0005, ADR-0001 |
 
 Số thứ tự không phải thứ tự build. Thứ tự build theo phụ thuộc: 001 → 002, 003, 006 → 004 → 007 → 009 → 008 → 005 → 011 → 012 → 013 → 010, 014 → 015 → 016 → 017 → 018 (xem mục Dependencies của từng story). Số story (18) vượt khoảng 5-10 kỳ vọng ở trên vì Economy Core có 51 AC; mỗi story giữ 1-4 AC và ước tính 1-2 ngày.
 

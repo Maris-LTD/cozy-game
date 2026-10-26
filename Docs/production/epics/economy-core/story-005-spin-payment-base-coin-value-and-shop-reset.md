@@ -1,11 +1,11 @@
 # Story 005: Spin Payment, Base Coin Value Source & Shop Reset
 
 > **Epic**: Economy Core
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (systems index; code nằm ở assembly `CozyGachapon.Core`)
 > **Type**: Logic
 > **Estimate**: 2 days
-> **Last Updated**: —
+> **Last Updated**: 2026-10-26
 > **Manifest Version**: 2026-10-21
 
 ## Context
@@ -34,9 +34,9 @@
 
 *From Docs/design/gdd/economy-core.md, scoped to this story:*
 
-- [ ] `AC-30 [EditMode]` **GIVEN** Xu = 150, n = 0, **WHEN** gọi `TryPaySpin` hai lần trong cùng khung có ngữ cảnh hành động, **THEN** lần 1 `true`, Xu = 50, n = 1, `SpinPriceChanged { 1, 110, 1.0297 }`; lần 2 `false` (giá 110 > 50), Xu = 50, n = 1, một `SpendRejected`.
-- [ ] `AC-33 [EditMode]` **GIVEN** α = `C.coinValueExponent`, **WHEN** tính `base_coin_value`, **THEN** n = 0 → 1, n = 1 → 1.0297, n = 100 → 18.679 (α 0.6), 11.467 (α 0.5), 30.43 (α 0.7) (sai số 1e-3 tương đối). **GIVEN** registry dịch vụ giả và Plinko giả chỉ đọc `IBaseCoinValueSource` (không có kênh ghi nào từ Economy Core), **WHEN** (a) sau `Run()` với game mới; (b) sau một `TryPaySpin` thành công; (c) sau một `TryPaySpin` thất bại; (d) sau `Run()` với dữ liệu nạp có `spinsThisShop` = 100 (VS), **THEN** `BaseCoinValue` đọc được lần lượt = 1; = `base_coin_value(1)` (1.0297); không đổi so với trước lệnh; = `base_coin_value(100)` (18.679), và Plinko giả không bao giờ dùng `PlinkoConfig.baseCoinValue` trong cả bốn ca. (Hành vi dự phòng khi không có nguồn nào là AC-45 của Plinko.)
-- [ ] `AC-36 [EditMode]` **GIVEN** Xu = 5,000, Tem = 7, n = 40, một modifier `prestige.x` +1.0, **WHEN** `ResetForNewShop` có ngữ cảnh hành động, **THEN** Xu = `C.startingCoins`, Tem = 7, n = 0, giá quay = `C.spinBasePrice`, Plinko giả đọc `IBaseCoinValueSource.BaseCoinValue` = 1 ngay sau lời gọi (trước n = 40 nó đọc `base_coin_value(40)`), modifier `prestige.x` vẫn tính, đúng một `WalletChanged` (`currency.coin`, previous 5,000, current `C.startingCoins`, reason `ShopReset`), đúng một `SpinPriceChanged { 0, C.spinBasePrice, 1 }` và đúng một `ShopEconomyReset { [currency.coin], 0 }`, theo thứ tự đó.
+- [x] `AC-30 [EditMode]` **GIVEN** Xu = 150, n = 0, **WHEN** gọi `TryPaySpin` hai lần trong cùng khung có ngữ cảnh hành động, **THEN** lần 1 `true`, Xu = 50, n = 1, `SpinPriceChanged { 1, 110, 1.0297 }`; lần 2 `false` (giá 110 > 50), Xu = 50, n = 1, một `SpendRejected`.
+- [x] `AC-33 [EditMode]` **GIVEN** α = `C.coinValueExponent`, **WHEN** tính `base_coin_value`, **THEN** n = 0 → 1, n = 1 → 1.0297, n = 100 → 18.679 (α 0.6), 11.467 (α 0.5), 30.43 (α 0.7) (sai số 1e-3 tương đối). **GIVEN** registry dịch vụ giả và Plinko giả chỉ đọc `IBaseCoinValueSource` (không có kênh ghi nào từ Economy Core), **WHEN** (a) sau `Run()` với game mới; (b) sau một `TryPaySpin` thành công; (c) sau một `TryPaySpin` thất bại; (d) sau `Run()` với dữ liệu nạp có `spinsThisShop` = 100 (VS), **THEN** `BaseCoinValue` đọc được lần lượt = 1; = `base_coin_value(1)` (1.0297); không đổi so với trước lệnh; = `base_coin_value(100)` (18.679), và Plinko giả không bao giờ dùng `PlinkoConfig.baseCoinValue` trong cả bốn ca. (Hành vi dự phòng khi không có nguồn nào là AC-45 của Plinko.)
+- [x] `AC-36 [EditMode]` **GIVEN** Xu = 5,000, Tem = 7, n = 40, một modifier `prestige.x` +1.0, **WHEN** `ResetForNewShop` có ngữ cảnh hành động, **THEN** Xu = `C.startingCoins`, Tem = 7, n = 0, giá quay = `C.spinBasePrice`, Plinko giả đọc `IBaseCoinValueSource.BaseCoinValue` = 1 ngay sau lời gọi (trước n = 40 nó đọc `base_coin_value(40)`), modifier `prestige.x` vẫn tính, đúng một `WalletChanged` (`currency.coin`, previous 5,000, current `C.startingCoins`, reason `ShopReset`), đúng một `SpinPriceChanged { 0, C.spinBasePrice, 1 }` và đúng một `ShopEconomyReset { [currency.coin], 0 }`, theo thứ tự đó.
 
 ## Implementation Notes
 
@@ -81,7 +81,23 @@
 **Story Type**: Logic
 **Required evidence**: `Assets/CozyGachapon/Tests/EditMode/Economy/SpinPaymentTests.cs`, `BaseCoinValueSourceTests.cs`, `ShopResetTests.cs`, passing in `unity-harness tests`
 
-**Evidence**: [ ] Not yet created
+**Evidence**: [x] Assets/CozyGachapon/Tests/EditMode/Economy/SpinPaymentTests.cs, BaseCoinValueSourceTests.cs, ShopResetTests.cs passing in unity-harness tests (CozyGachapon.Tests.EditMode 945/945)
+
+## Completion Notes
+
+**Completed**: 2026-10-26
+**Criteria**: 3/3 passing
+**Harness**: unity-harness all PASS; rules PASS; compile PASS; tests CozyGachapon.Tests.EditMode 945/945
+**Run result**: N/A - Logic story with no scene or UI surface
+**Deviations**: None
+**Test Evidence**: Assets/CozyGachapon/Tests/EditMode/Economy/SpinPaymentTests.cs, BaseCoinValueSourceTests.cs, ShopResetTests.cs passing
+**Visual sign-off**: n/a (not Visual/Feel or UI)
+**Code Review**: unity-reviewer: 0 blockers, APPROVE (polish recommendations applied). LP-CODE-REVIEW skipped (lean)
+**Untested criteria**: none
+
+- `IBaseCoinValueSource` định nghĩa property `double BaseCoinValue { get; }` theo GDD (thay vì `GetCurrentBaseCoinValue()` theo ADR-0005).
+- Thứ tự sự kiện trong `TryPaySpin`: `WalletChanged` phát trước `SpinPriceChanged`.
+- Thứ tự sự kiện trong `ResetForNewShop`: `WalletChanged(ShopReset)` -> `SpinPriceChanged` -> `ShopEconomyReset`.
 
 ## Dependencies
 

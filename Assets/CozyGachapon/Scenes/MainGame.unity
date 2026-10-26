@@ -667,6 +667,7 @@ MonoBehaviour:
   _audioConfig: {fileID: 11400000, guid: 671b0b40e7e364d43bbd3b9a9ebb9cea, type: 2}
   _audioCueLibrary: {fileID: 11400000, guid: cfcbd3c1009eb684d8b65450c7f9b090, type: 2}
   _audioVoiceContainer: {fileID: 2096040879}
+  _economyConfig: {fileID: 11400000, guid: d1e26144179b8fb4f84603e561570c2e, type: 2}
   _failFirstBootForTest: 0
 --- !u!1 &2096040878
 GameObject:
