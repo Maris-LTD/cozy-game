@@ -1,6 +1,8 @@
 using System;
 using CozyGachapon.Audio;
+using CozyGachapon.Bootstrap;
 using CozyGachapon.Contracts;
+using CozyGachapon.Core.PetCatalog;
 using CozyGachapon.Economy;
 using CozyGachapon.Foundation;
 using CozyGachapon.Pooling;
@@ -24,18 +26,21 @@ namespace CozyGachapon
         [SerializeField] private AudioCueLibrary _audioCueLibrary;
         [SerializeField] private Transform _audioVoiceContainer;
         [SerializeField] private EconomyConfig _economyConfig;
+        [SerializeField] private PetCatalogConfig _petCatalogConfig;
         [SerializeField] private bool _failFirstBootForTest;
 
         private IServiceRegistry _services;
         private PoolingBootModule _pooling;
         private AudioWiring _audio;
         private EconomyWiring _economy;
+        private PetWiring _petWiring;
 
         public BootstrapGraph Graph { get; private set; }
         public IServiceRegistry Services => _services;
         public IAudioService Audio { get; private set; }
         public UnityVoiceBackend AudioVoices { get; private set; }
         public EconomyCore Economy { get; private set; }
+        public IPetDatabase PetDatabase => _services != null && _services.TryGet<IPetDatabase>(out var db) ? db : null;
 
         private void Awake()
         {
@@ -67,6 +72,7 @@ namespace CozyGachapon
             InitializeAdapters();
             RegisterPoolingSteps();
             RegisterAudioSteps();
+            RegisterPetSteps();
             RegisterEconomySteps();
             RegisterDebugSteps();
         }
@@ -123,6 +129,12 @@ namespace CozyGachapon
             _audio.Register(Graph);
             Audio = _audio.Service;
             AudioVoices = _audio.Voices;
+        }
+
+        private void RegisterPetSteps()
+        {
+            _petWiring = new PetWiring(_petCatalogConfig, _services);
+            _petWiring.Register(Graph);
         }
 
         private void RegisterEconomySteps()

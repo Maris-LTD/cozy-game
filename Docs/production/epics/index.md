@@ -1,6 +1,6 @@
 # Epics Index
 
-Last Updated: 2026-10-26
+Last Updated: 2026-10-27
 Engine: Unity 6000.3.16f1
 
 | Epic | Layer | System | GDD | Stories | Status |
@@ -9,7 +9,7 @@ Engine: Unity 6000.3.16f1
 | Object Pooling | Foundation | object-pooling | Docs/design/gdd/object-pooling.md | 6 stories (6 Complete) | Complete |
 | Audio | Foundation | audio | Docs/design/gdd/audio.md | 12 stories (12 Complete) | Complete |
 | Economy Core | Foundation | economy-core | Docs/design/gdd/economy-core.md | 18 stories (18 Complete) | Complete |
-| Pet Catalog | Foundation | pet-catalog | Docs/design/gdd/pet-catalog.md | Not yet created | Ready |
+| Pet Catalog | Foundation | pet-catalog | Docs/design/gdd/pet-catalog.md | 6 stories (6 Complete) | Complete |
 | Plinko Board | Core | plinko-board | Docs/design/gdd/plinko-board.md | Not yet created | Ready |
 | Inventory | Core | inventory | Docs/design/gdd/inventory.md | Not yet created | Ready |
 | Gacha Machine | Feature | gacha-machine | Docs/design/gdd/gacha-machine.md | Not yet created | Ready |
