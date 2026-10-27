@@ -2,6 +2,8 @@ using System;
 using CozyGachapon.Audio;
 using CozyGachapon.Bootstrap;
 using CozyGachapon.Contracts;
+using CozyGachapon.Contracts.Inventory;
+using CozyGachapon.Core.Inventory;
 using CozyGachapon.Core.PetCatalog;
 using CozyGachapon.Economy;
 using CozyGachapon.Foundation;
@@ -27,6 +29,7 @@ namespace CozyGachapon
         [SerializeField] private Transform _audioVoiceContainer;
         [SerializeField] private EconomyConfig _economyConfig;
         [SerializeField] private PetCatalogConfig _petCatalogConfig;
+        [SerializeField] private InventoryConfig _inventoryConfig;
         [SerializeField] private bool _failFirstBootForTest;
 
         private IServiceRegistry _services;
@@ -34,6 +37,7 @@ namespace CozyGachapon
         private AudioWiring _audio;
         private EconomyWiring _economy;
         private PetWiring _petWiring;
+        private InventoryWiring _inventoryWiring;
 
         public BootstrapGraph Graph { get; private set; }
         public IServiceRegistry Services => _services;
@@ -41,6 +45,7 @@ namespace CozyGachapon
         public UnityVoiceBackend AudioVoices { get; private set; }
         public EconomyCore Economy { get; private set; }
         public IPetDatabase PetDatabase => _services != null && _services.TryGet<IPetDatabase>(out var db) ? db : null;
+        public IInventoryService Inventory => _services != null && _services.TryGet<IInventoryService>(out var inv) ? inv : null;
 
         private void Awake()
         {
@@ -74,6 +79,7 @@ namespace CozyGachapon
             RegisterAudioSteps();
             RegisterPetSteps();
             RegisterEconomySteps();
+            RegisterInventorySteps();
             RegisterDebugSteps();
         }
 
@@ -142,6 +148,12 @@ namespace CozyGachapon
             _economy = new EconomyWiring(_economyConfig, _services);
             _economy.Register(Graph);
             Economy = _economy.Core;
+        }
+
+        private void RegisterInventorySteps()
+        {
+            _inventoryWiring = new InventoryWiring(_inventoryConfig, _services);
+            _inventoryWiring.Register(Graph);
         }
 
         private void RegisterDebugSteps()

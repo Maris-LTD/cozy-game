@@ -2,9 +2,9 @@
 
 > **Layer**: Core
 > **GDD**: Docs/design/gdd/inventory.md
-> **Code area**: Assets/CozyGachapon/Scripts/Features/Inventory/ (theo architecture.md `InventoryService` thuộc assembly `CozyGachapon.Features` — asmdef chưa tồn tại; systems-index xếp hệ này ở tầng Core)
-> **Status**: Ready
-> **Stories**: Not yet created — run `game-tasks inventory`
+> **Code area**: Assets/CozyGachapon/Scripts/Core/Inventory/
+> **Status**: Complete
+> **Stories**: 5/5 stories completed (Story 001 - Story 005)
 
 ## Overview
 
@@ -14,7 +14,7 @@ Inventory là mô hình dữ liệu nhỏ có đúng một cổng ghi (`AddPet(i
 
 | ADR | Decision summary | Engine risk |
 |-----|------------------|-------------|
-| ADR-0001: Layered Assembly Architecture | Contracts cho interface/DTO/sự kiện, cài đặt ở assembly Features | LOW |
+| ADR-0001: Layered Assembly Architecture | Contracts cho interface/DTO/sự kiện, cài đặt ở assembly Core | LOW |
 | ADR-0002: Bootstrap Composition Root | Bước `inventory.core` ở pha `GameplayInit` | LOW |
 
 ## Requirements
@@ -25,19 +25,20 @@ Inventory là mô hình dữ liệu nhỏ có đúng một cổng ghi (`AddPet(i
 | TR-inventory-002 | Mutation events for pet acquisition and duplicate increments | ADR-0001 ⚠️ partial |
 | TR-inventory-003 | Read-only query interfaces for shelf loadout selection | ADR-0001 ⚠️ partial |
 
-Thông tin (không chặn): cả 3 yêu cầu chỉ được ADR-0001/0002 phủ một phần và không có ADR riêng; mức standard chỉ đòi ADR Foundation. Lưu ý TR-inventory-001 nhắc "Star rank" nhưng GDD giao Sao cho Star Progression (VS) suy từ `GetCopies`, không lưu ở Inventory.
+## Stories
+
+| Story | Title | Type | Status |
+|-------|-------|------|--------|
+| [story-001](file:///C:/Users/PC/CodingProgram/cozy-game/Docs/production/epics/inventory/story-001-inventory-contracts-config-and-math.md) | Inventory Contracts, Config and Badge Math | Logic | Complete |
+| [story-002](file:///C:/Users/PC/CodingProgram/cozy-game/Docs/production/epics/inventory/story-002-core-inventory-store-addpet-and-event-queue.md) | Core Inventory Store, AddPet and FIFO Event Queue | Logic | Complete |
+| [story-003](file:///C:/Users/PC/CodingProgram/cozy-game/Docs/production/epics/inventory/story-003-inventory-queries-sorting-and-progress.md) | Inventory Queries, Display Sorting and Collection Progress | Logic | Complete |
+| [story-004](file:///C:/Users/PC/CodingProgram/cozy-game/Docs/production/epics/inventory/story-004-orphan-retention-starting-pets-and-save-snapshot.md) | Orphan Retention, Starting Pets and Save Snapshot | Logic | Complete |
+| [story-005](file:///C:/Users/PC/CodingProgram/cozy-game/Docs/production/epics/inventory/story-005-inventory-boot-step-and-config-validator.md) | Inventory Boot Step, Wiring and Config Validator | Integration | Complete |
 
 ## Definition of Done
 
 This epic is complete when:
 - All stories are implemented, reviewed and closed with `game-done`.
 - All acceptance criteria (AC-1…AC-29) from `Docs/design/gdd/inventory.md` are verified.
-- Logic and Integration stories have passing EditMode tests in the asmdef listed in `testAssemblies` (`unity-harness config`), conventionally `Assets/CozyGachapon/Tests/EditMode/`. At qaLevel minimal tests are advisory.
-- Visual/Feel and UI stories have screenshots kept in `Docs/production/qa/evidence/inventory/` (Visual/Feel cần có sự xác nhận của người dùng trong `game-done`).
+- Logic and Integration stories have passing EditMode tests in the asmdef listed in `testAssemblies` (`unity-harness config`), conventionally `Assets/CozyGachapon/Tests/EditMode/`.
 - `unity-harness all` passes.
-- GDD lưu ý: header `Status` là `In Review` trong khi systems-index ghi Approved; Save/Load là soft (VS) nên khôi phục trạng thái và quy ước "không có khóa Inventory" áp dụng `startingPets` chưa nằm trong epic MVP.
-- Lệch tầng: systems-index xếp Inventory ở Core, architecture.md đặt `InventoryService` ở assembly Features.
-
-## Next Step
-
-Run `game-tasks inventory` to break this epic into implementable stories (balanced granularity: kỳ vọng 5-10 stories; hệ nhỏ có thể rơi ở cận dưới). PR-EPIC bỏ qua (lean).

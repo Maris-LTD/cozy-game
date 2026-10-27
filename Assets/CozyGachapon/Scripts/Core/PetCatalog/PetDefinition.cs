@@ -16,6 +16,7 @@ namespace CozyGachapon.Core.PetCatalog
         [SerializeField] private PetEffect[] effects = Array.Empty<PetEffect>();
         [SerializeField] private string iconAddress;
         [SerializeField] private string prefabAddress;
+        [SerializeField] private bool isDeprecated;
 
         public string Id => id;
         public string DisplayNameKey => displayNameKey;
@@ -26,6 +27,7 @@ namespace CozyGachapon.Core.PetCatalog
         public PetEffect[] Effects => effects;
         public string IconAddress => iconAddress;
         public string PrefabAddress => prefabAddress;
+        public bool IsDeprecated => isDeprecated;
 
         public void SetData(
             string id,
@@ -36,7 +38,8 @@ namespace CozyGachapon.Core.PetCatalog
             PetReleaseTier releaseTier,
             PetEffect[] effects,
             string iconAddress = null,
-            string prefabAddress = null)
+            string prefabAddress = null,
+            bool isDeprecated = false)
         {
             this.id = id;
             this.displayNameKey = displayNameKey;
@@ -47,6 +50,7 @@ namespace CozyGachapon.Core.PetCatalog
             this.effects = effects ?? Array.Empty<PetEffect>();
             this.iconAddress = iconAddress ?? string.Empty;
             this.prefabAddress = prefabAddress ?? string.Empty;
+            this.isDeprecated = isDeprecated;
         }
     }
 }
