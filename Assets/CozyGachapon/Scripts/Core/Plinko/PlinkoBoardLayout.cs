@@ -108,6 +108,21 @@ namespace CozyGachapon.Plinko
             return pegs;
         }
 
+        public static float ComputeMinPassageGap(PlinkoConfig config)
+        {
+            float pegToPegGap = config.PegSpacing - 2f * config.PegRadius;
+            float oddRowPegToWallGap = config.PegSpacing - config.PegRadius;
+            float evenRowBumpGap = config.UseWallBumps
+                ? 1.5f * config.PegSpacing - config.PegRadius - config.WallBumpRadius
+                : 0.5f * config.PegSpacing - config.PegRadius;
+
+            float dx = 0.5f * config.PegSpacing;
+            float dy = config.RowSpacingRatio * config.PegSpacing;
+            float diagonalGap = Mathf.Sqrt(dx * dx + dy * dy) - 2f * config.PegRadius;
+
+            return Mathf.Min(Mathf.Min(pegToPegGap, oddRowPegToWallGap), Mathf.Min(evenRowBumpGap, diagonalGap));
+        }
+
         public static List<BucketLayoutInfo> GenerateBuckets(PlinkoConfig config)
         {
             var buckets = new List<BucketLayoutInfo>();

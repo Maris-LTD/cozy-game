@@ -43,7 +43,7 @@ This epic is complete when:
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
 | 001 | [Hình học bàn & kiểm định thông số](story-001-board-geometry-and-config-validation.md) | Logic | Complete | ADR-0006 |
-| 002 | [Thiết lập vật lý Box2D & trần độ nảy](story-002-physics-simulation-and-bounciness-cap.md) | Logic | Ready | ADR-0006 |
+| 002 | [Thiết lập vật lý Box2D & trần độ nảy](story-002-physics-simulation-and-bounciness-cap.md) | Logic | Complete | ADR-0006 |
 | 003 | [Vùng thả & bộ kiểm soát nhận chạm](story-003-drop-zone-and-tap-admission-limiter.md) | Logic | Ready | ADR-0006 |
 | 004 | [Quản lý sức chứa & hàng đợi loạt](story-004-concurrency-and-burst-queue-management.md) | Logic | Ready | ADR-0006 |
 | 005 | [Va chạm đinh & tính điểm có debounce](story-005-peg-collision-and-scored-debounce.md) | Logic | Ready | ADR-0006 |
