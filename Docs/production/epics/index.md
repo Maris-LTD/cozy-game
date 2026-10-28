@@ -10,7 +10,7 @@ Engine: Unity 6000.3.16f1
 | Audio | Foundation | audio | Docs/design/gdd/audio.md | 12 stories (12 Complete) | Complete |
 | Economy Core | Foundation | economy-core | Docs/design/gdd/economy-core.md | 18 stories (18 Complete) | Complete |
 | Pet Catalog | Foundation | pet-catalog | Docs/design/gdd/pet-catalog.md | 6 stories (6 Complete) | Complete |
-| Plinko Board | Core | plinko-board | Docs/design/gdd/plinko-board.md | Not yet created | Ready |
+| Plinko Board | Core | plinko-board | Docs/design/gdd/plinko-board.md | 13 stories (1/13 Complete) | In Progress |
 | Inventory | Core | inventory | Docs/design/gdd/inventory.md | 5 stories (5 Complete) | Complete |
 | Gacha Machine | Feature | gacha-machine | Docs/design/gdd/gacha-machine.md | Not yet created | Ready |
 | Shelf & Synergy | Feature | shelf-and-synergy | Docs/design/gdd/shelf-and-synergy.md | Not yet created | Ready |

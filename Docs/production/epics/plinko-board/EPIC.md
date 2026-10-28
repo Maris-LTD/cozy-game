@@ -2,9 +2,9 @@
 
 > **Layer**: Core
 > **GDD**: Docs/design/gdd/plinko-board.md
-> **Code area**: Assets/CozyGachapon/Scripts/Core/Plinko/ (assembly `CozyGachapon.Core` — asmdef chưa tồn tại; adapter MonoBehaviour vật lý 2D đặt trong `CozyGachapon.Runtime`)
+> **Code area**: Assets/CozyGachapon/Scripts/Core/Plinko/ (assembly `CozyGachapon.Core`; adapter MonoBehaviour vật lý 2D đặt trong `CozyGachapon.Runtime`)
 > **Status**: Ready
-> **Stories**: Not yet created — run `game-tasks plinko-board`
+> **Stories**: 13 — see table
 
 ## Overview
 
@@ -34,15 +34,28 @@ Plinko Board là nguồn xu chủ động của game: bàn gỗ đứng dọc �
 This epic is complete when:
 - All stories are implemented, reviewed and closed with `game-done`.
 - All acceptance criteria (AC-1…AC-49) from `Docs/design/gdd/plinko-board.md` are verified.
-- Logic and Integration stories have passing EditMode tests in the asmdef listed in `testAssemblies` (`unity-harness config`), conventionally `Assets/CozyGachapon/Tests/EditMode/`. At qaLevel minimal tests are advisory.
+- Logic and Integration stories have passing EditMode tests in the asmdef listed in `testAssemblies` (`unity-harness config`), conventionally `Assets/CozyGachapon/Tests/EditMode/`.
 - Visual/Feel and UI stories have screenshots kept in `Docs/production/qa/evidence/plinko-board/` (Visual/Feel cần có sự xác nhận của người dùng trong `game-done`).
 - `unity-harness all` passes.
-- Inherited from Bootstrap & Scene Flow: AC-20 (tạm dừng 60 s với 10 xu rơi), AC-23 (`WorldPress` bị chặn bởi nút UI, khớp Plinko AC-34), AC-24 (trễ router ≤ `routerMaxAddedFrames`, xu xuất hiện), AC-28 (renderer/camera bàn tắt khi sang Shelf nhưng `CoinResolved` vẫn tăng; cần thêm HUD cho phần `ActiveTab` mặc định), AC-39 (nhấn ở viền letterbox; cần nút UI từ HUD).
-- Inherited from Object Pooling: AC-26, AC-29, AC-33 (pool `plinko.coin` trên bàn thật); AC-28 (prefab MVP thật, cùng Feedback & Juice).
-- Inherited from Audio: AC-33 (0 cấp phát 600 khung trên bàn thật), AC-34 (bàn bão hòa trên thiết bị tham chiếu), AC-25 (WebGL Chrome/Safari cùng bàn thật).
-- Phụ thuộc đã chốt nhưng chưa có số: ngân sách Physics2D/draw call, `k_diff` thực tế (prototype Plinko, AC-30), `maxActiveCoins` = 24 (Open Questions của GDD).
-- GDD lưu ý: header `Status` là `In Review` trong khi systems-index ghi Approved.
+
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | [Hình học bàn & kiểm định thông số](story-001-board-geometry-and-config-validation.md) | Logic | Complete | ADR-0006 |
+| 002 | [Thiết lập vật lý Box2D & trần độ nảy](story-002-physics-simulation-and-bounciness-cap.md) | Logic | Ready | ADR-0006 |
+| 003 | [Vùng thả & bộ kiểm soát nhận chạm](story-003-drop-zone-and-tap-admission-limiter.md) | Logic | Ready | ADR-0006 |
+| 004 | [Quản lý sức chứa & hàng đợi loạt](story-004-concurrency-and-burst-queue-management.md) | Logic | Ready | ADR-0006 |
+| 005 | [Va chạm đinh & tính điểm có debounce](story-005-peg-collision-and-scored-debounce.md) | Logic | Ready | ADR-0006 |
+| 006 | [Watchdog phát hiện xu kẹt & despawn](story-006-stuck-watchdog-and-despawn-timer.md) | Logic | Ready | ADR-0006 |
+| 007 | [Cảm biến hũ, trả thưởng & tích hợp Economy](story-007-bucket-payout-and-economy-integration.md) | Integration | Ready | ADR-0006, ADR-0005 |
+| 008 | [Jackpot & chuỗi Bùng Xu không lặp](story-008-jackpot-and-chain-free-burst-cascades.md) | Logic | Ready | ADR-0006 |
+| 009 | [Dịch vụ đăng ký nguồn ngoài & Auto-Drop](story-009-external-modifiers-and-auto-drop-service.md) | Logic | Ready | ADR-0006 |
+| 010 | [Bộ sự kiện R12 & quản lý pool zero-allocation](story-010-event-publication-and-zero-allocation-pooling.md) | Integration | Ready | ADR-0006, ADR-0003 |
+| 011 | [Vòng đời mô phỏng & tích hợp Bootstrap](story-011-simulation-lifecycle-and-bootstrap-integration.md) | Integration | Ready | ADR-0006, ADR-0002 |
+| 012 | [Kiểm chứng thống kê & mô hình cân bằng](story-012-balance-models-and-statistical-verification.md) | Logic | Ready | ADR-0006 |
+| 013 | [Viewport camera, định tuyến chạm & hiển thị](story-013-presentation-touch-router-and-ui-alignment.md) | Visual/Feel | Ready | ADR-0006 |
 
 ## Next Step
 
-Run `game-tasks plinko-board` to break this epic into implementable stories (balanced granularity: kỳ vọng 5-10 stories). PR-EPIC bỏ qua (lean).
+Run `game-readiness Docs/production/epics/plinko-board/story-001-board-geometry-and-config-validation.md` or `game-dev Docs/production/epics/plinko-board/story-001-board-geometry-and-config-validation.md` to begin implementation.
